@@ -20,48 +20,41 @@ var KEY_WII_B = 171;
 
 var keys = {};
 
-function keyDown(e)
-{
-	var keynum;
-	if (window.event)
-		keynum = e.keyCode;
-	else if (e.which)
-		keynum = e.which;
+function keyDown(e) {
+    var keynum;
+    if (window.event)
+        keynum = e.keyCode;
+    else if (e.which)
+        keynum = e.which;
 
-		keys[keynum] = 1;
+    keys[keynum] = 1;
 }
-function keyUp(e)
-{
-	var keynum;
-	if (window.event) {
-		keynum = e.keyCode;
-	} else if (e.which) {
-		keynum = e.which;
-	}
-	keys[keynum] = 0;
+function keyUp(e) {
+    var keynum;
+    if (window.event) {
+        keynum = e.keyCode;
+    } else if (e.which) {
+        keynum = e.which;
+    }
+    keys[keynum] = 0;
 }
 
-function checkInput()
-{
-	if(keys[KEY_W] == 1)
-	{
-		player.move(player.angle, lastFrameTime);
-	}
-	
-	if(keys[KEY_S] == 1)
-	{
-		player.move(player.angle + 180.0, lastFrameTime);
-	}
-	
-	if(keys[KEY_A] == 1)
-	{
-		player.angle -= 5.0 * lastFrameTime / 30.0;
-		player.angle = fast_floor(normalizeAngle(player.angle));
-	}		
-	
-	if(keys[KEY_D] == 1)
-	{
-		player.angle += 5.0 * lastFrameTime / 30.0;
-		player.angle = fast_floor(normalizeAngle(player.angle));
-	}	
+function checkInput() {
+    if (keys[KEY_W] == 1) {
+        player.move(player.angle, lastFrameTime);
+    }
+
+    if (keys[KEY_S] == 1) {
+        player.move(player.angle + 180.0, lastFrameTime);
+    }
+
+    if (keys[KEY_A] == 1) {
+        player.angle -= 5.0 * lastFrameTime / 30.0;
+        player.angle = fast_floor(normalizeAngle(player.angle));
+    }
+
+    if (keys[KEY_D] == 1) {
+        player.angle += 5.0 * lastFrameTime / 30.0;
+        player.angle = fast_floor(normalizeAngle(player.angle));
+    }
 }
