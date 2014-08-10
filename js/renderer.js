@@ -1,6 +1,6 @@
 function Renderer(options) {
-    this.screenWidth = 1280;
-    this.screenHeight = 720;
+    this.screenWidth = 640;
+    this.screenHeight = 360;
     this.fov = 75.0;
     this.maxViewDist = 100000.0;
 
