@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<meta http-equiv="content-type" content="text/html;charset=UTF-8" />
+		<title>Rays</title>
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+		<meta name="description" content="Rays" />
+		<meta name="keywords" content="rays />
+		<meta name="author" content="Tim Lyakhovetskiy" />
+		<link rel="shortcut icon" type="image/x-icon" href="/favicon.ico" />
+		<link href='http://fonts.googleapis.com/css?family=Cabin:500,500italic,700,700italic' rel='stylesheet' type='text/css'>
+		<link href='http://fonts.googleapis.com/css?family=Roboto+Condensed:300,400,700' rel='stylesheet' type='text/css'>
+		<!-- Latest compiled and minified CSS -->
+		<link rel="stylesheet" href="http://netdna.bootstrapcdn.com/bootstrap/3.0.3/css/bootstrap.min.css">
+		<!-- Optional theme -->
+		<link rel="stylesheet" href="http://netdna.bootstrapcdn.com/bootstrap/3.0.3/css/bootstrap-theme.min.css">
+		<!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
+		<script src="https://code.jquery.com/jquery.js"></script>
+		<!-- Latest compiled and minified JavaScript -->
+		<script src="http://netdna.bootstrapcdn.com/bootstrap/3.0.3/js/bootstrap.min.js"></script>
+		<script src="http://code.jquery.com/jquery-1.11.0.min.js"></script>
+		<script src="js/ObjectId.js"></script>
+		<script src="js/utils.js"></script>
+		<script src="js/texture.js"></script>
+		<script src="js/texture_cache.js"></script>
+		<script src="js/map_segment.js"></script>
+		<script src="js/map_sector.js"></script>
+		<script src="js/map.js"></script>
+		<script src="js/testmap.js"></script>
+		<script src="js/entity.js"></script>
+		<script src="js/player.js"></script>
+		<script src="js/input.js"></script>
+		<script src="js/renderer.js"></script>
+		<script src="js/render_slice.js"></script>
+	</head>
+<body onload="init();" onkeydown="keyDown(event);" onkeyup = "keyUp(event);">	
+	<canvas id="renderCanvas" width="1280" height="720">
+	</canvas>
+		<script>
+		/*var map = new Map({
+							sectors: [
+									new MapSector({
+										id: 'sector1',
+										segments: [
+												new MapSegment({ ax: 0, ay: 0 }),
+												new MapSegment({ ax: 300, ay: 0, midTexSrc: null, adjacentSectorId: 'sector3' }),
+												new MapSegment({ ax: 400, ay: 0 }),
+												new MapSegment({ ax: 600, ay: 0 }),
+												new MapSegment({ ax: 700, ay: 300 }),
+												new MapSegment({ ax: 600, ay: 600 }),
+												new MapSegment({ ax: 0, ay: 600 })
+											]
+									}),
+									new MapSector({
+										id: 'sector2',
+										topZ: 200,
+										segments: [
+												new MapSegment({ ax: 0, ay: -600 }),
+												new MapSegment({ ax: 600, ay: -600 }),
+												new MapSegment({ ax: 700, ay: -300 }),
+												new MapSegment({ ax: 600, ay: -60 }),
+												new MapSegment({ ax: 400, ay: -60, midTexSrc: null, adjacentSectorId: 'sector3' }),
+												new MapSegment({ ax: 300, ay: -60 }),
+												new MapSegment({ ax: 0, ay: -60 })
+											]
+									}),
+									new MapSector({
+										id: 'sector3',
+										topZ: 50,
+										segments: [
+												new MapSegment({ ax: 300, ay: 0, midTexSrc: null, adjacentSectorId: 'sector1' }),
+												new MapSegment({ ax: 400, ay: 0 }),
+												new MapSegment({ ax: 400, ay: -60, midTexSrc: null, adjacentSectorId: 'sector2' }),
+												new MapSegment({ ax: 300, ay: -60 }),
+											]
+									}),
+									
+								]
+							});*/
+	
+	
+		var player = new Player({ angle: 45, map: map });
+		var renderer = new Renderer({});
+		var prevTime = 0;
+		var curTime = 0;
+		var lastFrameTime = 0;
+		
+		function init() {
+			var canvas = document.getElementById('renderCanvas');
+			var ctx = canvas.getContext('2d');
+			var imgData = ctx.createImageData(renderer.screenWidth, renderer.screenHeight);
+			var renderBuffer = new ArrayBuffer(imgData.data.length);
+			var renderBuffer8 = new Uint8ClampedArray(renderBuffer);
+			var renderTarget = new Uint32Array(renderBuffer);
+			
+			setInterval(function() {
+				curTime = new Date().getTime();
+				lastFrameTime = (curTime - prevTime);
+				prevTime = curTime;
+
+				renderer.render(renderTarget);
+				imgData.data.set(renderBuffer8);
+				ctx.putImageData(imgData, 0, 0);
+
+				checkInput();
+				player.frame(lastFrameTime);
+				
+			}, 10);
+		}
+		
+	</script>
+</body>
+</html>
