@@ -51,16 +51,24 @@ function checkInput() {
     }
 
     if (keys[KEY_A] == 1) {
-        player.angle -= 5.0 * lastFrameTime / 30.0;
+        player.angle -= 4.0 * lastFrameTime / 30.0;
         player.angle = fast_floor(normalizeAngle(player.angle));
     }
 
     if (keys[KEY_D] == 1) {
-        player.angle += 5.0 * lastFrameTime / 30.0;
+        player.angle += 4.0 * lastFrameTime / 30.0;
         player.angle = fast_floor(normalizeAngle(player.angle));
     }
 
+    if (keys[KEY_SPACE] == 1) {
+        if (player.standing)
+            player.velZ += 1.0 * lastFrameTime / 30.0;
+    }
+
     if (keys[KEY_C] == 1) {
-        player.velZ += 1.0 * lastFrameTime / 30.0;
+        player.crouching = true;
+    }
+    else {
+        player.crouching = false;
     }
 }

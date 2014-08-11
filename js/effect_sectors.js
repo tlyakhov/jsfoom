@@ -19,7 +19,7 @@ MapSectorWater.prototype.actOnEntity = function (entity) {
 
     if (this.floorTargetSectorId) {
         if (ez > entity.sector.bottomZ) {
-            entity.velZ -= 0.001;
+            entity.velZ -= 0.0001;
         }
         else if (entity.z < entity.sector.bottomZ) {
             entity.sector = this.map.getSector(this.floorTargetSectorId);
@@ -29,7 +29,7 @@ MapSectorWater.prototype.actOnEntity = function (entity) {
     }
     else {
         if (entity.z > entity.sector.bottomZ) {
-            entity.velZ -= 0.001;
+            entity.velZ -= 0.0001;
         }
         else if (entity.z < entity.sector.bottomZ) {
             entity.velZ = 0;
@@ -50,4 +50,23 @@ MapSectorWater.prototype.actOnEntity = function (entity) {
             entity.z = entity.constructor == Player ? entity.sector.topZ - entity.height - 1.0 : entity.sector.bottomZ;
         }
     }
+};
+
+MapSectorVerticalDoor.prototype = new MapSector();
+MapSectorVerticalDoor.prototype.constructor = MapSectorVerticalDoor;
+MapSectorVerticalDoor.prototype.parent = MapSector.prototype;
+
+function MapSectorVerticalDoor(options) {
+    this.parent.constructor.call(this, options);
+
+    this.oTopZ = this.topZ;
+
+    $.extend(true, this, options);
+
+    this.oTopZ = this.topZ;
+}
+
+MapSectorVerticalDoor.prototype.frame = function (lastFrameTime) {
+    if (this.topZ > this.bottomZ)
+        this.topZ -= 1.0 * lastFrameTime / 30.0;
 };

@@ -38,6 +38,9 @@ Renderer.prototype.renderFloor = function (slice, start, end) {
     var th = floorMaterial.getTexture().height;
 
     for (slice.y = start; slice.y < end; slice.y++) {
+        if (slice.y - this.screenHeight / 2 == 0)
+            continue;
+
         var distToFloor = (-sector.bottomZ + (player.z + player.height)) * this.viewFix[slice.x] / (slice.y - this.screenHeight / 2);
         var scaler = th * sector.floorScale * 0.25 / distToFloor;
         var screenIndex = slice.x + slice.y * this.screenWidth;
@@ -103,13 +106,14 @@ Renderer.prototype.renderSlice = function (slice) {
     this.renderFloor(slice, clippedEnd, slice.yEnd);
 
     if (segment.midMaterialId == null) {
-        var hiMaterial = segment.getHiMaterial();
-        var loMaterial = segment.getLoMaterial();
-
         var adj = segment.getAdjacentSector();
 
         if (!adj)
             return;
+
+        var adjSegment = segment.getAdjacentSegment();
+        var hiMaterial = adjSegment.getHiMaterial();
+        var loMaterial = adjSegment.getLoMaterial();
 
         var adjProjectedHeightTop = (adj.topZ - (player.z + player.height)) * this.viewFix[slice.x] / slice.distance;
         var adjProjectedHeightBottom = (adj.bottomZ - (player.z + player.height)) * this.viewFix[slice.x] / slice.distance;
@@ -122,7 +126,7 @@ Renderer.prototype.renderSlice = function (slice) {
         for (slice.y = clippedStart; slice.y < adjClippedTop; slice.y++) {
             var screenIndex = slice.x + slice.y * this.screenWidth;
             if (slice.distance < this.zbuffer[screenIndex]) {
-                slice.renderTarget[screenIndex] = hiMaterial.sample(slice, slice.textureX, (slice.y - sliceStart) / (sliceEnd - sliceStart), sliceEnd - sliceStart);
+                slice.renderTarget[screenIndex] = hiMaterial.sample(slice, slice.textureX, (slice.y - sliceStart) / (adjSliceTop - sliceStart), adjSliceTop - sliceStart);
                 this.zbuffer[screenIndex] = slice.distance;
             }
         }
@@ -130,7 +134,7 @@ Renderer.prototype.renderSlice = function (slice) {
         for (slice.y = adjClippedBottom; slice.y < clippedEnd; slice.y++) {
             var screenIndex = slice.x + slice.y * this.screenWidth;
             if (slice.distance < this.zbuffer[screenIndex]) {
-                slice.renderTarget[screenIndex] = loMaterial.sample(slice, slice.textureX, (slice.y - sliceStart) / (sliceEnd - sliceStart), sliceEnd - sliceStart);
+                slice.renderTarget[screenIndex] = loMaterial.sample(slice, slice.textureX, (slice.y - adjClippedBottom) / (sliceEnd - adjSliceBottom), sliceEnd - adjSliceBottom);
                 this.zbuffer[screenIndex] = slice.distance;
             }
         }

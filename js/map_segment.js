@@ -15,6 +15,7 @@ function MapSegment(options) {
     this.normalY = 0;
     this.adjacentSectorId = null;
     this.adjacentSector = null;
+    this.adjacentSegment = null;
     this.playerPortal = false;
     this.flags = 0;
 
@@ -74,6 +75,24 @@ MapSegment.prototype.getAdjacentSector = function () {
     }
 
     return this.adjacentSector;
+};
+
+MapSegment.prototype.getAdjacentSegment = function () {
+    if (!this.adjacentSectorId)
+        return null;
+
+    if (!this.adjacentSegment || this.adjacentSector.id != this.adjacentSectorId) {
+        var adj = this.getAdjacentSector();
+
+        for (var i = 0; i < adj.segments.length; i++) {
+            if (this.sector.id == adj.segments[i].adjacentSectorId) {
+                this.adjacentSegment = adj.segments[i];
+                break;
+            }
+        }
+    }
+
+    return this.adjacentSegment;
 };
 
 MapSegment.prototype.intersect = function (s2) {

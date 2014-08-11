@@ -660,7 +660,7 @@ var map = new Map({
                     midMaterialId: null,
                     adjacentSectorId: 'sector23',
                     loMaterialId: 'mat0', hiMaterialId: 'mat0', flags: 0 }) ] }),
-        new MapSector({ id: 'sector25', bottomZ: 0, topZ: 64,
+        new MapSectorVerticalDoor({ id: 'sector25', bottomZ: 0, topZ: 64,
             floorMaterialId: 'mat0',
             ceilMaterialId: 'mat6',
             flags: 4,

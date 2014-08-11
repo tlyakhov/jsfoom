@@ -82,6 +82,10 @@ MapSector.prototype.isPointInside = function (x, y) {
     return inside;
 };
 
+MapSector.prototype.frame = function (lastFrameTime) {
+
+};
+
 MapSector.prototype.actOnEntity = function (entity) {
     if (entity.constructor == Player) {
         entity.velX = 0;
@@ -92,7 +96,7 @@ MapSector.prototype.actOnEntity = function (entity) {
 
     if (this.floorTargetSectorId) {
         if (ez > entity.sector.bottomZ) {
-            entity.velZ -= 0.1;
+            entity.velZ -= 0.2;
         }
         else if (entity.z < entity.sector.bottomZ) {
             entity.sector = this.map.getSector(this.floorTargetSectorId);
@@ -102,7 +106,7 @@ MapSector.prototype.actOnEntity = function (entity) {
     }
     else {
         if (entity.z > entity.sector.bottomZ) {
-            entity.velZ -= 0.1;
+            entity.velZ -= 0.2;
         }
         else if (entity.z < entity.sector.bottomZ) {
             entity.velZ = 0;

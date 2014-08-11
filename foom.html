@@ -38,7 +38,7 @@
     <script src="js/renderer.js"></script>
     <script src="js/render_slice.js"></script>
 </head>
-<body onload="init();" onkeydown="keyDown(event);return true;" onkeyup="keyUp(event); return true;">
+<body onload="init();" onkeydown="keyDown(event);return false;" onkeyup="keyUp(event); return false;">
 <canvas id="renderCanvas" width="1280" height="720">
 </canvas>
 <script>
@@ -86,8 +86,8 @@
 
     var player = new Player({ angle: 45, map: map });
     var renderer = new Renderer({});
-    var prevTime = 0;
-    var curTime = 0;
+    var prevTime = new Date().getTime();
+    var curTime = new Date().getTime();
     var lastFrameTime = 0;
 
     function init() {
@@ -109,6 +109,10 @@
 
             checkInput();
             player.frame(lastFrameTime);
+
+            for (var i = 0; i < map.sectors.length; i++) {
+                map.sectors[i].frame(lastFrameTime);
+            }
 
         }, 10);
     }

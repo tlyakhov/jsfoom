@@ -5,9 +5,12 @@ Player.prototype.parent = Entity.prototype;
 function Player(options) {
     this.parent.constructor.call(this, options);
 
-    this.height = 32;
+    this.spawnheight = 32;
+    this.height = this.spawnheight;
     this.x = this.map.spawnx;
     this.y = this.map.spawny;
+    this.standing = true;
+    this.crouching = false;
 
     $.extend(true, this, options);
     this.updateSector();
@@ -15,14 +18,24 @@ function Player(options) {
 
 Player.prototype.frame = function (lastFrameTime) {
     this.parent.frame.call(this, lastFrameTime);
-
     this.sector.actOnEntity(this);
-
     this.updateSector();
+
+    if (Math.abs(this.z - this.sector.bottomZ) < 0.01)
+        this.standing = true;
+    else
+        this.standing = false;
+
+    if (this.crouching) {
+        this.height = 16;
+    }
+    else {
+        this.height = this.spawnheight;
+    }
 }
 
 Player.prototype.move = function (angle, lastFrameTime) {
-    var speed = 2.0 / 8;
+    var speed = 1.0 / 8;
 
     for (var i = 0; i < 8; i++) {
         var opx = this.x;
