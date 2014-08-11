@@ -9,6 +9,8 @@ function MapSector(options) {
     this.floorMaterial = null;
     this.ceilMaterialId = "mat0";
     this.ceilMaterial = null;
+    this.centerX = 0.0;
+    this.centerY = 0.0;
     this.floorScale = 256.0;
     this.ceilScale = 256.0;
     this.floorOx = 0;
@@ -31,13 +33,20 @@ function MapSector(options) {
 }
 
 MapSector.prototype.update = function () {
+    this.centerX = 0.0;
+    this.centerY = 0.0;
     for (var i = 0; i < this.segments.length; i++) {
         var next = i + 1 >= this.segments.length ? 0 : i + 1;
+        this.centerX += this.segments[i].ax;
+        this.centerY += this.segments[i].ay;
         this.segments[i].sector = this;
         this.segments[i].bx = this.segments[next].ax;
         this.segments[i].by = this.segments[next].ay;
         this.segments[i].update();
     }
+
+    this.centerX /= this.segments.length;
+    this.centerY /= this.segments.length;
 };
 
 MapSector.prototype.getCeilMaterial = function () {
@@ -87,6 +96,9 @@ MapSector.prototype.frame = function (lastFrameTime) {
 };
 
 MapSector.prototype.actOnEntity = function (entity) {
+    if (entity.sector.id != this.id)
+        return;
+
     if (entity.constructor == Player) {
         entity.velX = 0;
         entity.velY = 0;
@@ -99,7 +111,9 @@ MapSector.prototype.actOnEntity = function (entity) {
             entity.velZ -= 0.2;
         }
         else if (entity.z < entity.sector.bottomZ) {
+            entity.sector.onExit(entity);
             entity.sector = this.map.getSector(this.floorTargetSectorId);
+            entity.sector.onEnter(entity);
             entity.z = entity.constructor == Player ? entity.sector.topZ - entity.height : entity.sector.topZ;
         }
 
@@ -116,7 +130,9 @@ MapSector.prototype.actOnEntity = function (entity) {
 
     if (this.ceilTargetSectorId) {
         if (ez > entity.sector.topZ) {
+            entity.sector.onExit(entity);
             entity.sector = this.map.getSector(this.ceilTargetSectorId);
+            entity.sector.onEnter(entity);
             entity.z = entity.constructor == Player ? entity.sector.bottomZ - entity.height : entity.sector.bottomZ;
         }
 
@@ -127,4 +143,10 @@ MapSector.prototype.actOnEntity = function (entity) {
             entity.z = entity.constructor == Player ? entity.sector.topZ - entity.height - 1.0 : entity.sector.bottomZ;
         }
     }
+};
+
+MapSector.prototype.onEnter = function (entity) {
+};
+
+MapSector.prototype.onExit = function (entity) {
 };

@@ -28,6 +28,7 @@ Entity.prototype.updateSector = function () {
         for (var i = 0; i < this.map.sectors.length; i++) {
             if (this.map.sectors[i].isPointInside(this.x, this.y)) {
                 this.sector = this.map.sectors[i];
+                this.sector.onEnter(this);
                 return true;
             }
         }
@@ -40,7 +41,9 @@ Entity.prototype.updateSector = function () {
     for (var i = 0; i < this.sector.segments.length; i++) {
         var segment = this.sector.segments[i];
         if (segment.getAdjacentSector() && segment.getAdjacentSector().isPointInside(this.x, this.y)) {
+            this.sector.onExit(this);
             this.sector = segment.getAdjacentSector();
+            this.sector.onEnter(this);
             return true;
         }
     }

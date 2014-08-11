@@ -4,6 +4,7 @@ function Renderer(options) {
     this.fov = 75.0;
     this.maxViewDist = 100000.0;
     this.frame = 0;
+    this.frameTint = 0;
 
     $.extend(true, this, options);
 
@@ -216,6 +217,9 @@ Renderer.prototype.render = function (renderTarget) {
 
         slice.sector = player.sector;
         this.renderSector(slice);
+    }
+    for (var i = 0; i < this.screenWidth * this.screenHeight; i++) {
+        renderTarget[i] = colorTint(renderTarget[i], this.frameTint);
     }
 
     this.frame++;

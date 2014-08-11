@@ -111,6 +111,7 @@
             player.frame(lastFrameTime);
 
             for (var i = 0; i < map.sectors.length; i++) {
+                map.sectors[i].actOnEntity(player);
                 map.sectors[i].frame(lastFrameTime);
             }
 

@@ -18,7 +18,6 @@ function Player(options) {
 
 Player.prototype.frame = function (lastFrameTime) {
     this.parent.frame.call(this, lastFrameTime);
-    this.sector.actOnEntity(this);
     this.updateSector();
 
     if (Math.abs(this.z - this.sector.bottomZ) < 0.01)
