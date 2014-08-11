@@ -4,13 +4,15 @@ function MapSegment(options) {
     this.ay = 0.0;
     this.bx = 0.0;
     this.by = 0.0;
-    this.midTexSrc = 'data/bricks.png';
-    this.midTex = null;
-    this.loTexSrc = 'data/grate.jpg';
-    this.loTex = null;
-    this.hiTexSrc = 'data/grate.jpg';
-    this.hiTex = null;
+    this.midMaterialId = 'mat0';
+    this.midMaterial = null;
+    this.loMaterialId = 'mat0';
+    this.loMaterial = null;
+    this.hiMaterialId = 'mat0';
+    this.hiMaterial = null;
     this.length = 0;
+    this.normalX = 0;
+    this.normalY = 0;
     this.adjacentSectorId = null;
     this.adjacentSector = null;
     this.playerPortal = false;
@@ -23,36 +25,38 @@ function MapSegment(options) {
 
 MapSegment.prototype.update = function () {
     this.length = Math.sqrt((this.ax - this.bx) * (this.ax - this.bx) + (this.ay - this.by) * (this.ay - this.by));
+    this.normalX = -(this.by - this.ay) / this.length;
+    this.normalY = (this.bx - this.ax) / this.length;
 };
 
-MapSegment.prototype.getMidTex = function () {
-    if (!this.midTexSrc)
+MapSegment.prototype.getMidMaterial = function () {
+    if (!this.midMaterialId)
         return null;
 
-    if (!this.midTex || this.midTex.src != this.midTexSrc)
-        this.midTex = textureCache.get(this.midTexSrc, true);
+    if (!this.midMaterial || this.midMaterial.id != this.midMaterialId)
+        this.midMaterial = this.sector.map.getMaterial(this.midMaterialId);
 
-    return this.midTex;
+    return this.midMaterial;
 };
 
-MapSegment.prototype.getHiTex = function () {
-    if (!this.hiTexSrc)
+MapSegment.prototype.getHiMaterial = function () {
+    if (!this.hiMaterialId)
         return null;
 
-    if (!this.hiTex || this.hiTex.src != this.hiTexSrc)
-        this.hiTex = textureCache.get(this.hiTexSrc, true);
+    if (!this.hiMaterial || this.hiMaterial.id != this.hiMaterialId)
+        this.hiMaterial = this.sector.map.getMaterial(this.hiMaterialId);
 
-    return this.hiTex;
+    return this.hiMaterial;
 };
 
-MapSegment.prototype.getLoTex = function () {
-    if (!this.loTexSrc)
+MapSegment.prototype.getLoMaterial = function () {
+    if (!this.loMaterialId)
         return null;
 
-    if (!this.loTex || this.loTex.src != this.loTexSrc)
-        this.loTex = textureCache.get(this.loTexSrc, true);
+    if (!this.loMaterial || this.loMaterial.id != this.loMaterialId)
+        this.loMaterial = this.sector.map.getMaterial(this.loMaterialId);
 
-    return this.loTex;
+    return this.loMaterial;
 };
 
 MapSegment.prototype.getAdjacentSector = function () {
@@ -101,6 +105,14 @@ MapSegment.prototype.intersect = function (s2) {
         return undefined;
 
     return { x: s1.ax + r * s1dx, y: s1.ay + r * s1dy, tx: r };
+};
+
+MapSegment.prototype.distanceToPoint = function (x, y) {
+    var dx = (this.bx - this.ax);
+    var dy = (this.by - this.ay);
+
+    return (dy * x - dx * y - this.ax * this.by + this.bx * this.ay) /
+        Math.sqrt(dx * dx + dy * dy);
 };
 
 function Ray(ax, ay, bx, by) {

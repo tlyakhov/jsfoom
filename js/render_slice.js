@@ -1,6 +1,7 @@
 function RenderSlice() {
     this.renderTarget = null;
     this.x = 0;
+    this.y = 0;
     this.yStart = 0;
     this.yEnd = 0;
     this.segment = null;
@@ -17,6 +18,7 @@ RenderSlice.prototype.clone = function () {
 
     s.renderTarget = this.renderTarget;
     s.x = this.x;
+    s.y = this.y;
     s.yStart = this.yStart;
     s.yEnd = this.yEnd;
     s.segment = this.segment;

@@ -1,12 +1,12 @@
 function Entity(options) {
     this.map = null;
-    this.x = 0;
-    this.y = 0;
-    this.z = 0;
-    this.angle = 0;
-    this.velX = 0;
-    this.velY = 0;
-    this.velZ = 0;
+    this.x = 0.0;
+    this.y = 0.0;
+    this.z = 0.0;
+    this.angle = 0.0;
+    this.velX = 0.0;
+    this.velY = 0.0;
+    this.velZ = 0.0;
 
     this.sector = null;
 

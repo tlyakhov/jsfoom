@@ -14,44 +14,39 @@ function Player(options) {
 }
 
 Player.prototype.frame = function (lastFrameTime) {
-    this.velX /= 4.0;
-    this.velY /= 4.0;
-    if (this.z > this.sector.bottomZ) {
-        this.velZ -= 0.1;
-    }
-    else if (this.z < this.sector.bottomZ) {
-        this.velZ = 0;
-        this.z = this.sector.bottomZ;
-    }
-
     this.parent.frame.call(this, lastFrameTime);
+
+    this.sector.actOnEntity(this);
+
     this.updateSector();
 }
 
 Player.prototype.move = function (angle, lastFrameTime) {
-    var speed = 4.0;
+    var speed = 2.0 / 8;
 
-    var opx = this.x;
-    var opy = this.y;
+    for (var i = 0; i < 8; i++) {
+        var opx = this.x;
+        var opy = this.y;
 
-    this.velX += Math.cos(angle * deg2rad) * speed;
+        this.velX += Math.cos(angle * deg2rad) * speed;
 
-    this.x += this.velX * lastFrameTime / 10.0;
-    this.y += this.velY * lastFrameTime / 10.0;
+        this.x += this.velX * lastFrameTime / 10.0;
+        this.y += this.velY * lastFrameTime / 10.0;
 
-    if (!this.updateSector()) {
-        this.velX = 0;
+        if (!this.updateSector()) {
+            this.velX = Math.cos(angle * deg2rad) * -0.1;
+        }
+
+        this.velY += Math.sin(angle * deg2rad) * speed;
+
+        this.x = opx + this.velX * lastFrameTime / 10.0;
+        this.y = opy + this.velY * lastFrameTime / 10.0;
+
+        if (!this.updateSector()) {
+            this.velY = Math.sin(angle * deg2rad) * -0.1;
+        }
+
+        this.x = opx;
+        this.y = opy;
     }
-
-    this.velY += Math.sin(angle * deg2rad) * speed;
-
-    this.x = opx + this.velX * lastFrameTime / 10.0;
-    this.y = opy + this.velY * lastFrameTime / 10.0;
-
-    if (!this.updateSector()) {
-        this.velY = 0;
-    }
-
-    this.x = opx;
-    this.y = opy;
 }

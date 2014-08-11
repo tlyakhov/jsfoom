@@ -26,8 +26,10 @@
     <script src="js/utils.js"></script>
     <script src="js/texture.js"></script>
     <script src="js/texture_cache.js"></script>
+    <script src="js/material.js"></script>
     <script src="js/map_segment.js"></script>
     <script src="js/map_sector.js"></script>
+    <script src="js/effect_sectors.js"></script>
     <script src="js/map.js"></script>
     <script src="js/testmap.js"></script>
     <script src="js/entity.js"></script>
@@ -36,7 +38,7 @@
     <script src="js/renderer.js"></script>
     <script src="js/render_slice.js"></script>
 </head>
-<body onload="init();" onkeydown="keyDown(event);" onkeyup="keyUp(event);">
+<body onload="init();" onkeydown="keyDown(event);return true;" onkeyup="keyUp(event); return true;">
 <canvas id="renderCanvas" width="1280" height="720">
 </canvas>
 <script>
