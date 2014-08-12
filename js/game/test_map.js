@@ -101,10 +101,10 @@ var testMap = new Map({
             flags: 0,
             floorOx: 0, floorOy: 0, floorMx: 1, floorMy: 1, floorRot: 0,
             ceilOx: 0, ceilOy: 0, ceilMx: 1, ceilMy: 1, ceilRot: 0,
-            entities: [ new StaticEntity({
-                spriteSources: [ 'data/test_sprite/Test0000.png' ],
-                x: -17, y: 68, z: 0, height: 60, zOffset: -13.0
-            }) ],
+            entities: [
+                new StaticEntity({ sprites: testMonsterSprites, x: -17, y: 68, z: 0, height: 60, zOffset: -13.0 }),
+                new StaticEntity({ sprites: testMonsterSprites, x: 32, y: 68, z: 0, height: 60, zOffset: -13.0 })
+            ],
             segments: [
                 new MapSegment({ ax: -100, ay: 100,
                     midMaterialId: 'Sky',

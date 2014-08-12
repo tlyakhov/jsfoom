@@ -138,7 +138,7 @@ MapSector.prototype.collide = function (entity) {
 
     var cm = this.getCeilMaterial();
 
-    if (cm.hurt > 0 && ez >= this.topZ && entity.hurtTime == 0) {
+    if (cm.hurt > 0 && entity.z + entity.height >= this.topZ && entity.hurtTime == 0) {
         entity.hurt(cm.hurt);
     }
 

@@ -10,6 +10,8 @@ function StaticEntity(options) {
 
 StaticEntity.prototype.frame = function (lastFrameTime) {
     this.parent.frame.call(this, lastFrameTime);
+
+    this.angle += 4.0;
 };
 
 StaticEntity.prototype.hurt = function (amount) {

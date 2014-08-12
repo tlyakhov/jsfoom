@@ -2,8 +2,10 @@ var KEY_A = 65;
 var KEY_B = 66;
 var KEY_C = 67;
 var KEY_D = 68;
+var KEY_E = 69;
 var KEY_H = 72;
 var KEY_I = 73;
+var KEY_Q = 81;
 var KEY_R = 82;
 var KEY_S = 83;
 var KEY_T = 84;
@@ -48,6 +50,13 @@ function checkInput() {
 
     if (keys[KEY_S] == 1) {
         map.player.move(map.player.angle + 180.0, lastFrameTime);
+    }
+    if (keys[KEY_Q] == 1) {
+        map.player.move(map.player.angle + 270.0, lastFrameTime);
+    }
+
+    if (keys[KEY_E] == 1) {
+        map.player.move(map.player.angle + 90.0, lastFrameTime);
     }
 
     if (keys[KEY_A] == 1) {

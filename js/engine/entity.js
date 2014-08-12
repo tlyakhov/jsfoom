@@ -16,8 +16,7 @@ function Entity(options) {
     this.collisionResponse = 'slide'; // can be 'slide', 'bounce', or 'stop'
     this.health = 100;
     this.mountHeight = GAME_CONSTANTS.playerMountHeight;
-    this.spriteSources = [];
-    this.sprites = [];
+    this.sprites = {};
     this.zOffset = 0.0;
 
 
@@ -40,18 +39,10 @@ Entity.prototype.distanceTo = function (x, y) {
     return Math.sqrt(sqr(x - this.x) + sqr(y - this.y));
 };
 
-Entity.prototype.getSprite = function (sprite) {
-    if (!this.spriteSources || sprite >= this.spriteSources.length)
-        return null;
+Entity.prototype.getSprite = function (angle) {
+    var index = fast_floor(angle * Object.keys(this.sprites).length / 360.0);
 
-    if (this.sprites.length != this.spriteSources.length) {
-        this.sprites = [];
-        for (var i = 0; i < this.spriteSources.length; i++) {
-            this.sprites.push(textureCache.get(this.spriteSources[i], true, false));
-        }
-    }
-
-    return this.sprites[sprite];
+    return this.sprites[index];
 };
 
 Entity.prototype.collide = function (frameScale) {

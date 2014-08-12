@@ -204,11 +204,15 @@ Renderer.prototype.renderEntity = function (renderTarget, entity) {
     while (ang > this.fov / 2)
         ang -= 360.0;
 
+    var sprite = entity.getSprite(normalizeAngle(360 - etop + entity.angle));
+    var texture = sprite.getTexture();
+
     var d = map.player.distanceTo(entity.x, entity.y);
     var x = (ang + this.fov / 2.0) * this.screenWidth / this.fov;
+    var vfixindex = Math.min(Math.max(fast_floor(x), 0), this.screenWidth - 1);
     var z = entity.z + entity.zOffset - (map.player.z + map.player.height);
-    var y1 = fast_floor(this.screenHeight / 2 - (z + entity.height) * this.viewFix[fast_floor(x)] / d);
-    var y2 = fast_floor(this.screenHeight / 2 - z * this.viewFix[fast_floor(x)] / d);
+    var y1 = fast_floor(this.screenHeight / 2 - (z + entity.height) * this.viewFix[vfixindex] / d);
+    var y2 = fast_floor(this.screenHeight / 2 - z * this.viewFix[vfixindex] / d);
 
     var scale = (y2 - y1) * entity.width / entity.height;
     var x1 = fast_floor(x - scale * 0.5);
@@ -222,7 +226,7 @@ Renderer.prototype.renderEntity = function (renderTarget, entity) {
         for (var y = clippedY1; y < clippedY2; y++) {
             var screenIndex = y * this.screenWidth + x;
             if (d < this.zbuffer[screenIndex]) {
-                var pixel = entity.getSprite(0).sample((x - x1) / scale, (y - y1) / (y2 - y1), y2 - y1);
+                var pixel = texture.sample((x - x1) / scale, (y - y1) / (y2 - y1), y2 - y1);
                 if (((pixel >> 24) & 0xFF) > 0) {
                     renderTarget[screenIndex] = colorTint(renderTarget[screenIndex], pixel);
                     this.zbuffer[screenIndex] = d;
