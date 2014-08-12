@@ -22,6 +22,7 @@
     <!-- Latest compiled and minified JavaScript -->
     <script src="http://netdna.bootstrapcdn.com/bootstrap/3.0.3/js/bootstrap.min.js"></script>
     <script src="http://code.jquery.com/jquery-1.11.0.min.js"></script>
+    <script src="js/game_constants.js"></script>
     <script src="js/engine/ObjectId.js"></script>
     <script src="js/engine/utils.js"></script>
     <script src="js/engine/texture.js"></script>
@@ -29,14 +30,15 @@
     <script src="js/engine/material.js"></script>
     <script src="js/engine/map_segment.js"></script>
     <script src="js/engine/map_sector.js"></script>
-    <script src="js/engine/effect_sectors.js"></script>
+    <script src="js/engine/map_sector_water.js"></script>
+    <script src="js/engine/map_sector_vertical_door.js"></script>
     <script src="js/engine/entity.js"></script>
     <script src="js/engine/player.js"></script>
     <script src="js/engine/map.js"></script>
-    <script src="js/testmap.js"></script>
-    <script src="js/input.js"></script>
     <script src="js/engine/renderer.js"></script>
     <script src="js/engine/render_slice.js"></script>
+    <script src="js/testmap.js"></script>
+    <script src="js/input.js"></script>
 </head>
 <body onload="init();" onkeydown="keyDown(event);return false;" onkeyup="keyUp(event); return false;">
 <canvas id="renderCanvas" width="640" height="360">
@@ -65,12 +67,10 @@
             imgData.data.set(renderBuffer8);
             ctx.putImageData(imgData, 0, 0);
 
-            var debugText = 'FPS: ' + Math.round(1000.0 / lastFrameTime);
-
-            debugText += '\nCurrent sector: ' + map.player.sector.id;
-
             ctx.fillStyle = '#FFF';
-            ctx.fillText(debugText, 5, 15);
+            ctx.fillText('FPS: ' + Math.round(1000.0 / lastFrameTime), 5, 15);
+            ctx.fillText('Current sector: ' + map.player.sector.id, 5, 25);
+            ctx.fillText('Health: ' + map.player.health, 5, 35);
             checkInput();
 
             map.frame(lastFrameTime);

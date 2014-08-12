@@ -5,8 +5,7 @@ Player.prototype.parent = Entity.prototype;
 function Player(options) {
     this.parent.constructor.call(this, options);
 
-    this.spawnheight = 32;
-    this.height = this.spawnheight;
+    this.height = GAME_CONSTANTS.playerHeight;
     this.standing = true;
     this.crouching = false;
 
@@ -24,39 +23,67 @@ Player.prototype.frame = function (lastFrameTime) {
         this.standing = false;
 
     if (this.crouching) {
-        this.height = 16;
+        this.height = GAME_CONSTANTS.playerCrouchHeight;
     }
     else {
-        this.height = this.spawnheight;
+        this.height = GAME_CONSTANTS.playerHeight;
     }
-}
+
+    if (this.hurtTime > 0) {
+        renderer.frameTint = 255 | ((this.hurtTime * 200 / GAME_CONSTANTS.playerHurtTime) & 0xFF) << 24;
+        this.hurtTime--;
+    }
+};
+
+Player.prototype.hurt = function (amount) {
+    this.parent.hurt.call(this, amount);
+
+    this.hurtTime = GAME_CONSTANTS.playerHurtTime;
+};
 
 Player.prototype.move = function (angle, lastFrameTime) {
-    var speed = 1.0 / 8;
+    var opx = this.x;
+    var opy = this.y;
 
-    for (var i = 0; i < 8; i++) {
-        var opx = this.x;
-        var opy = this.y;
+    var xAllowed = true;
+    var yAllowed = true;
 
-        this.velX += Math.cos(angle * deg2rad) * speed;
+    var vx = this.velX + Math.cos(angle * deg2rad) * GAME_CONSTANTS.playerSpeed * 4.0;
+    var vy = this.velY;
 
-        this.x += this.velX * lastFrameTime / 10.0;
-        this.y += this.velY * lastFrameTime / 10.0;
+    this.x += vx * lastFrameTime / 30.0;
+    this.y += vy * lastFrameTime / 30.0;
 
-        if (!this.updateSector()) {
-            this.velX = Math.cos(angle * deg2rad) * -0.1;
-        }
-
-        this.velY += Math.sin(angle * deg2rad) * speed;
-
-        this.x = opx + this.velX * lastFrameTime / 10.0;
-        this.y = opy + this.velY * lastFrameTime / 10.0;
-
-        if (!this.updateSector()) {
-            this.velY = Math.sin(angle * deg2rad) * -0.1;
-        }
-
-        this.x = opx;
-        this.y = opy;
+    if (!this.updateSector()) {
+        xAllowed = false;
     }
+
+    vx = this.velX;
+    vy = this.velY + Math.sin(angle * deg2rad) * GAME_CONSTANTS.playerSpeed * 4.0;
+
+    this.x = opx + vx * lastFrameTime / 30.0;
+    this.y = opy + vy * lastFrameTime / 30.0;
+
+    if (!this.updateSector()) {
+        yAllowed = false;
+    }
+
+    if (xAllowed && yAllowed) {
+        vx = this.velX + Math.cos(angle * deg2rad) * GAME_CONSTANTS.playerSpeed * 4.0;
+        vy = this.velY + Math.sin(angle * deg2rad) * GAME_CONSTANTS.playerSpeed * 4.0;
+        this.x = opx + vx * lastFrameTime / 30.0;
+        this.y = opy + vy * lastFrameTime / 30.0;
+        if (!this.updateSector()) {
+            xAllowed = false;
+            yAllowed = false;
+        }
+    }
+
+    if (xAllowed)
+        this.velX += Math.cos(angle * deg2rad) * GAME_CONSTANTS.playerSpeed;
+    if (yAllowed)
+        this.velY += Math.sin(angle * deg2rad) * GAME_CONSTANTS.playerSpeed;
+
+    this.x = opx;
+    this.y = opy;
 }

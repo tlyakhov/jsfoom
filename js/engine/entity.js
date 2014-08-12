@@ -10,6 +10,10 @@ function Entity(options) {
 
     this.sector = null;
 
+    this.health = 100;
+    this.hurtTime = 0;
+    this.mountHeight = GAME_CONSTANTS.playerMountHeight;
+
     if (options || this.map) {
         $.extend(true, this, options);
 
@@ -21,6 +25,11 @@ Entity.prototype.frame = function (lastFrameTime) {
     this.x += this.velX * lastFrameTime / 10.0;
     this.y += this.velY * lastFrameTime / 10.0;
     this.z += this.velZ * lastFrameTime / 10.0;
+
+};
+
+Entity.prototype.hurt = function (amount) {
+    this.health -= amount;
 };
 
 Entity.prototype.updateSector = function () {
@@ -40,7 +49,11 @@ Entity.prototype.updateSector = function () {
 
     for (var i = 0; i < this.sector.segments.length; i++) {
         var segment = this.sector.segments[i];
-        if (segment.getAdjacentSector() && segment.getAdjacentSector().isPointInside(this.x, this.y)) {
+        var adj = segment.getAdjacentSector();
+        if (adj && adj.isPointInside(this.x, this.y)) {
+            if (adj.topZ - adj.bottomZ < this.height || adj.bottomZ - this.z > this.mountHeight)
+                continue;
+
             this.sector.onExit(this);
             this.sector = segment.getAdjacentSector();
             this.sector.onEnter(this);

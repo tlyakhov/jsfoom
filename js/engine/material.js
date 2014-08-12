@@ -3,6 +3,7 @@ function Material(options) {
     this.textureSrc = 'data/bricks.png';
     this.texture = null;
     this.renderAsSky = false;
+    this.hurt = 0;
     this.isLiquid = false;
     this.map = null;
 
@@ -26,8 +27,8 @@ Material.prototype.sample = function (slice, x, y, scaledHeight) {
     }
 
     if (this.isLiquid) {
-        x = x + Math.cos(renderer.frame * deg2rad) * 0.03;
-        y = y + Math.sin(renderer.frame * deg2rad) * 0.03;
+        x = x + Math.cos(renderer.frame * GAME_CONSTANTS.liquidChurnSpeed * deg2rad) * GAME_CONSTANTS.liquidChurnSize;
+        y = y + Math.sin(renderer.frame * GAME_CONSTANTS.liquidChurnSpeed * deg2rad) * GAME_CONSTANTS.liquidChurnSize;
     }
 
     while (x < 0)

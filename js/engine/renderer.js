@@ -2,8 +2,8 @@ function Renderer(options) {
     this.canvas = '';
     this.screenWidth = 640;
     this.screenHeight = 360;
-    this.fov = 75.0;
-    this.maxViewDist = 100000.0;
+    this.fov = GAME_CONSTANTS.fieldOfView;
+    this.maxViewDist = GAME_CONSTANTS.maxViewDistance;
     this.frame = 0;
     this.frameTint = 0;
 

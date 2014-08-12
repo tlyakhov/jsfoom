@@ -24,6 +24,7 @@ function MapSector(options) {
     this.ceilMy = 0;
     this.ceilRot = 0;
     this.flags = 0;
+    this.hurt = 0;
     this.floorTargetSectorId = null;
     this.ceilTargetSectorId = null;
 
@@ -95,6 +96,49 @@ MapSector.prototype.frame = function (lastFrameTime) {
 
 };
 
+MapSector.prototype.collide = function (entity) {
+    var ez = entity.constructor == Player ? entity.z + entity.height : entity.z;
+
+    if (this.floorTargetSectorId && ez <= entity.sector.bottomZ) {
+        entity.sector.onExit(entity);
+        entity.sector = this.map.getSector(this.floorTargetSectorId);
+        entity.sector.onEnter(entity);
+        entity.z = entity.constructor == Player ? entity.sector.topZ - entity.height - 1.0 : entity.sector.topZ - 1.0;
+    }
+    else if (!this.floorTargetSectorId && entity.z <= entity.sector.bottomZ) {
+        entity.velZ = 0;
+        entity.z = entity.sector.bottomZ;
+    }
+
+    if (this.ceilTargetSectorId && ez > entity.sector.topZ) {
+        entity.sector.onExit(entity);
+        entity.sector = this.map.getSector(this.ceilTargetSectorId);
+        entity.sector.onEnter(entity);
+        entity.z = entity.constructor == Player ? entity.sector.bottomZ - entity.height + 1.0 : entity.sector.bottomZ + 1.0;
+    }
+    else if (!this.ceilTargetSectorId && ez >= entity.sector.topZ) {
+        entity.velZ = 0;
+        entity.z = entity.constructor == Player ? entity.sector.topZ - entity.height - 1.0 : entity.sector.bottomZ;
+    }
+
+    if (this.hurt > 0 && entity.hurtTime == 0)
+        entity.hurt(this.hurt);
+
+    var fm = this.getFloorMaterial();
+
+    if (fm.hurt > 0 && entity.z <= this.bottomZ && entity.hurtTime == 0) {
+        entity.hurt(fm.hurt);
+    }
+
+    var cm = this.getCeilMaterial();
+
+    if (cm.hurt > 0 && ez >= this.topZ && entity.hurtTime == 0) {
+        entity.hurt(cm.hurt);
+    }
+
+
+};
+
 MapSector.prototype.actOnEntity = function (entity) {
     if (entity.sector.id != this.id)
         return;
@@ -104,45 +148,9 @@ MapSector.prototype.actOnEntity = function (entity) {
         entity.velY = 0;
     }
 
-    var ez = entity.constructor == Player ? entity.z + entity.height : entity.z;
+    entity.velZ -= GAME_CONSTANTS.gravity;
 
-    if (this.floorTargetSectorId) {
-        if (ez > entity.sector.bottomZ) {
-            entity.velZ -= 0.2;
-        }
-        else if (entity.z < entity.sector.bottomZ) {
-            entity.sector.onExit(entity);
-            entity.sector = this.map.getSector(this.floorTargetSectorId);
-            entity.sector.onEnter(entity);
-            entity.z = entity.constructor == Player ? entity.sector.topZ - entity.height - 1.0 : entity.sector.topZ - 1.0;
-        }
-
-    }
-    else {
-        if (entity.z > entity.sector.bottomZ) {
-            entity.velZ -= 0.2;
-        }
-        else if (entity.z < entity.sector.bottomZ) {
-            entity.velZ = 0;
-            entity.z = entity.sector.bottomZ;
-        }
-    }
-
-    if (this.ceilTargetSectorId) {
-        if (ez > entity.sector.topZ) {
-            entity.sector.onExit(entity);
-            entity.sector = this.map.getSector(this.ceilTargetSectorId);
-            entity.sector.onEnter(entity);
-            entity.z = entity.constructor == Player ? entity.sector.bottomZ - entity.height + 1.0 : entity.sector.bottomZ + 1.0;
-        }
-
-    }
-    else {
-        if (ez >= entity.sector.topZ) {
-            entity.velZ = 0;
-            entity.z = entity.constructor == Player ? entity.sector.topZ - entity.height - 1.0 : entity.sector.bottomZ;
-        }
-    }
+    this.collide(entity);
 };
 
 MapSector.prototype.onEnter = function (entity) {

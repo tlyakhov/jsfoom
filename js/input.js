@@ -51,22 +51,31 @@ function checkInput() {
     }
 
     if (keys[KEY_A] == 1) {
-        map.player.angle -= 4.0 * lastFrameTime / 30.0;
+        map.player.angle -= GAME_CONSTANTS.playerTurnSpeed * lastFrameTime / 30.0;
         map.player.angle = fast_floor(normalizeAngle(map.player.angle));
     }
 
     if (keys[KEY_D] == 1) {
-        map.player.angle += 4.0 * lastFrameTime / 30.0;
+        map.player.angle += GAME_CONSTANTS.playerTurnSpeed * lastFrameTime / 30.0;
         map.player.angle = fast_floor(normalizeAngle(map.player.angle));
     }
 
     if (keys[KEY_SPACE] == 1) {
-        if (map.player.standing)
-            map.player.velZ += 1.0 * lastFrameTime / 30.0;
+        if (map.player.sector.constructor == MapSectorWater) {
+            map.player.velZ += GAME_CONSTANTS.playerSwimStrength * lastFrameTime / 30.0;
+        }
+        else if (map.player.standing) {
+            map.player.velZ += GAME_CONSTANTS.playerJumpStrength * lastFrameTime / 30.0;
+        }
     }
 
     if (keys[KEY_C] == 1) {
-        map.player.crouching = true;
+        if (!map.player.standing && map.player.sector.constructor == MapSectorWater) {
+            map.player.velZ -= GAME_CONSTANTS.playerSwimStrength * lastFrameTime / 30.0;
+        }
+        else {
+            map.player.crouching = true;
+        }
     }
     else {
         map.player.crouching = false;
