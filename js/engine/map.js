@@ -13,6 +13,9 @@ function Map(options) {
     for (var i = 0; i < this.materials.length; i++) {
         this.materials[i].map = this;
     }
+
+    this.player = new Player({ x: this.spawnx, y: this.spawny, angle: 45, map: this });
+
 }
 
 Map.prototype.getMaterial = function (id) {
@@ -22,7 +25,7 @@ Map.prototype.getMaterial = function (id) {
     }
 
     return undefined;
-}
+};
 
 Map.prototype.getSector = function (id) {
     for (var i = 0; i < this.sectors.length; i++) {
@@ -31,4 +34,13 @@ Map.prototype.getSector = function (id) {
     }
 
     return undefined;
+};
+
+Map.prototype.frame = function (lastFrameTime) {
+    this.player.frame(lastFrameTime);
+
+    for (var i = 0; i < map.sectors.length; i++) {
+        map.sectors[i].actOnEntity(this.player);
+        map.sectors[i].frame(lastFrameTime);
+    }
 }

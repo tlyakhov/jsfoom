@@ -4,11 +4,11 @@ function MapSegment(options) {
     this.ay = 0.0;
     this.bx = 0.0;
     this.by = 0.0;
-    this.midMaterialId = 'mat0';
+    this.midMaterialId = 'Default';
     this.midMaterial = null;
-    this.loMaterialId = 'mat0';
+    this.loMaterialId = 'Default';
     this.loMaterial = null;
-    this.hiMaterialId = 'mat0';
+    this.hiMaterialId = 'Default';
     this.hiMaterial = null;
     this.length = 0;
     this.normalX = 0;

@@ -5,6 +5,7 @@ function Texture(options) {
     this.generateMipMaps = false;
     this.data = [];
     this.mipmaps = [];
+    this.smallestMipmap = null;
 
     $.extend(true, this, options);
 
@@ -47,16 +48,15 @@ Texture.prototype.loaded = function (img, evt) {
     }
 
     if (this.generateMipMaps) {
-        this.mipmaps = [
-            { width: this.width, height: this.height, data: this.data }
-        ];
+        this.mipmaps = {};
+
+        var prev = this.mipmaps[nearestPow2(this.height)] = { width: this.width, height: this.height, data: this.data };
 
         var w = fast_floor(this.width / 2.0);
         var h = fast_floor(this.height / 2.0);
 
         while (w > 1 && h > 1) {
             var mipmap = { width: w, height: h, data: new Uint32Array(w * h) };
-            var prev = this.mipmaps[this.mipmaps.length - 1];
 
             for (var i = 0; i < w; i++) {
                 for (var j = 0; j < h; j++) {
@@ -67,12 +67,12 @@ Texture.prototype.loaded = function (img, evt) {
                         y: fast_floor(y) });
                     pts.push({ x: Math.min(fast_floor(x) + 1, prev.width - 1),
                         y: Math.min(fast_floor(y), prev.height - 1) });
+                    pts.push({ x: Math.min(fast_floor(x) + 1, prev.width - 1),
+                        y: Math.min(fast_floor(y) + 1, prev.height - 1) });
                     pts.push({ x: Math.min(fast_floor(x), prev.width - 1),
                         y: Math.min(fast_floor(y) + 1, prev.height - 1) });
-                    pts.push({ x: Math.max(fast_floor(x) - 1, 0),
-                        y: Math.max(fast_floor(y), 0) });
-                    pts.push({ x: Math.max(fast_floor(x), 0),
-                        y: Math.max(fast_floor(y) - 1, 0) });
+                    //pts.push({ x: Math.min(fast_floor(x) + 1, prev.width - 1),
+                    //    y: Math.min(fast_floor(y) + 1, prev.height - 1) });
                     var rsum = 0;
                     var gsum = 0;
                     var bsum = 0;
@@ -91,13 +91,15 @@ Texture.prototype.loaded = function (img, evt) {
                 }
             }
 
-            this.mipmaps.push(mipmap);
+            prev = this.mipmaps[nearestPow2(mipmap.height)] = mipmap;
 
             if (w > 1)
                 w = Math.max(1, fast_floor(w / 2.0));
             if (h > 1)
                 h = Math.max(1, fast_floor(h / 2.0));
         }
+
+        this.smallestMipmap = prev;
     }
 };
 
@@ -107,22 +109,18 @@ Texture.prototype.sample = function (x, y, scaledHeight) {
     var height = this.height;
 
     //return data[fast_floor(x * width) * height + fast_floor(y * height)];
-    if (this.generateMipMaps) {
-        for (var i = 0; i < this.mipmaps.length; i++) {
-            var mipmap = this.mipmaps[i];
-            if (mipmap.height < scaledHeight) {
-                if (i > 0) {
-                    data = this.mipmaps[i - 1].data;
-                    width = this.mipmaps[i - 1].width;
-                    height = this.mipmaps[i - 1].height;
-                }
-                else {
-                    data = this.mipmaps[i].data;
-                    width = this.mipmaps[i].width;
-                    height = this.mipmaps[i].height;
-                }
-                break;
-            }
+    if (this.generateMipMaps && this.smallestMipmap) {
+        if (scaledHeight <= this.smallestMipmap.height) {
+            data = this.smallestMipmap.data;
+            width = this.smallestMipmap.width;
+            height = this.smallestMipmap.height;
+        }
+        else if (scaledHeight < this.height) {
+            var mipmap = this.mipmaps[nearestPow2(scaledHeight)];
+
+            data = mipmap.data;
+            width = mipmap.width;
+            height = mipmap.height;
         }
     }
 
@@ -133,6 +131,10 @@ Texture.prototype.sample = function (x, y, scaledHeight) {
     var fy = fast_floor(y * height);
     var cx = Math.min(fx + 1, width - 1);
     var cy = Math.min(fy + 1, height - 1);
+    /*var t00 = 255 << 24 | 255;
+     var t10 = 255 << 24 | 0;
+     var t11 = 255 << 24 | 255;
+     var t01 = 255 << 24 | 255;*/
     var t00 = data[fx * height + fy];
     var t10 = data[cx * height + fy];
     var t11 = data[cx * height + cy];

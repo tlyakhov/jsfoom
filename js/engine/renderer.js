@@ -1,4 +1,5 @@
 function Renderer(options) {
+    this.canvas = '';
     this.screenWidth = 640;
     this.screenHeight = 360;
     this.fov = 75.0;
@@ -8,12 +9,14 @@ function Renderer(options) {
 
     $.extend(true, this, options);
 
-    this.cameraToProjectionPlane = (this.screenWidth / 2.0) / Math.tan(this.fov * deg2rad / 2.0);
+    this.screenWidth = $(this.canvas).width();
+    this.screenHeight = $(this.canvas).height();
 
     this.initTables();
 }
 
 Renderer.prototype.initTables = function () {
+    this.cameraToProjectionPlane = (this.screenWidth / 2.0) / Math.tan(this.fov * deg2rad / 2.0);
     this.trigCount = fast_floor(this.screenWidth * 360.0 / this.fov); // Quantize trig tables per-pixel.
     this.trigTable = [];
     this.viewFix = [];
@@ -42,13 +45,13 @@ Renderer.prototype.renderFloor = function (slice, start, end) {
         if (slice.y - this.screenHeight / 2 == 0)
             continue;
 
-        var distToFloor = (-sector.bottomZ + (player.z + player.height)) * this.viewFix[slice.x] / (slice.y - this.screenHeight / 2);
+        var distToFloor = (-sector.bottomZ + (map.player.z + map.player.height)) * this.viewFix[slice.x] / (slice.y - this.screenHeight / 2);
         var scaler = th * sector.floorScale * 0.25 / distToFloor;
         var screenIndex = slice.x + slice.y * this.screenWidth;
 
         if (distToFloor < this.zbuffer[screenIndex]) {
-            var floorX = player.x + this.trigTable[slice.rayTable].cos * distToFloor;
-            var floorY = player.y + this.trigTable[slice.rayTable].sin * distToFloor;
+            var floorX = map.player.x + this.trigTable[slice.rayTable].cos * distToFloor;
+            var floorY = map.player.y + this.trigTable[slice.rayTable].sin * distToFloor;
 
             var tx = floorX / sector.floorScale - fast_floor(floorX / sector.floorScale);
             var ty = floorY / sector.floorScale - fast_floor(floorY / sector.floorScale);
@@ -70,13 +73,13 @@ Renderer.prototype.renderCeiling = function (slice, start, end) {
     var th = ceilMaterial.getTexture().height;
 
     for (slice.y = start; slice.y < end; slice.y++) {
-        var distToCeiling = (sector.topZ - (player.z + player.height)) * this.viewFix[slice.x] / (this.screenHeight / 2 - 1 - slice.y);
+        var distToCeiling = (sector.topZ - (map.player.z + map.player.height)) * this.viewFix[slice.x] / (this.screenHeight / 2 - 1 - slice.y);
         var scaler = th * sector.ceilScale * 0.25 / distToCeiling;
         var screenIndex = slice.x + slice.y * this.screenWidth;
 
         if (distToCeiling < this.zbuffer[screenIndex]) {
-            var ceilingX = player.x + this.trigTable[slice.rayTable].cos * distToCeiling;
-            var ceilingY = player.y + this.trigTable[slice.rayTable].sin * distToCeiling;
+            var ceilingX = map.player.x + this.trigTable[slice.rayTable].cos * distToCeiling;
+            var ceilingY = map.player.y + this.trigTable[slice.rayTable].sin * distToCeiling;
 
             var tx = Math.abs(ceilingX / sector.ceilScale - fast_floor(ceilingX / sector.ceilScale));
             var ty = Math.abs(ceilingY / sector.ceilScale - fast_floor(ceilingY / sector.ceilScale));
@@ -95,8 +98,8 @@ Renderer.prototype.renderCeiling = function (slice, start, end) {
 Renderer.prototype.renderSlice = function (slice) {
     var segment = slice.segment;
     var sector = slice.segment.sector;
-    var projectedHeightTop = (sector.topZ - (player.z + player.height)) * this.viewFix[slice.x] / slice.distance;
-    var projectedHeightBottom = (sector.bottomZ - (player.z + player.height)) * this.viewFix[slice.x] / slice.distance;
+    var projectedHeightTop = (sector.topZ - (map.player.z + map.player.height)) * this.viewFix[slice.x] / slice.distance;
+    var projectedHeightBottom = (sector.bottomZ - (map.player.z + map.player.height)) * this.viewFix[slice.x] / slice.distance;
 
     var sliceStart = fast_floor(this.screenHeight / 2 - projectedHeightTop);
     var sliceEnd = fast_floor(this.screenHeight / 2 - projectedHeightBottom);
@@ -116,8 +119,8 @@ Renderer.prototype.renderSlice = function (slice) {
         var hiMaterial = adjSegment.getHiMaterial();
         var loMaterial = adjSegment.getLoMaterial();
 
-        var adjProjectedHeightTop = (adj.topZ - (player.z + player.height)) * this.viewFix[slice.x] / slice.distance;
-        var adjProjectedHeightBottom = (adj.bottomZ - (player.z + player.height)) * this.viewFix[slice.x] / slice.distance;
+        var adjProjectedHeightTop = (adj.topZ - (map.player.z + map.player.height)) * this.viewFix[slice.x] / slice.distance;
+        var adjProjectedHeightBottom = (adj.bottomZ - (map.player.z + map.player.height)) * this.viewFix[slice.x] / slice.distance;
 
         var adjSliceTop = fast_floor(this.screenHeight / 2 - adjProjectedHeightTop);
         var adjSliceBottom = fast_floor(this.screenHeight / 2 - adjProjectedHeightBottom);
@@ -175,8 +178,8 @@ Renderer.prototype.renderSector = function (slice) {
         if (slice.intersection == undefined)
             continue;
 
-        var dx = Math.abs(slice.intersection.x - player.x);
-        var dy = Math.abs(slice.intersection.y - player.y);
+        var dx = Math.abs(slice.intersection.x - map.player.x);
+        var dy = Math.abs(slice.intersection.y - map.player.y);
 
         if (dy > dx)
             slice.distance = Math.abs(dy / this.trigTable[slice.rayTable].sin);
@@ -202,8 +205,8 @@ Renderer.prototype.render = function (renderTarget) {
         slice.x = x;
         slice.yStart = 0;
         slice.yEnd = this.screenHeight - 1;
-        //slice.rayAngle = normalizeAngle(player.angle + (x * this.fov) / (this.screenWidth - 1) - (this.fov / 2.0));
-        slice.rayTable = fast_floor(player.angle * this.trigCount / 360.0) + x - this.screenWidth / 2 + 1;
+        //slice.rayAngle = normalizeAngle(map.player.angle + (x * this.fov) / (this.screenWidth - 1) - (this.fov / 2.0));
+        slice.rayTable = fast_floor(map.player.angle * this.trigCount / 360.0) + x - this.screenWidth / 2 + 1;
 
         while (slice.rayTable < 0)
             slice.rayTable += this.trigCount;
@@ -211,11 +214,11 @@ Renderer.prototype.render = function (renderTarget) {
         while (slice.rayTable >= this.trigCount)
             slice.rayTable -= this.trigCount;
 
-        slice.ray = new Ray(player.x, player.y,
-                player.x + this.maxViewDist * this.trigTable[slice.rayTable].cos,
-                player.y + this.maxViewDist * this.trigTable[slice.rayTable].sin);
+        slice.ray = new Ray(map.player.x, map.player.y,
+                map.player.x + this.maxViewDist * this.trigTable[slice.rayTable].cos,
+                map.player.y + this.maxViewDist * this.trigTable[slice.rayTable].sin);
 
-        slice.sector = player.sector;
+        slice.sector = map.player.sector;
         this.renderSector(slice);
     }
     for (var i = 0; i < this.screenWidth * this.screenHeight; i++) {

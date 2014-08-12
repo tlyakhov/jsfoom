@@ -22,70 +22,28 @@
     <!-- Latest compiled and minified JavaScript -->
     <script src="http://netdna.bootstrapcdn.com/bootstrap/3.0.3/js/bootstrap.min.js"></script>
     <script src="http://code.jquery.com/jquery-1.11.0.min.js"></script>
-    <script src="js/ObjectId.js"></script>
-    <script src="js/utils.js"></script>
-    <script src="js/texture.js"></script>
-    <script src="js/texture_cache.js"></script>
-    <script src="js/material.js"></script>
-    <script src="js/map_segment.js"></script>
-    <script src="js/map_sector.js"></script>
-    <script src="js/effect_sectors.js"></script>
-    <script src="js/map.js"></script>
+    <script src="js/engine/ObjectId.js"></script>
+    <script src="js/engine/utils.js"></script>
+    <script src="js/engine/texture.js"></script>
+    <script src="js/engine/texture_cache.js"></script>
+    <script src="js/engine/material.js"></script>
+    <script src="js/engine/map_segment.js"></script>
+    <script src="js/engine/map_sector.js"></script>
+    <script src="js/engine/effect_sectors.js"></script>
+    <script src="js/engine/entity.js"></script>
+    <script src="js/engine/player.js"></script>
+    <script src="js/engine/map.js"></script>
     <script src="js/testmap.js"></script>
-    <script src="js/entity.js"></script>
-    <script src="js/player.js"></script>
     <script src="js/input.js"></script>
-    <script src="js/renderer.js"></script>
-    <script src="js/render_slice.js"></script>
+    <script src="js/engine/renderer.js"></script>
+    <script src="js/engine/render_slice.js"></script>
 </head>
 <body onload="init();" onkeydown="keyDown(event);return false;" onkeyup="keyUp(event); return false;">
-<canvas id="renderCanvas" width="1280" height="720">
+<canvas id="renderCanvas" width="640" height="360">
 </canvas>
 <script>
-    /*var map = new Map({
-     sectors: [
-     new MapSector({
-     id: 'sector1',
-     segments: [
-     new MapSegment({ ax: 0, ay: 0 }),
-     new MapSegment({ ax: 300, ay: 0, midTexSrc: null, adjacentSectorId: 'sector3' }),
-     new MapSegment({ ax: 400, ay: 0 }),
-     new MapSegment({ ax: 600, ay: 0 }),
-     new MapSegment({ ax: 700, ay: 300 }),
-     new MapSegment({ ax: 600, ay: 600 }),
-     new MapSegment({ ax: 0, ay: 600 })
-     ]
-     }),
-     new MapSector({
-     id: 'sector2',
-     topZ: 200,
-     segments: [
-     new MapSegment({ ax: 0, ay: -600 }),
-     new MapSegment({ ax: 600, ay: -600 }),
-     new MapSegment({ ax: 700, ay: -300 }),
-     new MapSegment({ ax: 600, ay: -60 }),
-     new MapSegment({ ax: 400, ay: -60, midTexSrc: null, adjacentSectorId: 'sector3' }),
-     new MapSegment({ ax: 300, ay: -60 }),
-     new MapSegment({ ax: 0, ay: -60 })
-     ]
-     }),
-     new MapSector({
-     id: 'sector3',
-     topZ: 50,
-     segments: [
-     new MapSegment({ ax: 300, ay: 0, midTexSrc: null, adjacentSectorId: 'sector1' }),
-     new MapSegment({ ax: 400, ay: 0 }),
-     new MapSegment({ ax: 400, ay: -60, midTexSrc: null, adjacentSectorId: 'sector2' }),
-     new MapSegment({ ax: 300, ay: -60 }),
-     ]
-     }),
-
-     ]
-     });*/
-
-
-    var player = new Player({ angle: 45, map: map });
-    var renderer = new Renderer({});
+    var map = testmap;
+    var renderer = new Renderer({ canvas: '#renderCanvas' });
     var prevTime = new Date().getTime();
     var curTime = new Date().getTime();
     var lastFrameTime = 0;
@@ -107,17 +65,31 @@
             imgData.data.set(renderBuffer8);
             ctx.putImageData(imgData, 0, 0);
 
+            var debugText = 'FPS: ' + Math.round(1000.0 / lastFrameTime);
+
+            debugText += '\nCurrent sector: ' + map.player.sector.id;
+
+            ctx.fillStyle = '#FFF';
+            ctx.fillText(debugText, 5, 15);
             checkInput();
-            player.frame(lastFrameTime);
 
-            for (var i = 0; i < map.sectors.length; i++) {
-                map.sectors[i].actOnEntity(player);
-                map.sectors[i].frame(lastFrameTime);
-            }
-
-        }, 10);
+            map.frame(lastFrameTime);
+        }, 1);
     }
 
 </script>
+<h1>jsFoom Test</h1>
+
+<p>
+    Controls:
+<ul>
+    <li>Walk Forward: <b>W</b></li>
+    <li>Walk Backward: <b>S</b></li>
+    <li>Turn Left: <b>A</b></li>
+    <li>Turn Right: <b>D</b></li>
+    <li>Jump: <b>SPACE</b></li>
+    <li>Crouch: <b>C</b></li>
+</ul>
+</p>
 </body>
 </html>

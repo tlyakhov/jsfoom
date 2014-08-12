@@ -43,32 +43,32 @@ function keyUp(e) {
 
 function checkInput() {
     if (keys[KEY_W] == 1) {
-        player.move(player.angle, lastFrameTime);
+        map.player.move(map.player.angle, lastFrameTime);
     }
 
     if (keys[KEY_S] == 1) {
-        player.move(player.angle + 180.0, lastFrameTime);
+        map.player.move(map.player.angle + 180.0, lastFrameTime);
     }
 
     if (keys[KEY_A] == 1) {
-        player.angle -= 4.0 * lastFrameTime / 30.0;
-        player.angle = fast_floor(normalizeAngle(player.angle));
+        map.player.angle -= 4.0 * lastFrameTime / 30.0;
+        map.player.angle = fast_floor(normalizeAngle(map.player.angle));
     }
 
     if (keys[KEY_D] == 1) {
-        player.angle += 4.0 * lastFrameTime / 30.0;
-        player.angle = fast_floor(normalizeAngle(player.angle));
+        map.player.angle += 4.0 * lastFrameTime / 30.0;
+        map.player.angle = fast_floor(normalizeAngle(map.player.angle));
     }
 
     if (keys[KEY_SPACE] == 1) {
-        if (player.standing)
-            player.velZ += 1.0 * lastFrameTime / 30.0;
+        if (map.player.standing)
+            map.player.velZ += 1.0 * lastFrameTime / 30.0;
     }
 
     if (keys[KEY_C] == 1) {
-        player.crouching = true;
+        map.player.crouching = true;
     }
     else {
-        player.crouching = false;
+        map.player.crouching = false;
     }
 }

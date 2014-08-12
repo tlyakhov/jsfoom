@@ -7,8 +7,6 @@ function Player(options) {
 
     this.spawnheight = 32;
     this.height = this.spawnheight;
-    this.x = this.map.spawnx;
-    this.y = this.map.spawny;
     this.standing = true;
     this.crouching = false;
 

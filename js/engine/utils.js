@@ -35,3 +35,15 @@ function colorTint(target, tint) {
 
     return (ta << 24) | ((rb & 0xFF) << 16) | ((rg & 0xFF) << 8) | (rr & 0xFF);
 }
+
+function nearestPow2(n) {
+    n--;
+
+    n |= n >> 1;
+    n |= n >> 2;
+    n |= n >> 4;
+    n |= n >> 8;
+    n |= n >> 16;
+
+    return ++n;
+}

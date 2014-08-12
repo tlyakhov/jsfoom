@@ -5,9 +5,9 @@ function MapSector(options) {
     this.map = null;
     this.bottomZ = 0;
     this.topZ = 64;
-    this.floorMaterialId = "mat0";
+    this.floorMaterialId = "Default";
     this.floorMaterial = null;
-    this.ceilMaterialId = "mat0";
+    this.ceilMaterialId = "Default";
     this.ceilMaterial = null;
     this.centerX = 0.0;
     this.centerY = 0.0;
@@ -114,7 +114,7 @@ MapSector.prototype.actOnEntity = function (entity) {
             entity.sector.onExit(entity);
             entity.sector = this.map.getSector(this.floorTargetSectorId);
             entity.sector.onEnter(entity);
-            entity.z = entity.constructor == Player ? entity.sector.topZ - entity.height : entity.sector.topZ;
+            entity.z = entity.constructor == Player ? entity.sector.topZ - entity.height - 1.0 : entity.sector.topZ - 1.0;
         }
 
     }
@@ -133,7 +133,7 @@ MapSector.prototype.actOnEntity = function (entity) {
             entity.sector.onExit(entity);
             entity.sector = this.map.getSector(this.ceilTargetSectorId);
             entity.sector.onEnter(entity);
-            entity.z = entity.constructor == Player ? entity.sector.bottomZ - entity.height : entity.sector.bottomZ;
+            entity.z = entity.constructor == Player ? entity.sector.bottomZ - entity.height + 1.0 : entity.sector.bottomZ + 1.0;
         }
 
     }

@@ -28,7 +28,7 @@ MapSectorWater.prototype.actOnEntity = function (entity) {
             entity.sector.onExit(entity);
             entity.sector = this.map.getSector(this.floorTargetSectorId);
             entity.sector.onEnter(entity);
-            entity.z = entity.constructor == Player ? entity.sector.topZ - entity.height : entity.sector.topZ;
+            entity.z = entity.constructor == Player ? entity.sector.topZ - entity.height - 1.0 : entity.sector.topZ - 1.0;
         }
 
     }
@@ -47,7 +47,7 @@ MapSectorWater.prototype.actOnEntity = function (entity) {
             entity.sector.onExit(entity);
             entity.sector = this.map.getSector(this.ceilTargetSectorId);
             entity.sector.onEnter(entity);
-            entity.z = entity.constructor == Player ? entity.sector.bottomZ - entity.height : entity.sector.bottomZ;
+            entity.z = entity.constructor == Player ? entity.sector.bottomZ - entity.height + 1.0 : entity.sector.bottomZ + 1.0;
         }
 
     }
@@ -63,7 +63,7 @@ MapSectorWater.prototype.onEnter = function (entity) {
     this.parent.onEnter.call(this, entity);
 
     if (entity.constructor == Player)
-        renderer.frameTint = 100 << 24 | 255 << 16;
+        renderer.frameTint = 75 | 147 << 8 | 255 << 16 | 90 << 24;
 };
 
 MapSectorWater.prototype.onExit = function (entity) {
