@@ -11,8 +11,8 @@ function MapSector(options) {
     this.ceilMaterial = null;
     this.centerX = 0.0;
     this.centerY = 0.0;
-    this.floorScale = 256.0;
-    this.ceilScale = 256.0;
+    this.floorScale = 64.0;
+    this.ceilScale = 64.0;
     this.floorOx = 0;
     this.floorOy = 0;
     this.floorMx = 0;
@@ -99,26 +99,26 @@ MapSector.prototype.frame = function (lastFrameTime) {
 MapSector.prototype.collide = function (entity) {
     var ez = entity.constructor == Player ? entity.z + entity.height : entity.z;
 
-    if (this.floorTargetSectorId && ez <= entity.sector.bottomZ) {
+    if (this.floorTargetSectorId && ez <= this.bottomZ) {
         entity.sector.onExit(entity);
         entity.sector = this.map.getSector(this.floorTargetSectorId);
         entity.sector.onEnter(entity);
         entity.z = entity.constructor == Player ? entity.sector.topZ - entity.height - 1.0 : entity.sector.topZ - 1.0;
     }
-    else if (!this.floorTargetSectorId && entity.z <= entity.sector.bottomZ) {
+    else if (!this.floorTargetSectorId && entity.z <= this.bottomZ) {
         entity.velZ = 0;
-        entity.z = entity.sector.bottomZ;
+        entity.z = this.bottomZ;
     }
 
-    if (this.ceilTargetSectorId && ez > entity.sector.topZ) {
+    if (this.ceilTargetSectorId && ez > this.topZ) {
         entity.sector.onExit(entity);
         entity.sector = this.map.getSector(this.ceilTargetSectorId);
         entity.sector.onEnter(entity);
         entity.z = entity.constructor == Player ? entity.sector.bottomZ - entity.height + 1.0 : entity.sector.bottomZ + 1.0;
     }
-    else if (!this.ceilTargetSectorId && ez >= entity.sector.topZ) {
+    else if (!this.ceilTargetSectorId && ez >= this.topZ) {
         entity.velZ = 0;
-        entity.z = entity.constructor == Player ? entity.sector.topZ - entity.height - 1.0 : entity.sector.bottomZ;
+        entity.z = entity.constructor == Player ? this.topZ - entity.height - 1.0 : this.bottomZ;
     }
 
     if (this.hurt > 0 && entity.hurtTime == 0)
@@ -154,6 +154,10 @@ MapSector.prototype.actOnEntity = function (entity) {
 };
 
 MapSector.prototype.onEnter = function (entity) {
+    if (!this.floorTargetSectorId && entity.z <= entity.sector.bottomZ) {
+        entity.velZ = 0;
+        entity.z = entity.sector.bottomZ;
+    }
 };
 
 MapSector.prototype.onExit = function (entity) {

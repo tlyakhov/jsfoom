@@ -3,6 +3,7 @@ function Material(options) {
     this.textureSrc = 'data/bricks.png';
     this.texture = null;
     this.renderAsSky = false;
+    this.staticBackground = false;
     this.hurt = 0;
     this.isLiquid = false;
     this.map = null;
@@ -22,8 +23,15 @@ Material.prototype.getTexture = function () {
 
 Material.prototype.sample = function (slice, x, y, scaledHeight) {
     if (this.renderAsSky) {
-        x = slice.x / (renderer.screenWidth - 1);
         y = slice.y / (renderer.screenHeight - 1);
+
+        if (this.staticBackground) {
+            x = slice.x / (renderer.screenWidth - 1);
+        }
+        else {
+            x = slice.rayTable / (renderer.trigCount - 1);
+        }
+
     }
 
     if (this.isLiquid) {

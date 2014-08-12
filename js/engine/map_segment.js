@@ -25,7 +25,7 @@ function MapSegment(options) {
 }
 
 MapSegment.prototype.update = function () {
-    this.length = Math.sqrt((this.ax - this.bx) * (this.ax - this.bx) + (this.ay - this.by) * (this.ay - this.by));
+    this.length = Math.sqrt(sqr((this.ax - this.bx)) + sqr((this.ay - this.by)));
     this.normalX = -(this.by - this.ay) / this.length;
     this.normalY = (this.bx - this.ax) / this.length;
 };
@@ -126,12 +126,35 @@ MapSegment.prototype.intersect = function (s2) {
     return { x: s1.ax + r * s1dx, y: s1.ay + r * s1dy, tx: r };
 };
 
-MapSegment.prototype.distanceToPoint = function (x, y) {
-    var dx = (this.bx - this.ax);
+/*MapSegment.prototype.distanceToPoint = function (x, y) {
+ var dx = (this.bx - this.ax);
     var dy = (this.by - this.ay);
 
     return (dy * x - dx * y - this.ax * this.by + this.bx * this.ay) /
-        Math.sqrt(dx * dx + dy * dy);
+ Math.sqrt(sqr(dx) + sqr(dy));
+ };*/
+
+MapSegment.prototype.distanceToPoint2 = function (x, y) {
+    var l2 = dist2(this.ax, this.ay, this.bx, this.by);
+    if (l2 == 0)
+        return dist2(x, y, this.ax, this.ay);
+    var t = ((x - this.ax) * (this.bx - this.ax) + (y - this.ay) * (this.by - this.ay)) / l2;
+    if (t < 0)
+        return dist2(x, y, this.ax, this.ay);
+    if (t > 1)
+        return dist2(x, y, this.bx, this.by);
+    return dist2(x, y, this.ax + t * (this.bx - this.ax), this.ay + t * (this.by - this.ay));
+};
+
+MapSegment.prototype.distanceToPoint = function (x, y) {
+    return Math.sqrt(this.distanceToPoint2(x, y));
+};
+
+MapSegment.prototype.whichSide = function (x, y) {
+    var dx = (this.bx - this.ax);
+    var dy = (this.by - this.ay);
+
+    return sign(dy * x - dx * y - this.ax * this.by + this.bx * this.ay);
 };
 
 function Ray(ax, ay, bx, by) {

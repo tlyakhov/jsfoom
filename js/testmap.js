@@ -15,7 +15,7 @@ var testmap = new Map({
         new Material({ id: 'f5', textureSrc: 'data/FRedLight.png' }),
         new Material({ id: 'f6', textureSrc: 'data/FHexMetal.png' }),
         new Material({ id: 'Water', textureSrc: 'data/Water.png', isLiquid: true }),
-        new Material({ id: 'Sky', textureSrc: 'data/Sky.png', renderAsSky: true })
+        new Material({ id: 'Sky', textureSrc: 'data/nightsky.jpg', renderAsSky: true })
     ],
     sectors: [
         new MapSector({ id: 'sector0', bottomZ: 0, topZ: 64,

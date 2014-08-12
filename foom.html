@@ -69,7 +69,10 @@
 
             ctx.fillStyle = '#FFF';
             ctx.fillText('FPS: ' + Math.round(1000.0 / lastFrameTime), 5, 15);
-            ctx.fillText('Current sector: ' + map.player.sector.id, 5, 25);
+            ctx.fillText('Current sector: ' + map.player.sector.id +
+                    ', x: ' + Math.round(map.player.x) +
+                    ', y: ' + Math.round(map.player.y) +
+                    ', z: ' + Math.round(map.player.z), 5, 25);
             ctx.fillText('Health: ' + map.player.health, 5, 35);
             checkInput();
 

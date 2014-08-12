@@ -46,7 +46,7 @@ Renderer.prototype.renderFloor = function (slice, start, end) {
             continue;
 
         var distToFloor = (-sector.bottomZ + (map.player.z + map.player.height)) * this.viewFix[slice.x] / (slice.y - this.screenHeight / 2);
-        var scaler = th * sector.floorScale * 0.25 / distToFloor;
+        var scaler = th * sector.floorScale / distToFloor;
         var screenIndex = slice.x + slice.y * this.screenWidth;
 
         if (distToFloor < this.zbuffer[screenIndex]) {
@@ -74,7 +74,7 @@ Renderer.prototype.renderCeiling = function (slice, start, end) {
 
     for (slice.y = start; slice.y < end; slice.y++) {
         var distToCeiling = (sector.topZ - (map.player.z + map.player.height)) * this.viewFix[slice.x] / (this.screenHeight / 2 - 1 - slice.y);
-        var scaler = th * sector.ceilScale * 0.25 / distToCeiling;
+        var scaler = th * sector.ceilScale / distToCeiling;
         var screenIndex = slice.x + slice.y * this.screenWidth;
 
         if (distToCeiling < this.zbuffer[screenIndex]) {
@@ -186,8 +186,8 @@ Renderer.prototype.renderSector = function (slice) {
         else
             slice.distance = Math.abs(dx / this.trigTable[slice.rayTable].cos);
 
-        slice.textureX = Math.sqrt((slice.intersection.x - slice.segment.ax) * (slice.intersection.x - slice.segment.ax) +
-            (slice.intersection.y - slice.segment.ay) * (slice.intersection.y - slice.segment.ay)) / slice.segment.length; // 0.0 - 1.0
+        slice.textureX = Math.sqrt(sqr((slice.intersection.x - slice.segment.ax)) +
+            sqr((slice.intersection.y - slice.segment.ay))) / slice.segment.length; // 0.0 - 1.0
 
         this.renderSlice(slice);
     }

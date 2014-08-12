@@ -6,6 +6,7 @@ function Player(options) {
     this.parent.constructor.call(this, options);
 
     this.height = GAME_CONSTANTS.playerHeight;
+    this.boundingRadius = GAME_CONSTANTS.playerBoundingRadius;
     this.standing = true;
     this.crouching = false;
 
@@ -15,7 +16,6 @@ function Player(options) {
 
 Player.prototype.frame = function (lastFrameTime) {
     this.parent.frame.call(this, lastFrameTime);
-    this.updateSector();
 
     if (Math.abs(this.z - this.sector.bottomZ) < 0.01)
         this.standing = true;
@@ -42,48 +42,6 @@ Player.prototype.hurt = function (amount) {
 };
 
 Player.prototype.move = function (angle, lastFrameTime) {
-    var opx = this.x;
-    var opy = this.y;
-
-    var xAllowed = true;
-    var yAllowed = true;
-
-    var vx = this.velX + Math.cos(angle * deg2rad) * GAME_CONSTANTS.playerSpeed * 4.0;
-    var vy = this.velY;
-
-    this.x += vx * lastFrameTime / 30.0;
-    this.y += vy * lastFrameTime / 30.0;
-
-    if (!this.updateSector()) {
-        xAllowed = false;
-    }
-
-    vx = this.velX;
-    vy = this.velY + Math.sin(angle * deg2rad) * GAME_CONSTANTS.playerSpeed * 4.0;
-
-    this.x = opx + vx * lastFrameTime / 30.0;
-    this.y = opy + vy * lastFrameTime / 30.0;
-
-    if (!this.updateSector()) {
-        yAllowed = false;
-    }
-
-    if (xAllowed && yAllowed) {
-        vx = this.velX + Math.cos(angle * deg2rad) * GAME_CONSTANTS.playerSpeed * 4.0;
-        vy = this.velY + Math.sin(angle * deg2rad) * GAME_CONSTANTS.playerSpeed * 4.0;
-        this.x = opx + vx * lastFrameTime / 30.0;
-        this.y = opy + vy * lastFrameTime / 30.0;
-        if (!this.updateSector()) {
-            xAllowed = false;
-            yAllowed = false;
-        }
-    }
-
-    if (xAllowed)
-        this.velX += Math.cos(angle * deg2rad) * GAME_CONSTANTS.playerSpeed;
-    if (yAllowed)
-        this.velY += Math.sin(angle * deg2rad) * GAME_CONSTANTS.playerSpeed;
-
-    this.x = opx;
-    this.y = opy;
+    this.velX += Math.cos(angle * deg2rad) * GAME_CONSTANTS.playerSpeed;
+    this.velY += Math.sin(angle * deg2rad) * GAME_CONSTANTS.playerSpeed;
 }

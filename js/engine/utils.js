@@ -17,7 +17,7 @@ function normalizeAngle(a) {
 var deg2rad = Math.PI / 180.0;
 
 function distance2D(x1, y1, x2, y2) {
-    return Math.sqrt((x2 - x1) * (x2 - x1) + (y2 - y1) * (y2 - y1));
+    return Math.sqrt(sqr((x2 - x1)) + sqr((y2 - y1)));
 }
 
 function colorTint(target, tint) {
@@ -46,4 +46,16 @@ function nearestPow2(n) {
     n |= n >> 16;
 
     return ++n;
+}
+
+function sign(x) {
+    return typeof x === 'number' ? x ? x < 0 ? -1 : 1 : x === x ? 0 : NaN : NaN;
+}
+
+function sqr(x) {
+    return x * x;
+}
+
+function dist2(ax, ay, bx, by) {
+    return sqr(bx - ax) + sqr(by - ay);
 }

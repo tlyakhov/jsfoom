@@ -129,12 +129,8 @@ Texture.prototype.sample = function (x, y, scaledHeight) {
 
     var fx = fast_floor(x * width);
     var fy = fast_floor(y * height);
-    var cx = Math.min(fx + 1, width - 1);
-    var cy = Math.min(fy + 1, height - 1);
-    /*var t00 = 255 << 24 | 255;
-     var t10 = 255 << 24 | 0;
-     var t11 = 255 << 24 | 255;
-     var t01 = 255 << 24 | 255;*/
+    var cx = (fx + 1) % width;
+    var cy = (fy + 1) % height;
     var t00 = data[fx * height + fy];
     var t10 = data[cx * height + fy];
     var t11 = data[cx * height + cy];
