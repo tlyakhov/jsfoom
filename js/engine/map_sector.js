@@ -2,6 +2,7 @@ function MapSector(options) {
     // Defaults
     this.id = "Sector_" + (new ObjectId().toString());
     this.segments = [];
+    this.entities = [];
     this.map = null;
     this.bottomZ = 0;
     this.topZ = 64;
@@ -48,6 +49,11 @@ MapSector.prototype.update = function () {
 
     this.centerX /= this.segments.length;
     this.centerY /= this.segments.length;
+
+    for (var i = 0; i < this.entities.length; i++) {
+        this.entities[i].map = this;
+        this.entities[i].sector = this;
+    }
 };
 
 MapSector.prototype.getCeilMaterial = function () {
@@ -93,32 +99,32 @@ MapSector.prototype.isPointInside = function (x, y) {
 };
 
 MapSector.prototype.frame = function (lastFrameTime) {
-
+    for (var i = 0; i < this.entities.length; i++) {
+        this.entities[i].frame(lastFrameTime);
+    }
 };
 
 MapSector.prototype.collide = function (entity) {
-    var ez = entity.constructor == Player ? entity.z + entity.height : entity.z;
-
-    if (this.floorTargetSectorId && ez <= this.bottomZ) {
+    if (this.floorTargetSectorId && entity.z + entity.height <= this.bottomZ) {
         entity.sector.onExit(entity);
         entity.sector = this.map.getSector(this.floorTargetSectorId);
         entity.sector.onEnter(entity);
-        entity.z = entity.constructor == Player ? entity.sector.topZ - entity.height - 1.0 : entity.sector.topZ - 1.0;
+        entity.z = entity.sector.topZ - entity.height - 1.0;
     }
     else if (!this.floorTargetSectorId && entity.z <= this.bottomZ) {
         entity.velZ = 0;
         entity.z = this.bottomZ;
     }
 
-    if (this.ceilTargetSectorId && ez > this.topZ) {
+    if (this.ceilTargetSectorId && entity.z + entity.height > this.topZ) {
         entity.sector.onExit(entity);
         entity.sector = this.map.getSector(this.ceilTargetSectorId);
         entity.sector.onEnter(entity);
-        entity.z = entity.constructor == Player ? entity.sector.bottomZ - entity.height + 1.0 : entity.sector.bottomZ + 1.0;
+        entity.z = entity.sector.bottomZ - entity.height + 1.0;
     }
-    else if (!this.ceilTargetSectorId && ez >= this.topZ) {
+    else if (!this.ceilTargetSectorId && entity.z + entity.height >= this.topZ) {
         entity.velZ = 0;
-        entity.z = entity.constructor == Player ? this.topZ - entity.height - 1.0 : this.bottomZ;
+        entity.z = this.topZ - entity.height - 1.0;
     }
 
     if (this.hurt > 0 && entity.hurtTime == 0)

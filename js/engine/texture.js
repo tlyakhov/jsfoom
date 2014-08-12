@@ -3,6 +3,7 @@ function Texture(options) {
     this.height = 0;
     this.src = null;
     this.generateMipMaps = false;
+    this.filter = false;
     this.data = [];
     this.mipmaps = [];
     this.smallestMipmap = null;
@@ -129,6 +130,10 @@ Texture.prototype.sample = function (x, y, scaledHeight) {
 
     var fx = fast_floor(x * width);
     var fy = fast_floor(y * height);
+
+    if (!this.filter)
+        return data[fx * height + fy];
+
     var cx = (fx + 1) % width;
     var cy = (fy + 1) % height;
     var t00 = data[fx * height + fy];

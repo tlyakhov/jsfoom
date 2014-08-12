@@ -1,8 +1,8 @@
 function Map(options) {
     this.sectors = [];
     this.materials = [];
-    this.spawnx = 0;
-    this.spawny = 0;
+    this.spawnX = 0;
+    this.spawnY = 0;
 
     $.extend(true, this, options);
 
@@ -14,7 +14,7 @@ function Map(options) {
         this.materials[i].map = this;
     }
 
-    this.player = new Player({ x: this.spawnx, y: this.spawny, angle: 45, map: this });
+    this.player = new Player({ x: this.spawnX, y: this.spawnY, angle: 45, map: this });
 
 }
 

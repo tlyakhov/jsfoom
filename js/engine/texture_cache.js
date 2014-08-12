@@ -4,13 +4,13 @@ function TextureCache(options) {
     $.extend(true, this, options);
 }
 
-TextureCache.prototype.get = function (src, mipmaps) {
-    var key = src + "_" + mipmaps;
+TextureCache.prototype.get = function (src, mipmaps, filter) {
+    var key = src + "_" + mipmaps + "_" + filter;
 
     if (this.cache[key])
         return this.cache[key];
 
-    this.cache[key] = new Texture({ src: src, generateMipMaps: mipmaps });
+    this.cache[key] = new Texture({ src: src, generateMipMaps: mipmaps, filter: filter });
 
     return this.cache[key];
 };

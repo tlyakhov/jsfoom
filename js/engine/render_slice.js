@@ -30,4 +30,4 @@ RenderSlice.prototype.clone = function () {
     s.seenPortals = this.seenPortals;
 
     return s;
-}
+};

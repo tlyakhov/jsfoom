@@ -16,7 +16,7 @@ Material.prototype.getTexture = function () {
         return null;
 
     if (!this.texture || this.texture.src != this.textureSrc)
-        this.texture = textureCache.get(this.textureSrc, true);
+        this.texture = textureCache.get(this.textureSrc, true, true);
 
     return this.texture;
 };

@@ -1,6 +1,6 @@
-var testmap = new Map({
-    spawnx: 0,
-    spawny: -70,
+var testMap = new Map({
+    spawnX: 0,
+    spawnY: -70,
     materials: [
         new Material({ id: 'Default', textureSrc: 'data/WDef.png' }),
         new Material({ id: 'mat1', textureSrc: 'data/WSlimy.png' }),
@@ -101,6 +101,10 @@ var testmap = new Map({
             flags: 0,
             floorOx: 0, floorOy: 0, floorMx: 1, floorMy: 1, floorRot: 0,
             ceilOx: 0, ceilOy: 0, ceilMx: 1, ceilMy: 1, ceilRot: 0,
+            entities: [ new StaticEntity({
+                spriteSources: [ 'data/test_sprite/Test0000.png' ],
+                x: -17, y: 68, z: 0, height: 60, zOffset: -13.0
+            }) ],
             segments: [
                 new MapSegment({ ax: -100, ay: 100,
                     midMaterialId: 'Sky',
