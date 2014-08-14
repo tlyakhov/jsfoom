@@ -39,6 +39,26 @@ function colorTint(target, tint) {
     return (ta << 24) | ((rb & 0xFF) << 16) | ((rg & 0xFF) << 8) | (rr & 0xFF);
 }
 
+function rgba2int(r, g, b, a) {
+    return (r & 0xFF) | ((g & 0xFF) << 8) | ((b & 0xFF) << 16) | ((a & 0xFF) << 24);
+}
+
+function rgb2int(r, g, b) {
+    return rgba2int(r, g, b, 255);
+}
+
+function int2r(i) {
+    return i & 0xFF;
+}
+
+function int2g(i) {
+    return (i >> 8) & 0xFF;
+}
+
+function int2b(i) {
+    return (i >> 16) & 0xFF;
+}
+
 function nearestPow2(n) {
     n--;
 

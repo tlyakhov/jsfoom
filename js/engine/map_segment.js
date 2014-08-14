@@ -123,7 +123,7 @@ MapSegment.prototype.intersect = function (s2) {
     if (r > 1.0 || s > 1.0)
         return undefined;
 
-    return { x: s1.ax + r * s1dx, y: s1.ay + r * s1dy, tx: r };
+    return new Vector3(s1.ax + r * s1dx, s1.ay + r * s1dy, 0.0);
 };
 
 /*MapSegment.prototype.distanceToPoint = function (x, y) {

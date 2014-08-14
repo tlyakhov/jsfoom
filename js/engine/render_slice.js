@@ -11,6 +11,9 @@ function RenderSlice() {
     this.distance = 0.0;
     this.textureX = 0.0;
     this.seenPortals = {};
+    this.world = null;
+    this.normal = null;
+    this.lights = [];
 }
 
 RenderSlice.prototype.clone = function () {
@@ -28,6 +31,9 @@ RenderSlice.prototype.clone = function () {
     s.distance = this.distance;
     s.textureX = this.textureX;
     s.seenPortals = this.seenPortals;
+    s.world = this.world;
+    s.normal = this.normal;
+    s.lights = this.lights;
 
     return s;
 };

@@ -42,6 +42,9 @@ Renderer.prototype.renderFloor = function (slice, start, end) {
     var floorMaterial = sector.getFloorMaterial();
     var th = floorMaterial.getTexture().height;
 
+    slice.normal = new Vector3(0.0, 0.0, 1.0);
+    slice.world = new Vector3(0.0, 0.0, sector.bottomZ);
+
     for (slice.y = start; slice.y < end; slice.y++) {
         if (slice.y - this.screenHeight / 2 == 0)
             continue;
@@ -51,11 +54,12 @@ Renderer.prototype.renderFloor = function (slice, start, end) {
         var screenIndex = slice.x + slice.y * this.screenWidth;
 
         if (distToFloor < this.zbuffer[screenIndex]) {
-            var floorX = map.player.x + this.trigTable[slice.rayTable].cos * distToFloor;
-            var floorY = map.player.y + this.trigTable[slice.rayTable].sin * distToFloor;
+            slice.world.x = map.player.x + this.trigTable[slice.rayTable].cos * distToFloor;
+            slice.world.y = map.player.y + this.trigTable[slice.rayTable].sin * distToFloor;
 
-            var tx = floorX / sector.floorScale - fast_floor(floorX / sector.floorScale);
-            var ty = floorY / sector.floorScale - fast_floor(floorY / sector.floorScale);
+
+            var tx = slice.world.x / sector.floorScale - fast_floor(slice.world.x / sector.floorScale);
+            var ty = slice.world.y / sector.floorScale - fast_floor(slice.world.y / sector.floorScale);
 
             if (tx < 0)
                 tx = tx + 1.0;
@@ -73,17 +77,20 @@ Renderer.prototype.renderCeiling = function (slice, start, end) {
     var ceilMaterial = sector.getCeilMaterial();
     var th = ceilMaterial.getTexture().height;
 
+    slice.normal = new Vector3(0.0, 0.0, -1.0);
+    slice.world = new Vector3(0.0, 0.0, sector.topZ);
+
     for (slice.y = start; slice.y < end; slice.y++) {
         var distToCeiling = (sector.topZ - (map.player.z + map.player.height)) * this.viewFix[slice.x] / (this.screenHeight / 2 - 1 - slice.y);
         var scaler = th * sector.ceilScale / distToCeiling;
         var screenIndex = slice.x + slice.y * this.screenWidth;
 
         if (distToCeiling < this.zbuffer[screenIndex]) {
-            var ceilingX = map.player.x + this.trigTable[slice.rayTable].cos * distToCeiling;
-            var ceilingY = map.player.y + this.trigTable[slice.rayTable].sin * distToCeiling;
+            slice.world.x = map.player.x + this.trigTable[slice.rayTable].cos * distToCeiling;
+            slice.world.y = map.player.y + this.trigTable[slice.rayTable].sin * distToCeiling;
 
-            var tx = Math.abs(ceilingX / sector.ceilScale - fast_floor(ceilingX / sector.ceilScale));
-            var ty = Math.abs(ceilingY / sector.ceilScale - fast_floor(ceilingY / sector.ceilScale));
+            var tx = Math.abs(slice.world.x / sector.ceilScale - fast_floor(slice.world.x / sector.ceilScale));
+            var ty = Math.abs(slice.world.y / sector.ceilScale - fast_floor(slice.world.y / sector.ceilScale));
 
             if (tx < 0)
                 tx = tx + 1.0;
@@ -110,6 +117,10 @@ Renderer.prototype.renderSlice = function (slice) {
     this.renderCeiling(slice, slice.yStart, clippedStart);
     this.renderFloor(slice, clippedEnd, slice.yEnd);
 
+    slice.world.x = slice.intersection.x;
+    slice.world.y = slice.intersection.y;
+    slice.normal = new Vector3(-segment.normalX, -segment.normalY, 0.0);
+
     if (segment.midMaterialId == null) {
         var adj = segment.getAdjacentSector();
 
@@ -131,7 +142,9 @@ Renderer.prototype.renderSlice = function (slice) {
         for (slice.y = clippedStart; slice.y < adjClippedTop; slice.y++) {
             var screenIndex = slice.x + slice.y * this.screenWidth;
             if (slice.distance < this.zbuffer[screenIndex]) {
-                slice.renderTarget[screenIndex] = hiMaterial.sample(slice, slice.textureX, (slice.y - sliceStart) / (adjSliceTop - sliceStart), adjSliceTop - sliceStart);
+                var ty = (slice.y - sliceStart) / (adjSliceTop - sliceStart);
+                slice.world.z = sector.topZ - ty * (sector.topZ - adj.topZ);
+                slice.renderTarget[screenIndex] = hiMaterial.sample(slice, slice.textureX, ty, adjSliceTop - sliceStart);
                 this.zbuffer[screenIndex] = slice.distance;
             }
         }
@@ -139,7 +152,9 @@ Renderer.prototype.renderSlice = function (slice) {
         for (slice.y = adjClippedBottom; slice.y < clippedEnd; slice.y++) {
             var screenIndex = slice.x + slice.y * this.screenWidth;
             if (slice.distance < this.zbuffer[screenIndex]) {
-                slice.renderTarget[screenIndex] = loMaterial.sample(slice, slice.textureX, (slice.y - adjClippedBottom) / (sliceEnd - adjSliceBottom), sliceEnd - adjSliceBottom);
+                var ty = (slice.y - adjClippedBottom) / (sliceEnd - adjSliceBottom);
+                slice.world.z = adj.bottomZ - ty * (adj.bottomZ - sector.bottomZ);
+                slice.renderTarget[screenIndex] = loMaterial.sample(slice, slice.textureX, ty, sliceEnd - adjSliceBottom);
                 this.zbuffer[screenIndex] = slice.distance;
             }
         }
@@ -160,6 +175,7 @@ Renderer.prototype.renderSlice = function (slice) {
             if (slice.distance < this.zbuffer[screenIndex]) {
                 var ty = (slice.y - sliceStart) / (sliceEnd - sliceStart);
 
+                slice.world.z = sector.topZ + ty * (sector.bottomZ - sector.topZ);
                 slice.renderTarget[screenIndex] = midMaterial.sample(slice, slice.textureX, ty, sliceEnd - sliceStart);
                 this.zbuffer[screenIndex] = slice.distance;
             }
@@ -246,6 +262,7 @@ Renderer.prototype.render = function (renderTarget) {
 
     for (var x = 0; x < this.screenWidth; x++) {
         var slice = new RenderSlice();
+        slice.lights = [ new LightEntity({ x: 0, y: 0, z: 32 })];
         slice.renderTarget = renderTarget;
         slice.x = x;
         slice.yStart = 0;
