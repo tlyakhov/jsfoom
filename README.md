@@ -7,6 +7,7 @@ jsFoom is a pure JavaScript 2.5D sector/portal-based raycasting game engine.
 
 * Sectors with non-orthogonal walls of variable height.
 * Texture mapped floors, ceilings, and walls.
+* Fully dynamic Phong lighting
 * Objects represented as sprites with multiple angles.
 * Bilinear filtering & mipmapping for images.
 * Various effect sectors (doors, underwater sectors)
@@ -19,12 +20,12 @@ jsFoom is a pure JavaScript 2.5D sector/portal-based raycasting game engine.
 
 # Current/Future Work
 
+* Optimization
+* Level editor
 * Framework for game logic, AI, and player objectives.
 * Inventory/items
 * Weapons
-* Lighting
 * Sound
-* Level editor
 * Mini-map showing visited areas a la 'Doom'.
 * Ruby/Rails/MongoDB server storing player data/progress.
 * Distant future: Multiplayer
