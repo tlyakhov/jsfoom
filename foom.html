@@ -3,12 +3,12 @@
 <head>
     <meta charset="utf-8">
     <meta http-equiv="content-type" content="text/html;charset=UTF-8"/>
-    <title>Rays</title>
+    <title>jsFoom</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Rays"/>
-    <meta name="keywords" content="rays />
-		<meta name=" author
-    " content="Tim Lyakhovetskiy" />
+    <meta name="description" content="Foom"/>
+    <meta name="keywords" content="foom"/>
+    <meta name="author" content="Tim Lyakhovetskiy"/>
+
     <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico"/>
     <link href='http://fonts.googleapis.com/css?family=Cabin:500,500italic,700,700italic' rel='stylesheet'
           type='text/css'>
@@ -22,7 +22,7 @@
     <!-- Latest compiled and minified JavaScript -->
     <script src="http://netdna.bootstrapcdn.com/bootstrap/3.0.3/js/bootstrap.min.js"></script>
     <script src="js/game/game_constants.js"></script>
-    <script src="js/engine/ObjectId.js"></script>
+    <script src="js/engine/object_id.js"></script>
     <script src="js/engine/utils.js"></script>
     <script src="js/engine/object_cache.js"></script>
     <script src="js/engine/vector3.js"></script>
@@ -63,7 +63,7 @@
 
 
     function timer() {
-            curTime = new Date().getTime();
+        curTime = performance.now();
             lastFrameTime = (curTime - prevTime);
             prevTime = curTime;
 

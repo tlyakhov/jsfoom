@@ -1,6 +1,6 @@
 function ObjectCache(size, constr) {
     this.size = size;
-    this.cache = [];
+    this.cache = Array();
     this.index = 0;
 
     for (var i = 0; i < size; i++) {

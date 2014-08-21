@@ -91,14 +91,15 @@ Material.prototype.sample = function (slice, x, y, scaledHeight) {
         y = y + Math.sin(renderer.frame * GAME_CONSTANTS.liquidChurnSpeed * deg2rad) * GAME_CONSTANTS.liquidChurnSize;
     }
 
-    while (x < 0)
-        x += 1.0;
+    if (x < 0)
+        x = fast_floor(x) - x;
+    else if (x >= 1.0)
+        x -= fast_floor(x);
 
-    while (y < 0)
-        y += 1.0;
-
-    x -= fast_floor(x);
-    y -= fast_floor(y);
+    if (y < 0)
+        y = fast_floor(y) - y;
+    else if (y >= 1.0)
+        y -= fast_floor(y);
 
     //if (!this.renderAsSky)
     //this.shadows(slice, slice.sector, {}); // Shadows are SLOW
@@ -119,7 +120,9 @@ Material.prototype.sample = function (slice, x, y, scaledHeight) {
 
     vec3normalize(vec3sub(slice.world, map.player.pos, v), v);
 
-    for (var i = 0; i < slice.lights.length; i++) {
+    var i = slice.lights.length;
+
+    while (i--) {
         var light = slice.lights[i];
 
         //if(!light.marked)

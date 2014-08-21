@@ -253,7 +253,7 @@ var testMap = new Map({
             floorOx: 0, floorOy: 0, floorMx: 1, floorMy: 1, floorRot: 0,
             ceilOx: 0, ceilOy: 0, ceilMx: 1, ceilMy: 1, ceilRot: 0,
             entities: [
-                new LightEntity({ pos: vec3create(-240, 0, -30), diffuse: vec3create(0.1, 1.0, 0.1) })
+                new LightEntity({ pos: vec3create(-240, 0, -30), strength: 50, diffuse: vec3create(0.1, 1.0, 0.1) })
             ],
             segments: [
                 new MapSegment({ ax: -180, ay: -30,
@@ -286,6 +286,9 @@ var testMap = new Map({
             flags: 0,
             floorOx: 0, floorOy: 0, floorMx: 1, floorMy: 1, floorRot: 0,
             ceilOx: 0, ceilOy: 0, ceilMx: 1, ceilMy: 1, ceilRot: 0,
+            entities: [
+                new LightEntity({ pos: vec3create(-240, -100, -30), strength: 50, diffuse: vec3create(0.1, 1.0, 0.1) })
+            ],
             segments: [
                 new MapSegment({ ax: -180, ay: -30,
                     midMaterialId: null,
@@ -309,6 +312,9 @@ var testMap = new Map({
             flags: 0,
             floorOx: 0, floorOy: 0, floorMx: 1, floorMy: 1, floorRot: 0,
             ceilOx: 0, ceilOy: 0, ceilMx: 1, ceilMy: 1, ceilRot: 0,
+            entities: [
+                new LightEntity({ pos: vec3create(-240, 100, -30), strength: 50, diffuse: vec3create(0.1, 1.0, 0.1) })
+            ],
             segments: [
                 new MapSegment({ ax: -180, ay: 30,
                     midMaterialId: null,

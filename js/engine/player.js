@@ -43,6 +43,6 @@ Player.prototype.hurt = function (amount) {
 };
 
 Player.prototype.move = function (angle, lastFrameTime) {
-    this.velX += Math.cos(angle * deg2rad) * GAME_CONSTANTS.playerSpeed;
-    this.velY += Math.sin(angle * deg2rad) * GAME_CONSTANTS.playerSpeed;
+    this.vel[0] += Math.cos(angle * deg2rad) * GAME_CONSTANTS.playerSpeed;
+    this.vel[1] += Math.sin(angle * deg2rad) * GAME_CONSTANTS.playerSpeed;
 }

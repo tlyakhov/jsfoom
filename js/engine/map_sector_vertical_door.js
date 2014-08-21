@@ -21,12 +21,12 @@ MapSectorVerticalDoor.prototype.frame = function (lastFrameTime) {
     if (this.topZ > this.oTopZ)
         this.topZ = this.oTopZ;
 
-    this.velZ = -3.0;
+    this.velZ = -3.0
 };
 
 MapSectorVerticalDoor.prototype.actOnEntity = function (entity) {
     this.parent.actOnEntity.call(this, entity);
 
-    if (distance2D(this.centerX, this.centerY, entity.pos[0], entity.pos[1]) < 50.0)
+    if (distance2D(this.centerX, this.centerY, entity.pos[0], entity.pos[1]) < 100.0)
         this.velZ = 3.0;
 };

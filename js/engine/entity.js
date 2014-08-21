@@ -5,9 +5,7 @@ function Entity(options) {
     this.width = 64.0;
     this.height = 64.0;
     this.angle = 0.0;
-    this.velX = 0.0;
-    this.velY = 0.0;
-    this.velZ = 0.0;
+    this.vel = vec3blank(false);
     this.type = null;
     this.renderable = true;
     this.hurtTime = 0;
@@ -47,12 +45,10 @@ Entity.prototype.getSprite = function (angle) {
 Entity.prototype.collide = function (frameScale) {
     var stopStepping = false;
 
-    var vv = Math.sqrt(sqr(this.velX) + sqr(this.velY)) * frameScale;
+    var vv = Math.sqrt(sqr(this.vel[0]) + sqr(this.vel[1])) * frameScale;
     var steps = Math.max(fast_floor(vv / GAME_CONSTANTS.collisionCheck), 1);
     for (var step = 0; step < steps; step++) {
-        this.pos[0] += this.velX * frameScale / steps;
-        this.pos[1] += this.velY * frameScale / steps;
-        this.pos[2] += this.velZ * frameScale / steps;
+        vec3add(this.pos, vec3mul(this.vel, frameScale / steps, vec3blank(true)), this.pos);
 
         for (var i = 0; i < this.sector.segments.length; i++) {
             var segment = this.sector.segments[i];
@@ -70,14 +66,14 @@ Entity.prototype.collide = function (frameScale) {
 
                 if (this.collisionResponse == 'stop') {
                     stopStepping = true;
-                    this.velX = 0;
-                    this.velY = 0;
+                    this.vel[0] = 0;
+                    this.vel[1] = 0;
                 }
                 else if (this.collisionResponse == 'bounce') {
                     stopStepping = true;
-                    var dot = this.velX * segment.normalX + this.velY * segment.normalY;
-                    this.velX = this.velX - 2 * dot * segment.normalX;
-                    this.velY = this.velY - 2 * dot * segment.normalY;
+                    var dot = this.vel[0] * segment.normalX + this.vel[1] * segment.normalY;
+                    this.vel[0] = this.vel[0] - 2 * dot * segment.normalX;
+                    this.vel[1] = this.vel[1] - 2 * dot * segment.normalY;
                     break;
                 }
                 else {
@@ -94,7 +90,7 @@ Entity.prototype.frame = function (lastFrameTime) {
     if (this.sector) {
         var frameScale = lastFrameTime / 10.0;
 
-        if (Math.abs(this.velX) > GAME_CONSTANTS.velocityEpsilon || Math.abs(this.velY) > GAME_CONSTANTS.velocityEpsilon || Math.abs(this.velZ) > GAME_CONSTANTS.velocityEpsilon) {
+        if (Math.abs(this.vel[0]) > GAME_CONSTANTS.velocityEpsilon || Math.abs(this.vel[1]) > GAME_CONSTANTS.velocityEpsilon || Math.abs(this.vel[2]) > GAME_CONSTANTS.velocityEpsilon) {
             this.collide(frameScale);
         }
     }

@@ -114,7 +114,7 @@ MapSector.prototype.collide = function (entity) {
         entity.pos[2] = entity.sector.topZ - entity.height - 1.0;
     }
     else if (!this.floorTargetSectorId && entity.pos[2] <= this.bottomZ) {
-        entity.velZ = 0;
+        entity.vel[2] = 0;
         entity.pos[2] = this.bottomZ;
     }
 
@@ -125,7 +125,7 @@ MapSector.prototype.collide = function (entity) {
         entity.pos[2] = entity.sector.bottomZ - entity.height + 1.0;
     }
     else if (!this.ceilTargetSectorId && entityTop >= this.topZ) {
-        entity.velZ = 0;
+        entity.vel[2] = 0;
         entity.pos[2] = this.topZ - entity.height - 1.0;
     }
 
@@ -152,18 +152,18 @@ MapSector.prototype.actOnEntity = function (entity) {
         return;
 
     if (entity.constructor == Player) {
-        entity.velX = 0;
-        entity.velY = 0;
+        entity.vel[0] = 0;
+        entity.vel[1] = 0;
     }
 
-    entity.velZ -= GAME_CONSTANTS.gravity;
+    entity.vel[2] -= GAME_CONSTANTS.gravity;
 
     this.collide(entity);
 };
 
 MapSector.prototype.onEnter = function (entity) {
     if (!this.floorTargetSectorId && entity.pos[2] <= entity.sector.bottomZ) {
-        entity.velZ = 0;
+        entity.vel[2] = 0;
         entity.pos[2] = entity.sector.bottomZ;
     }
 };

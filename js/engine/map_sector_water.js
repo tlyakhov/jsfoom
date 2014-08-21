@@ -14,12 +14,12 @@ MapSectorWater.prototype.actOnEntity = function (entity) {
         return;
 
     if (entity.constructor == Player) {
-        entity.velX /= GAME_CONSTANTS.swimDamping;
-        entity.velY /= GAME_CONSTANTS.swimDamping;
+        entity.vel[0] /= GAME_CONSTANTS.swimDamping;
+        entity.vel[1] /= GAME_CONSTANTS.swimDamping;
     }
 
-    entity.velZ /= GAME_CONSTANTS.swimDamping;
-    entity.velZ -= GAME_CONSTANTS.gravitySwim;
+    entity.vel[2] /= GAME_CONSTANTS.swimDamping;
+    entity.vel[2] -= GAME_CONSTANTS.gravitySwim;
 
     this.collide(entity);
 };
