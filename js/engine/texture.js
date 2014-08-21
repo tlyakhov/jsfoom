@@ -126,7 +126,7 @@ Texture.prototype.sample = function (x, y, scaledHeight) {
     }
 
     if (!data || data.length == 0 || width <= 0 || height <= 0)
-        return;
+        return 255 << 24;
 
     var fx = fast_floor(x * width);
     var fy = fast_floor(y * height);

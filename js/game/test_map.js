@@ -102,8 +102,9 @@ var testMap = new Map({
             floorOx: 0, floorOy: 0, floorMx: 1, floorMy: 1, floorRot: 0,
             ceilOx: 0, ceilOy: 0, ceilMx: 1, ceilMy: 1, ceilRot: 0,
             entities: [
-                new StaticEntity({ sprites: testMonsterSprites, x: -17, y: 68, z: 0, height: 60, zOffset: -13.0 }),
-                new StaticEntity({ sprites: testMonsterSprites, x: 32, y: 68, z: 0, height: 60, zOffset: -13.0 })
+                new StaticEntity({ sprites: testMonsterSprites, pos: vec3create(-17, 68, 0), height: 60, zOffset: -13.0 }),
+                new StaticEntity({ sprites: testMonsterSprites, pos: vec3create(32, 68, 0), height: 60, zOffset: -13.0 }),
+                new LightEntity({ pos: vec3create(0, 68, 32) })
             ],
             segments: [
                 new MapSegment({ ax: -100, ay: 100,
@@ -251,6 +252,9 @@ var testMap = new Map({
             flags: 0,
             floorOx: 0, floorOy: 0, floorMx: 1, floorMy: 1, floorRot: 0,
             ceilOx: 0, ceilOy: 0, ceilMx: 1, ceilMy: 1, ceilRot: 0,
+            entities: [
+                new LightEntity({ pos: vec3create(-240, 0, -30), diffuse: vec3create(0.1, 1.0, 0.1) })
+            ],
             segments: [
                 new MapSegment({ ax: -180, ay: -30,
                     midMaterialId: null,

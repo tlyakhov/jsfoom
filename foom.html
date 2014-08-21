@@ -24,6 +24,7 @@
     <script src="js/game/game_constants.js"></script>
     <script src="js/engine/ObjectId.js"></script>
     <script src="js/engine/utils.js"></script>
+    <script src="js/engine/object_cache.js"></script>
     <script src="js/engine/vector3.js"></script>
     <script src="js/engine/texture.js"></script>
     <script src="js/engine/texture_cache.js"></script>
@@ -38,8 +39,8 @@
     <script src="js/engine/light_entity.js"></script>
     <script src="js/engine/player.js"></script>
     <script src="js/engine/map.js"></script>
-    <script src="js/engine/renderer.js"></script>
     <script src="js/engine/render_slice.js"></script>
+    <script src="js/engine/renderer.js"></script>
     <script src="js/game/game_sprite_sets.js"></script>
     <script src="js/game/test_map.js"></script>
     <script src="js/input.js"></script>
@@ -53,35 +54,37 @@
     var prevTime = new Date().getTime();
     var curTime = new Date().getTime();
     var lastFrameTime = 0;
+    var globalCanvas = document.getElementById('renderCanvas');
+    var globalCtx = globalCanvas.getContext('2d');
+    var globalImgData = globalCtx.createImageData(renderer.screenWidth, renderer.screenHeight);
+    var globalRenderBuffer = new ArrayBuffer(globalImgData.data.length);
+    var globalRenderBuffer8 = new Uint8ClampedArray(globalRenderBuffer);
+    var globalRenderTarget = new Uint32Array(globalRenderBuffer);
 
-    function init() {
-        var canvas = document.getElementById('renderCanvas');
-        var ctx = canvas.getContext('2d');
-        var imgData = ctx.createImageData(renderer.screenWidth, renderer.screenHeight);
-        var renderBuffer = new ArrayBuffer(imgData.data.length);
-        var renderBuffer8 = new Uint8ClampedArray(renderBuffer);
-        var renderTarget = new Uint32Array(renderBuffer);
 
-        setInterval(function () {
+    function timer() {
             curTime = new Date().getTime();
             lastFrameTime = (curTime - prevTime);
             prevTime = curTime;
 
-            renderer.render(renderTarget);
-            imgData.data.set(renderBuffer8);
-            ctx.putImageData(imgData, 0, 0);
+        renderer.render(globalRenderTarget);
+        globalImgData.data.set(globalRenderBuffer8);
+        globalCtx.putImageData(globalImgData, 0, 0);
 
-            ctx.fillStyle = '#FFF';
-            ctx.fillText('FPS: ' + Math.round(1000.0 / lastFrameTime), 5, 15);
-            ctx.fillText('Current sector: ' + map.player.sector.id +
-                    ', x: ' + Math.round(map.player.x) +
-                    ', y: ' + Math.round(map.player.y) +
-                    ', z: ' + Math.round(map.player.z), 5, 25);
-            ctx.fillText('Health: ' + map.player.health, 5, 35);
+        globalCtx.fillStyle = '#FFF';
+        globalCtx.fillText('FPS: ' + Math.round(1000.0 / lastFrameTime), 5, 15);
+        globalCtx.fillText('Current sector: ' + map.player.sector.id +
+                ', x: ' + Math.round(map.player.pos[0]) +
+                ', y: ' + Math.round(map.player.pos[1]) +
+                ', z: ' + Math.round(map.player.pos[2]), 5, 25);
+        globalCtx.fillText('Health: ' + map.player.health, 5, 35);
             checkInput();
 
             map.frame(lastFrameTime);
-        }, 1);
+    }
+
+    function init() {
+        setInterval(timer, 1);
     }
 
 </script>

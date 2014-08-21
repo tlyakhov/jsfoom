@@ -1,9 +1,7 @@
 function Entity(options) {
     this.map = null;
     this.sector = null;
-    this.x = 0.0;
-    this.y = 0.0;
-    this.z = 0.0;
+    this.pos = vec3create(0.0, 0.0, 0.0);
     this.width = 64.0;
     this.height = 64.0;
     this.angle = 0.0;
@@ -11,6 +9,7 @@ function Entity(options) {
     this.velY = 0.0;
     this.velZ = 0.0;
     this.type = null;
+    this.renderable = true;
     this.hurtTime = 0;
     this.boundingRadius = 10.0;
     this.collisionResponse = 'slide'; // can be 'slide', 'bounce', or 'stop'
@@ -29,14 +28,14 @@ function Entity(options) {
 }
 
 Entity.prototype.angleTo = function (x, y) {
-    var dx = this.x - x;
-    var dy = this.y - y;
+    var dx = this.pos[0] - x;
+    var dy = this.pos[1] - y;
 
     return Math.atan2(dy, dx) * rad2deg + 180.0;
 };
 
 Entity.prototype.distanceTo = function (x, y) {
-    return Math.sqrt(sqr(x - this.x) + sqr(y - this.y));
+    return Math.sqrt(sqr(x - this.pos[0]) + sqr(y - this.pos[1]));
 };
 
 Entity.prototype.getSprite = function (angle) {
@@ -51,8 +50,9 @@ Entity.prototype.collide = function (frameScale) {
     var vv = Math.sqrt(sqr(this.velX) + sqr(this.velY)) * frameScale;
     var steps = Math.max(fast_floor(vv / GAME_CONSTANTS.collisionCheck), 1);
     for (var step = 0; step < steps; step++) {
-        this.x += this.velX * frameScale / steps;
-        this.y += this.velY * frameScale / steps;
+        this.pos[0] += this.velX * frameScale / steps;
+        this.pos[1] += this.velY * frameScale / steps;
+        this.pos[2] += this.velZ * frameScale / steps;
 
         for (var i = 0; i < this.sector.segments.length; i++) {
             var segment = this.sector.segments[i];
@@ -60,13 +60,13 @@ Entity.prototype.collide = function (frameScale) {
             if (segment.getAdjacentSector())
                 continue;
 
-            var d = segment.distanceToPoint2(this.x, this.y);
+            var d = segment.distanceToPoint2(this.pos[0], this.pos[1]);
 
             if (d < sqr(this.boundingRadius)) {
                 d = Math.sqrt(d);
-                var side = segment.whichSide(this.x, this.y);
-                this.x -= segment.normalX * side * (this.boundingRadius - d);
-                this.y -= segment.normalY * side * (this.boundingRadius - d);
+                var side = segment.whichSide(this.pos[0], this.pos[1]);
+                this.pos[0] -= segment.normalX * side * (this.boundingRadius - d);
+                this.pos[1] -= segment.normalY * side * (this.boundingRadius - d);
 
                 if (this.collisionResponse == 'stop') {
                     stopStepping = true;
@@ -94,9 +94,7 @@ Entity.prototype.frame = function (lastFrameTime) {
     if (this.sector) {
         var frameScale = lastFrameTime / 10.0;
 
-        this.z += this.velZ * frameScale;
-
-        if (Math.abs(this.velX) > GAME_CONSTANTS.velocityEpsilon || Math.abs(this.velY) > GAME_CONSTANTS.velocityEpsilon) {
+        if (Math.abs(this.velX) > GAME_CONSTANTS.velocityEpsilon || Math.abs(this.velY) > GAME_CONSTANTS.velocityEpsilon || Math.abs(this.velZ) > GAME_CONSTANTS.velocityEpsilon) {
             this.collide(frameScale);
         }
     }
@@ -109,16 +107,16 @@ Entity.prototype.hurt = function (amount) {
 };
 
 Entity.prototype.updateSector = function () {
-    if (this.sector && this.sector.isPointInside(this.x, this.y))
+    if (this.sector && this.sector.isPointInside(this.pos[0], this.pos[1]))
         return true;
 
     for (var i = 0; i < this.map.sectors.length; i++) {
         var sector = this.map.sectors[i];
 
-        if (sector.topZ - sector.bottomZ < this.boundingRadius * 2 || sector.bottomZ - this.z > this.mountHeight)
+        if (sector.topZ - sector.bottomZ < this.boundingRadius * 2 || sector.bottomZ - this.pos[2] > this.mountHeight)
             continue;
 
-        if (sector.isPointInside(this.x, this.y)) {
+        if (sector.isPointInside(this.pos[0], this.pos[1])) {
             if (this.sector)
                 this.sector.onExit(this);
             this.sector = sector;
@@ -126,21 +124,6 @@ Entity.prototype.updateSector = function () {
             return true;
         }
     }
-
-
-    /*for (var i = 0; i < this.sector.segments.length; i++) {
-     var segment = this.sector.segments[i];
-        var adj = segment.getAdjacentSector();
-        if (adj && adj.isPointInside(this.x, this.y)) {
-            if (adj.topZ - adj.bottomZ < this.height || adj.bottomZ - this.z > this.mountHeight)
-                continue;
-
-            this.sector.onExit(this);
-            this.sector = segment.getAdjacentSector();
-            this.sector.onEnter(this);
-            return true;
-        }
-     }*/
 
     return false;
 };

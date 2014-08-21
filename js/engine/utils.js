@@ -24,7 +24,7 @@ function distance2D(x1, y1, x2, y2) {
 function colorTint(target, tint) {
     if (tint == 0)
         return target;
-    if ((tint >> 24) & 0xFF == 0xFF)
+    if (((tint >> 24) & 0xFF) == 0xFF)
         return tint;
 
     var ta = ((target >> 24) & 0xFF);

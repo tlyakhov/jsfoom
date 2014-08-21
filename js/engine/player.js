@@ -9,6 +9,7 @@ function Player(options) {
     this.boundingRadius = GAME_CONSTANTS.playerBoundingRadius;
     this.standing = true;
     this.crouching = false;
+    this.renderable = false;
 
     $.extend(true, this, options);
     this.updateSector();
@@ -17,7 +18,7 @@ function Player(options) {
 Player.prototype.frame = function (lastFrameTime) {
     this.parent.frame.call(this, lastFrameTime);
 
-    if (Math.abs(this.z - this.sector.bottomZ) < 0.01)
+    if (Math.abs(this.pos[2] - this.sector.bottomZ) < 0.01)
         this.standing = true;
     else
         this.standing = false;
@@ -30,7 +31,7 @@ Player.prototype.frame = function (lastFrameTime) {
     }
 
     if (this.hurtTime > 0) {
-        renderer.frameTint = 255 | ((this.hurtTime * 200 / GAME_CONSTANTS.playerHurtTime) & 0xFF) << 24;
+        renderer.frameTint = 255 | ((fast_floor(this.hurtTime * 200 / GAME_CONSTANTS.playerHurtTime) & 0xFF) << 24);
         this.hurtTime--;
     }
 };

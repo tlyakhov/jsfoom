@@ -95,25 +95,22 @@ MapSegment.prototype.getAdjacentSegment = function () {
     return this.adjacentSegment;
 };
 
-MapSegment.prototype.intersect = function (s2) {
-    var denom = -1.0;
-    var r = -1.0;
-    var s = -1.0;
+MapSegment.prototype.intersect = function (s2ax, s2ay, s2bx, s2by) {
     var s1 = this;
     var s1dx = s1.bx - s1.ax;
     var s1dy = s1.by - s1.ay;
-    var s2dx = s2.bx - s2.ax;
-    var s2dy = s2.by - s2.ay;
+    var s2dx = s2bx - s2ax;
+    var s2dy = s2by - s2ay;
 
-    denom = s1dx * s2dy - s2dx * s1dy;
+    var denom = s1dx * s2dy - s2dx * s1dy;
     if (denom == 0)
         return undefined;
-    r = (s1.ay - s2.ay) * s2dx - (s1.ax - s2.ax) * s2dy;
+    var r = (s1.ay - s2ay) * s2dx - (s1.ax - s2ax) * s2dy;
     if (denom <= 0 && r >= 0)
         return undefined;
     if (denom > 0 && r < 0)
         return undefined;
-    s = (s1.ay - s2.ay) * s1dx - (s1.ax - s2.ax) * s1dy;
+    var s = (s1.ay - s2ay) * s1dx - (s1.ax - s2ax) * s1dy;
     if (denom <= 0 && s >= 0)
         return undefined;
     if (denom > 0 && s < 0)
@@ -123,14 +120,14 @@ MapSegment.prototype.intersect = function (s2) {
     if (r > 1.0 || s > 1.0)
         return undefined;
 
-    return new Vector3(s1.ax + r * s1dx, s1.ay + r * s1dy, 0.0);
+    return vec3create(s1.ax + r * s1dx, s1.ay + r * s1dy, 0.0, true);
 };
 
 /*MapSegment.prototype.distanceToPoint = function (x, y) {
  var dx = (this.bx - this.ax);
-    var dy = (this.by - this.ay);
+ var dy = (this.by - this.ay);
 
-    return (dy * x - dx * y - this.ax * this.by + this.bx * this.ay) /
+ return (dy * x - dx * y - this.ax * this.by + this.bx * this.ay) /
  Math.sqrt(sqr(dx) + sqr(dy));
  };*/
 
@@ -156,12 +153,3 @@ MapSegment.prototype.whichSide = function (x, y) {
 
     return sign(dy * x - dx * y - this.ax * this.by + this.bx * this.ay);
 };
-
-function Ray(ax, ay, bx, by) {
-    this.ax = ax;
-    this.ay = ay;
-    this.bx = bx;
-    this.by = by;
-}
-
-Ray.prototype.intersect = MapSegment.prototype.intersect;

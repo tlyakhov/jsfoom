@@ -17,7 +17,7 @@ function RenderSlice() {
 }
 
 RenderSlice.prototype.clone = function () {
-    var s = new RenderSlice();
+    var s = _renderSliceCache.get();
 
     s.renderTarget = this.renderTarget;
     s.x = this.x;
@@ -37,3 +37,7 @@ RenderSlice.prototype.clone = function () {
 
     return s;
 };
+
+var _renderSliceCache = new ObjectCache(500, function () {
+    return new RenderSlice();
+});

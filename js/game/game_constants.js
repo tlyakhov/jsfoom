@@ -1,5 +1,6 @@
 var GAME_CONSTANTS = {
     velocityEpsilon: 0.00001,
+    lightAttenuationEpsilon: 0.001,
     maxViewDistance: 1000000.0,
     fieldOfView: 75,
     gravity: 0.3,

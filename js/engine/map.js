@@ -14,7 +14,7 @@ function Map(options) {
         this.materials[i].map = this;
     }
 
-    this.player = new Player({ x: this.spawnX, y: this.spawnY, angle: 45, map: this });
+    this.player = new Player({ pos: vec3create(this.spawnX, this.spawnY, 0.0), angle: 45, map: this });
 
 }
 

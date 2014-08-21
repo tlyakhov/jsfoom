@@ -105,26 +105,28 @@ MapSector.prototype.frame = function (lastFrameTime) {
 };
 
 MapSector.prototype.collide = function (entity) {
-    if (this.floorTargetSectorId && entity.z + entity.height <= this.bottomZ) {
+    var entityTop = entity.pos[2] + entity.height;
+
+    if (this.floorTargetSectorId && entityTop <= this.bottomZ) {
         entity.sector.onExit(entity);
         entity.sector = this.map.getSector(this.floorTargetSectorId);
         entity.sector.onEnter(entity);
-        entity.z = entity.sector.topZ - entity.height - 1.0;
+        entity.pos[2] = entity.sector.topZ - entity.height - 1.0;
     }
-    else if (!this.floorTargetSectorId && entity.z <= this.bottomZ) {
+    else if (!this.floorTargetSectorId && entity.pos[2] <= this.bottomZ) {
         entity.velZ = 0;
-        entity.z = this.bottomZ;
+        entity.pos[2] = this.bottomZ;
     }
 
-    if (this.ceilTargetSectorId && entity.z + entity.height > this.topZ) {
+    if (this.ceilTargetSectorId && entityTop > this.topZ) {
         entity.sector.onExit(entity);
         entity.sector = this.map.getSector(this.ceilTargetSectorId);
         entity.sector.onEnter(entity);
-        entity.z = entity.sector.bottomZ - entity.height + 1.0;
+        entity.pos[2] = entity.sector.bottomZ - entity.height + 1.0;
     }
-    else if (!this.ceilTargetSectorId && entity.z + entity.height >= this.topZ) {
+    else if (!this.ceilTargetSectorId && entityTop >= this.topZ) {
         entity.velZ = 0;
-        entity.z = this.topZ - entity.height - 1.0;
+        entity.pos[2] = this.topZ - entity.height - 1.0;
     }
 
     if (this.hurt > 0 && entity.hurtTime == 0)
@@ -132,13 +134,13 @@ MapSector.prototype.collide = function (entity) {
 
     var fm = this.getFloorMaterial();
 
-    if (fm.hurt > 0 && entity.z <= this.bottomZ && entity.hurtTime == 0) {
+    if (fm.hurt > 0 && entity.pos[2] <= this.bottomZ && entity.hurtTime == 0) {
         entity.hurt(fm.hurt);
     }
 
     var cm = this.getCeilMaterial();
 
-    if (cm.hurt > 0 && entity.z + entity.height >= this.topZ && entity.hurtTime == 0) {
+    if (cm.hurt > 0 && entityTop >= this.topZ && entity.hurtTime == 0) {
         entity.hurt(cm.hurt);
     }
 
@@ -160,9 +162,9 @@ MapSector.prototype.actOnEntity = function (entity) {
 };
 
 MapSector.prototype.onEnter = function (entity) {
-    if (!this.floorTargetSectorId && entity.z <= entity.sector.bottomZ) {
+    if (!this.floorTargetSectorId && entity.pos[2] <= entity.sector.bottomZ) {
         entity.velZ = 0;
-        entity.z = entity.sector.bottomZ;
+        entity.pos[2] = entity.sector.bottomZ;
     }
 };
 

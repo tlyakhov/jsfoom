@@ -1,52 +1,100 @@
-function Vector3(x, y, z) {
-    this.x = x ? x : 0.0;
-    this.y = y ? y : 0.0;
-    this.z = z ? z : 0.0;
+// Not very OOP, but EXTREMELY fast for JS
+var _vec3pool = new ObjectCache(15000, function () {
+    return new Float32Array(3);
+});
+
+function vec3create(x, y, z, pool) {
+    var v = null;
+
+    if (pool)
+        v = _vec3pool.get();
+    else
+        v = new Float32Array(3);
+
+    v[0] = x;
+    v[1] = y;
+    v[2] = z;
+
+    return v;
 }
 
-Vector3.prototype.clone = function () {
-    return new Vector3(this.x, this.y, this.z);
-};
+function vec3blank(pool) {
+    if (pool)
+        return _vec3pool.get();
+    else
+        return new Float32Array(3);
+}
 
-Vector3.prototype.add = function (v2) {
-    return new Vector3(this.x + v2.x, this.y + v2.y, this.z + v2.z);
-};
+function vec3clone(v, pool) {
+    return vec3create(v[0], v[1], v[2], pool);
+}
 
-Vector3.prototype.sub = function (v2) {
-    return new Vector3(this.x - v2.x, this.y - v2.y, this.z - v2.z);
-};
+function vec3add(v, v2, vout) {
+    vout[0] = v[0] + v2[0];
+    vout[1] = v[1] + v2[1];
+    vout[2] = v[2] + v2[2];
 
-Vector3.prototype.mul3 = function (v2) {
-    return new Vector3(this.x * v2.x, this.y * v2.y, this.z * v2.z);
-};
+    return vout;
+}
 
-Vector3.prototype.mul = function (x) {
-    return new Vector3(this.x * x, this.y * x, this.z * x);
-};
+function vec3sub(v, v2, vout) {
+    vout[0] = v[0] - v2[0];
+    vout[1] = v[1] - v2[1];
+    vout[2] = v[2] - v2[2];
 
-Vector3.prototype.getLength = function () {
-    return Math.sqrt(sqr(this.x) + sqr(this.y) + sqr(this.z));
-};
+    return vout;
+}
 
-Vector3.prototype.normalize = function () {
-    var l = this.getLength();
+function vec3mul3(v, v2, vout) {
+    vout[0] = v[0] * v2[0];
+    vout[1] = v[1] * v2[1];
+    vout[2] = v[2] * v2[2];
 
-    if (l == 0.0)
-        return new Vector3(0.0, 0.0, 0.0);
+    return vout;
+}
 
-    return new Vector3(this.x / l, this.y / l, this.z / l);
-};
+function vec3mul(v, x, vout) {
+    vout[0] = v[0] * x;
+    vout[1] = v[1] * x;
+    vout[2] = v[2] * x;
 
-Vector3.prototype.dot = function (v2) {
-    return this.x * v2.x + this.y * v2.y + this.z * v2.z;
-};
+    return vout;
+}
 
-Vector3.prototype.reflect = function (normal) {
-    return normal.mul(2 * this.dot(normal)).sub(this);
-};
+function vec3length(v) {
+    return Math.sqrt(sqr(v[0]) + sqr(v[1]) + sqr(v[2]));
+}
 
-Vector3.prototype.clamp = function (min, max) {
-    return new Vector3(Math.max(min, Math.min(max, this.x)),
-        Math.max(min, Math.min(max, this.y)),
-        Math.max(min, Math.min(max, this.z)));
+function vec3normalize(v, vout) {
+    var l = Math.sqrt(sqr(v[0]) + sqr(v[1]) + sqr(v[2]));
+
+    if (l == 0.0) {
+        vout[0] = 0.0;
+        vout[1] = 0.0;
+        vout[2] = 0.0;
+
+        return vout;
+    }
+
+    vout[0] = v[0] / l;
+    vout[1] = v[1] / l;
+    vout[2] = v[2] / l;
+
+    return vout;
+}
+
+function vec3dot(v, v2) {
+    return v[0] * v2[0] + v[1] * v2[1] + v[2] * v2[2];
+}
+
+function vec3reflect(v, normal, vout) {
+    return vec3sub(vec3mul(normal, 2 * vec3dot(v, normal), vout), v, vout);
+}
+
+function vec3clamp(v, min, max, vout) {
+    vout[0] = Math.max(min, Math.min(max, v[0]));
+    vout[1] = Math.max(min, Math.min(max, v[1]));
+    vout[2] = Math.max(min, Math.min(max, v[2]));
+
+    return vout;
 }
