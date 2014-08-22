@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="content-type" content="text/html;charset=UTF-8"/>
+    <title>jsFoom</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Foom"/>
+    <meta name="keywords" content="foom"/>
+    <meta name="author" content="Tim Lyakhovetskiy"/>
+
+    <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico"/>
+    <link href='http://fonts.googleapis.com/css?family=Cabin:500,500italic,700,700italic' rel='stylesheet'
+          type='text/css'>
+    <link href='http://fonts.googleapis.com/css?family=Roboto+Condensed:300,400,700' rel='stylesheet' type='text/css'>
+    <!-- Latest compiled and minified CSS -->
+    <link rel="stylesheet" href="http://netdna.bootstrapcdn.com/bootstrap/3.0.3/css/bootstrap.min.css">
+    <!-- Optional theme -->
+    <link rel="stylesheet" href="http://netdna.bootstrapcdn.com/bootstrap/3.0.3/css/bootstrap-theme.min.css">
+    <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
+    <script src="https://code.jquery.com/jquery.js"></script>
+    <!-- Latest compiled and minified JavaScript -->
+    <script src="http://netdna.bootstrapcdn.com/bootstrap/3.0.3/js/bootstrap.min.js"></script>
+    <script src="js/game/constants.js"></script>
+    <script src="js/lib/object_id.js"></script>
+    <script src="js/engine/utils.js"></script>
+    <script src="js/engine/object_cache.js"></script>
+    <script src="js/engine/vector3.js"></script>
+    <script src="js/engine/texture.js"></script>
+    <script src="js/engine/texture_cache.js"></script>
+    <script src="js/engine/material.js"></script>
+    <script src="js/engine/map_segment.js"></script>
+    <script src="js/engine/map_sector.js"></script>
+    <script src="js/engine/map_sector_water.js"></script>
+    <script src="js/engine/map_sector_vertical_door.js"></script>
+    <script src="js/engine/sprite.js"></script>
+    <script src="js/engine/entity.js"></script>
+    <script src="js/engine/static_entity.js"></script>
+    <script src="js/engine/light_entity.js"></script>
+    <script src="js/engine/player.js"></script>
+    <script src="js/engine/map.js"></script>
+    <script src="js/engine/render_slice.js"></script>
+    <script src="js/engine/renderer.js"></script>
+    <script src="js/game/sprite_sets.js"></script>
+    <script src="js/game/test_map.js"></script>
+    <script src="js/game/input.js"></script>
+    <script src="js/game/main.js"></script>
+</head>
+<body onload="foomInit();" onkeydown="keyDown(event);return false;" onkeyup="keyUp(event); return false;">
+<canvas id="renderCanvas" width="640" height="360">
+</canvas>
+<script>
+
+
+</script>
+<h1>jsFoom Test</h1>
+
+<p>
+    Controls:
+<ul>
+    <li>Walk Forward: <b>W</b></li>
+    <li>Walk Backward: <b>S</b></li>
+    <li>Turn Left: <b>A</b></li>
+    <li>Turn Right: <b>D</b></li>
+    <li>Jump: <b>SPACE</b></li>
+    <li>Crouch: <b>C</b></li>
+</ul>
+</p>
+</body>
+</html>
