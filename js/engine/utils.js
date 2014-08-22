@@ -1,3 +1,13 @@
+var classes = {};
+
+function createFromName(name, opts) {
+    var o = Object.create(classes[name].prototype);
+
+    classes[name].apply(o, [ opts ]);
+
+    return o;
+}
+
 function fast_floor(v) {
     return v | 0;
 }

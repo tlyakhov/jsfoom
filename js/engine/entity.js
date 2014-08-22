@@ -16,7 +16,6 @@ function Entity(options) {
     this.sprites = {};
     this.zOffset = 0.0;
 
-
     if (options) {
         $.extend(true, this, options);
 
@@ -24,6 +23,8 @@ function Entity(options) {
             this.updateSector();
     }
 }
+
+classes['Entity'] = Entity;
 
 Entity.prototype.angleTo = function (x, y) {
     var dx = this.pos[0] - x;
@@ -122,4 +123,55 @@ Entity.prototype.updateSector = function () {
     }
 
     return false;
+};
+
+Entity.prototype.serialize = function () {
+    var r = {
+        _type: this.constructor.name,
+        pos: this.pos,
+        width: this.width,
+        height: this.height,
+        angle: this.angle,
+        vel: this.vel,
+        type: this.type,
+        renderable: this.renderable,
+        hurtTime: this.hurtTime,
+        boundingRadius: this.boundingRadius,
+        collisionResponse: this.collisionResponse,
+        health: this.health,
+        mountHeight: this.mountHeight,
+        zOffset: this.zOffset,
+        sprites: {}
+    };
+
+    for (var s in this.sprites) {
+        r.sprites[s] = this.sprites[s].serialize();
+    }
+
+    return r;
+};
+
+Entity.deserialize = function (data, map) {
+    var entity = createFromName(data._type, {
+        pos: data.pos,
+        width: data.width,
+        height: data.height,
+        angle: data.angle,
+        vel: data.vel,
+        type: data.type,
+        renderable: data.renderable,
+        hurtTime: data.hurtTime,
+        boundingRadius: data.boundingRadius,
+        collisionResponse: data.collisionResponse,
+        health: data.health,
+        mountHeight: data.mountHeight,
+        zOffset: data.zOffset,
+        map: map
+    });
+
+    for (var s in data.sprites) {
+        entity.sprites[s] = Sprite.deserialize(data.sprites[s]);
+    }
+
+    return entity;
 };

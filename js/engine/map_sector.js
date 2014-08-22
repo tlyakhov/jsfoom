@@ -14,25 +14,17 @@ function MapSector(options) {
     this.centerY = 0.0;
     this.floorScale = 64.0;
     this.ceilScale = 64.0;
-    this.floorOx = 0;
-    this.floorOy = 0;
-    this.floorMx = 0;
-    this.floorMy = 0;
-    this.floorRot = 0;
-    this.ceilOx = 0;
-    this.ceilOy = 0;
-    this.ceilMx = 0;
-    this.ceilMy = 0;
-    this.ceilRot = 0;
-    this.flags = 0;
     this.hurt = 0;
     this.floorTargetSectorId = null;
     this.ceilTargetSectorId = null;
 
     $.extend(true, this, options);
 
-    this.update();
+    if (this.segments.length > 0)
+        this.update();
 }
+
+classes['MapSector'] = MapSector;
 
 MapSector.prototype.update = function () {
     this.centerX = 0.0;
@@ -169,4 +161,62 @@ MapSector.prototype.onEnter = function (entity) {
 };
 
 MapSector.prototype.onExit = function (entity) {
+};
+
+MapSector.prototype.serialize = function () {
+    var r = {
+        _type: this.constructor.name,
+        id: this.id,
+        bottomZ: this.bottomZ,
+        topZ: this.topZ,
+        floorMaterialId: this.floorMaterialId,
+        ceilMaterialId: this.ceilMaterialId,
+        centerX: this.centerX,
+        centerY: this.centerY,
+        floorScale: this.floorScale,
+        ceilScale: this.ceilScale,
+        hurt: this.hurt,
+        floorTargetSectorId: this.floorTargetSectorId,
+        ceilTargetSectorId: this.ceilTargetSectorId,
+        segments: [],
+        entities: []
+    };
+
+    for (var i = 0; i < this.segments.length; i++) {
+        r.segments.push(this.segments[i].serialize());
+    }
+
+    for (var i = 0; i < this.entities.length; i++) {
+        r.entities.push(this.entities[i].serialize());
+    }
+
+    return r;
+};
+
+MapSector.deserialize = function (data, map) {
+    var mapSector = createFromName(data._type, {
+        id: data.id,
+        bottomZ: data.bottomZ,
+        topZ: data.topZ,
+        floorMaterialId: data.floorMaterialId,
+        ceilMaterialId: data.ceilMaterialId,
+        centerX: data.centerX,
+        centerY: data.centerY,
+        floorScale: data.floorScale,
+        ceilScale: data.ceilScale,
+        hurt: data.hurt,
+        floorTargetSectorId: data.floorTargetSectorId,
+        ceilTargetSectorId: data.ceilTargetSectorId,
+        map: map
+    });
+
+    for (var i = 0; i < data.segments.length; i++) {
+        mapSector.segments.push(MapSegment.deserialize(data.segments[i], mapSector));
+    }
+
+    for (var i = 0; i < data.entities.length; i++) {
+        mapSector.entities.push(classes[data.entities[i]._type].deserialize(data.entities[i], map));
+    }
+
+    return mapSector;
 };

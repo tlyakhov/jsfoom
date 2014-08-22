@@ -12,8 +12,9 @@ function Player(options) {
     this.renderable = false;
 
     $.extend(true, this, options);
-    this.updateSector();
 }
+
+classes['Player'] = Player;
 
 Player.prototype.frame = function (lastFrameTime) {
     this.parent.frame.call(this, lastFrameTime);
@@ -45,4 +46,10 @@ Player.prototype.hurt = function (amount) {
 Player.prototype.move = function (angle, lastFrameTime) {
     this.vel[0] += Math.cos(angle * deg2rad) * GAME_CONSTANTS.playerSpeed;
     this.vel[1] += Math.sin(angle * deg2rad) * GAME_CONSTANTS.playerSpeed;
-}
+};
+
+Player.deserialize = function (data, map) {
+    var player = Entity.deserialize(data, map);
+
+    return player;
+};

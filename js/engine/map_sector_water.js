@@ -8,6 +8,7 @@ function MapSectorWater(options) {
     $.extend(true, this, options);
 }
 
+classes['MapSectorWater'] = MapSectorWater;
 
 MapSectorWater.prototype.actOnEntity = function (entity) {
     if (entity.sector.id != this.id)
@@ -36,4 +37,8 @@ MapSectorWater.prototype.onExit = function (entity) {
 
     if (entity.constructor == Player)
         renderer.frameTint = 0;
+};
+
+MapSectorWater.deserialize = function (data, map) {
+    return MapSector.deserialize(data, map);
 };

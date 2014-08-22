@@ -7,6 +7,7 @@ function Texture(options) {
     this.data = [];
     this.mipmaps = [];
     this.smallestMipmap = null;
+    this.onLoad = null;
 
     $.extend(true, this, options);
 
@@ -14,37 +15,44 @@ function Texture(options) {
 }
 
 Texture.prototype.reload = function () {
-    var img = new Image();
-    img.crossOrigin = '';
-    img.onload = $.proxy(function (evt) {
-        this.loaded(img, evt);
-    }, this);
-    img.src = this.src;
-    img.onerror = $.proxy(function () {
+    if (globalWorkerId == undefined) {
         var img = new Image();
         img.crossOrigin = '';
         img.onload = $.proxy(function (evt) {
             this.loaded(img, evt);
         }, this);
-        img.src = 'data/bricks.png';
-    }, this);
+        img.src = this.src;
+        img.onerror = $.proxy(function () {
+            var img = new Image();
+            img.crossOrigin = '';
+            img.onload = $.proxy(function (evt) {
+                this.loaded(img, evt);
+            }, this);
+            img.src = 'data/bricks.png';
+        }, this);
+    }
+    else {
+        postMessage({ id: globalWorkerId, type: 'getTextureData', texture: this.serialize() });
+    }
 };
 
 Texture.prototype.loaded = function (img, evt) {
-    var canvas = document.createElement("canvas");
-    this.width = canvas.width = img.width;
-    this.height = canvas.height = img.height;
-    var ctx = canvas.getContext("2d");
-    ctx.drawImage(img, 0, 0);
-    var imgData = ctx.getImageData(0, 0, this.width, this.height);
-    this.data = new Uint32Array(this.width * this.height);
+    if (globalWorkerId == undefined) {
+        var canvas = document.createElement("canvas");
+        this.width = canvas.width = img.width;
+        this.height = canvas.height = img.height;
+        var ctx = canvas.getContext("2d");
+        ctx.drawImage(img, 0, 0);
+        var imgData = ctx.getImageData(0, 0, this.width, this.height);
+        this.data = new Uint32Array(this.width * this.height);
 
-    for (var i = 0; i < this.width; i++) {
-        for (var j = 0; j < this.height; j++) {
-            this.data[i * this.height + j] = imgData.data[(j * this.width + i) * 4 + 0] |
-                imgData.data[(j * this.width + i) * 4 + 1] << 8 |
-                imgData.data[(j * this.width + i) * 4 + 2] << 16 |
-                imgData.data[(j * this.width + i) * 4 + 3] << 24;
+        for (var i = 0; i < this.width; i++) {
+            for (var j = 0; j < this.height; j++) {
+                this.data[i * this.height + j] = imgData.data[(j * this.width + i) * 4 + 0] |
+                    imgData.data[(j * this.width + i) * 4 + 1] << 8 |
+                    imgData.data[(j * this.width + i) * 4 + 2] << 16 |
+                    imgData.data[(j * this.width + i) * 4 + 3] << 24;
+            }
         }
     }
 
@@ -102,6 +110,9 @@ Texture.prototype.loaded = function (img, evt) {
 
         this.smallestMipmap = prev;
     }
+
+    if (this.onLoad)
+        this.onLoad(this);
 };
 
 Texture.prototype.sample = function (x, y, scaledHeight) {
@@ -158,4 +169,14 @@ Texture.prototype.sample = function (x, y, scaledHeight) {
             ((t10 >> 24) & 0xFF) * wx * (1.0 - wy) +
             ((t01 >> 24) & 0xFF) * (1.0 - wx) * wy +
             ((t11 >> 24) & 0xFF) * wx * wy) & 0xFF) << 24);
+};
+
+Texture.prototype.serialize = function () {
+    return {
+        src: this.src,
+        filter: this.filter,
+        generateMipMaps: this.generateMipMaps,
+        width: this.width,
+        height: this.height
+    };
 };

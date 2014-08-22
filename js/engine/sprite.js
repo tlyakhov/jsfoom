@@ -6,6 +6,8 @@ function Sprite(options) {
     $.extend(true, this, options);
 }
 
+classes['Sprite'] = Sprite;
+
 Sprite.prototype.getTexture = function () {
     if (!this.textureSrc)
         return null;
@@ -14,4 +16,20 @@ Sprite.prototype.getTexture = function () {
         this.texture = textureCache.get(this.textureSrc, true, false);
 
     return this.texture;
+};
+
+Sprite.prototype.serialize = function () {
+    var r = {
+        textureSrc: this.textureSrc,
+        angle: this.angle
+    };
+
+    return r;
+};
+
+Sprite.deserialize = function (data) {
+    var s = new Sprite({ textureSrc: data.textureSrc,
+        angle: data.angle});
+
+    return s;
 };

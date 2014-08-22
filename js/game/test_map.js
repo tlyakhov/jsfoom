@@ -21,9 +21,6 @@ var testMap = new Map({
         new MapSector({ id: 'sector0', bottomZ: 0, topZ: 64,
             floorMaterialId: 'Default Floor',
             ceilMaterialId: 'Sky',
-            flags: 0,
-            floorOx: 0, floorOy: 0, floorMx: 1, floorMy: 1, floorRot: 0,
-            ceilOx: 0, ceilOy: 0, ceilMx: 1, ceilMy: 1, ceilRot: 0,
             segments: [
                 new MapSegment({ ax: -100, ay: -100,
                     midMaterialId: 'Sky',
@@ -52,9 +49,6 @@ var testMap = new Map({
         new MapSector({ id: 'sector1', bottomZ: 0, topZ: 64,
             floorMaterialId: 'Default Floor',
             ceilMaterialId: 'Sky',
-            flags: 0,
-            floorOx: 0, floorOy: 0, floorMx: 1, floorMy: 1, floorRot: 0,
-            ceilOx: 0, ceilOy: 0, ceilMx: 1, ceilMy: 1, ceilRot: 0,
             segments: [
                 new MapSegment({ ax: 100, ay: -30,
                     midMaterialId: null,
@@ -75,9 +69,6 @@ var testMap = new Map({
         new MapSector({ id: 'sector2', bottomZ: -10, topZ: 64,
             floorMaterialId: 'Default Floor',
             ceilMaterialId: 'Sky',
-            flags: 0,
-            floorOx: 0, floorOy: 0, floorMx: 1, floorMy: 1, floorRot: 0,
-            ceilOx: 0, ceilOy: 0, ceilMx: 1, ceilMy: 1, ceilRot: 0,
             segments: [
                 new MapSegment({ ax: -100, ay: -30,
                     midMaterialId: null,
@@ -98,9 +89,6 @@ var testMap = new Map({
         new MapSector({ id: 'sector3', bottomZ: 0, topZ: 64,
             floorMaterialId: 'Default Floor',
             ceilMaterialId: 'Sky',
-            flags: 0,
-            floorOx: 0, floorOy: 0, floorMx: 1, floorMy: 1, floorRot: 0,
-            ceilOx: 0, ceilOy: 0, ceilMx: 1, ceilMy: 1, ceilRot: 0,
             entities: [
                 new StaticEntity({ sprites: testMonsterSprites, pos: vec3create(-17, 68, 0), height: 60, zOffset: -13.0 }),
                 new StaticEntity({ sprites: testMonsterSprites, pos: vec3create(32, 68, 0), height: 60, zOffset: -13.0 }),
@@ -134,9 +122,6 @@ var testMap = new Map({
         new MapSector({ id: 'sector4', bottomZ: -3, topZ: 50,
             floorMaterialId: 'f1',
             ceilMaterialId: 'f5',
-            flags: 0,
-            floorOx: 0, floorOy: 0, floorMx: 1, floorMy: 1, floorRot: 0,
-            ceilOx: 0, ceilOy: 0, ceilMx: 1, ceilMy: 1, ceilRot: 0,
             segments: [
                 new MapSegment({ ax: -30, ay: -30,
                     midMaterialId: null,
@@ -157,9 +142,6 @@ var testMap = new Map({
         new MapSector({ id: 'sector5', bottomZ: -20, topZ: 64,
             floorMaterialId: 'f1',
             ceilMaterialId: 'Sky',
-            flags: 0,
-            floorOx: 0, floorOy: 0, floorMx: 1, floorMy: 1, floorRot: 0,
-            ceilOx: 0, ceilOy: 0, ceilMx: 1, ceilMy: 1, ceilRot: 0,
             segments: [
                 new MapSegment({ ax: -100, ay: -30,
                     midMaterialId: 'Default',
@@ -180,9 +162,6 @@ var testMap = new Map({
         new MapSector({ id: 'sector6', bottomZ: -30, topZ: 64,
             floorMaterialId: 'f1',
             ceilMaterialId: 'Sky',
-            flags: 0,
-            floorOx: 0, floorOy: 0, floorMx: 1, floorMy: 1, floorRot: 0,
-            ceilOx: 0, ceilOy: 0, ceilMx: 1, ceilMy: 1, ceilRot: 0,
             segments: [
                 new MapSegment({ ax: -120, ay: -30,
                     midMaterialId: 'Default',
@@ -203,9 +182,6 @@ var testMap = new Map({
         new MapSector({ id: 'sector7', bottomZ: -40, topZ: 64,
             floorMaterialId: 'f1',
             ceilMaterialId: 'Sky',
-            flags: 0,
-            floorOx: 0, floorOy: 0, floorMx: 1, floorMy: 1, floorRot: 0,
-            ceilOx: 0, ceilOy: 0, ceilMx: 1, ceilMy: 1, ceilRot: 0,
             segments: [
                 new MapSegment({ ax: -140, ay: -30,
                     midMaterialId: 'Default',
@@ -226,9 +202,6 @@ var testMap = new Map({
         new MapSector({ id: 'sector8', bottomZ: -50, topZ: 64,
             floorMaterialId: 'f1',
             ceilMaterialId: 'Sky',
-            flags: 0,
-            floorOx: 0, floorOy: 0, floorMx: 1, floorMy: 1, floorRot: 0,
-            ceilOx: 0, ceilOy: 0, ceilMx: 1, ceilMy: 1, ceilRot: 0,
             segments: [
                 new MapSegment({ ax: -160, ay: -30,
                     midMaterialId: 'Default',
@@ -249,9 +222,6 @@ var testMap = new Map({
         new MapSector({ id: 'sector9', bottomZ: -60, topZ: -6,
             floorMaterialId: 'Painful Slime',
             ceilMaterialId: 'Default Floor',
-            flags: 0,
-            floorOx: 0, floorOy: 0, floorMx: 1, floorMy: 1, floorRot: 0,
-            ceilOx: 0, ceilOy: 0, ceilMx: 1, ceilMy: 1, ceilRot: 0,
             entities: [
                 new LightEntity({ pos: vec3create(-240, 0, -30), strength: 50, diffuse: vec3create(0.1, 1.0, 0.1) })
             ],
@@ -283,9 +253,6 @@ var testMap = new Map({
         new MapSector({ id: 'sector10', bottomZ: -60, topZ: -6,
             floorMaterialId: 'Painful Slime',
             ceilMaterialId: 'Default Floor',
-            flags: 0,
-            floorOx: 0, floorOy: 0, floorMx: 1, floorMy: 1, floorRot: 0,
-            ceilOx: 0, ceilOy: 0, ceilMx: 1, ceilMy: 1, ceilRot: 0,
             entities: [
                 new LightEntity({ pos: vec3create(-240, -100, -30), strength: 50, diffuse: vec3create(0.1, 1.0, 0.1) })
             ],
@@ -309,9 +276,6 @@ var testMap = new Map({
         new MapSector({ id: 'sector11', bottomZ: -60, topZ: -6,
             floorMaterialId: 'Painful Slime',
             ceilMaterialId: 'Default Floor',
-            flags: 0,
-            floorOx: 0, floorOy: 0, floorMx: 1, floorMy: 1, floorRot: 0,
-            ceilOx: 0, ceilOy: 0, ceilMx: 1, ceilMy: 1, ceilRot: 0,
             entities: [
                 new LightEntity({ pos: vec3create(-240, 100, -30), strength: 50, diffuse: vec3create(0.1, 1.0, 0.1) })
             ],
@@ -335,9 +299,6 @@ var testMap = new Map({
         new MapSector({ id: 'sector12', bottomZ: 0, topZ: 60,
             floorMaterialId: 'Default Floor',
             ceilMaterialId: 'f6',
-            flags: 0,
-            floorOx: 0, floorOy: 0, floorMx: 1, floorMy: 1, floorRot: 0,
-            ceilOx: 0, ceilOy: 0, ceilMx: 1, ceilMy: 1, ceilRot: 0,
             segments: [
                 new MapSegment({ ax: 105, ay: -30,
                     midMaterialId: null,
@@ -362,9 +323,6 @@ var testMap = new Map({
         new MapSector({ id: 'sector13', bottomZ: 0, topZ: 60,
             floorMaterialId: 'Default Floor',
             ceilMaterialId: 'f6',
-            flags: 0,
-            floorOx: 0, floorOy: 0, floorMx: 1, floorMy: 1, floorRot: 0,
-            ceilOx: 0, ceilOy: 0, ceilMx: 1, ceilMy: 1, ceilRot: 0,
             segments: [
                 new MapSegment({ ax: 115, ay: 30,
                     midMaterialId: null,
@@ -389,9 +347,6 @@ var testMap = new Map({
         new MapSector({ id: 'sector14', bottomZ: 0, topZ: 60,
             floorMaterialId: 'Default Floor',
             ceilMaterialId: 'f1',
-            flags: 0,
-            floorOx: 0, floorOy: 0, floorMx: 1, floorMy: 1, floorRot: 0,
-            ceilOx: 0, ceilOy: 0, ceilMx: 1, ceilMy: 1, ceilRot: 0,
             segments: [
                 new MapSegment({ ax: 150, ay: 100,
                     midMaterialId: null,
@@ -413,9 +368,6 @@ var testMap = new Map({
             floorMaterialId: 'Water',
             ceilMaterialId: 'Sky',
             floorTargetSectorId: 'sector17',
-            flags: 1,
-            floorOx: 0, floorOy: 0, floorMx: 1, floorMy: 1, floorRot: 0,
-            ceilOx: 0, ceilOy: 0, ceilMx: 1, ceilMy: 1, ceilRot: 0,
             segments: [
                 new MapSegment({ ax: 300, ay: 20,
                     midMaterialId: 'mat6',
@@ -448,9 +400,6 @@ var testMap = new Map({
         new MapSector({ id: 'sector16', bottomZ: 10, topZ: 60,
             floorMaterialId: 'Default Floor',
             ceilMaterialId: 'f1',
-            flags: 0,
-            floorOx: 0, floorOy: 0, floorMx: 1, floorMy: 1, floorRot: 0,
-            ceilOx: 0, ceilOy: 0, ceilMx: 1, ceilMy: 1, ceilRot: 0,
             segments: [
                 new MapSegment({ ax: 380, ay: 150,
                     midMaterialId: null,
@@ -472,9 +421,6 @@ var testMap = new Map({
             floorMaterialId: 'Default Floor',
             ceilMaterialId: 'Water',
             ceilTargetSectorId: 'sector15',
-            flags: 2,
-            floorOx: 0, floorOy: 0, floorMx: 1, floorMy: 1, floorRot: 0,
-            ceilOx: 0, ceilOy: 0, ceilMx: 1, ceilMy: 1, ceilRot: 0,
             segments: [
                 new MapSegment({ ax: 300, ay: 150,
                     midMaterialId: null,
@@ -495,9 +441,6 @@ var testMap = new Map({
         new MapSectorWater({ id: 'sector18', bottomZ: -230, topZ: -20,
             floorMaterialId: 'Default Floor',
             ceilMaterialId: 'Default Floor',
-            flags: 3,
-            floorOx: 0, floorOy: 0, floorMx: 1, floorMy: 1, floorRot: 0,
-            ceilOx: 0, ceilOy: 0, ceilMx: 1, ceilMy: 1, ceilRot: 0,
             segments: [
                 new MapSegment({ ax: 300, ay: 150,
                     midMaterialId: null,
@@ -526,9 +469,6 @@ var testMap = new Map({
         new MapSectorWater({ id: 'sector19', bottomZ: -50, topZ: -20,
             floorMaterialId: 'Default Floor',
             ceilMaterialId: 'Default Floor',
-            flags: 3,
-            floorOx: 0, floorOy: 0, floorMx: 1, floorMy: 1, floorRot: 0,
-            ceilOx: 0, ceilOy: 0, ceilMx: 1, ceilMy: 1, ceilRot: 0,
             segments: [
                 new MapSegment({ ax: 600, ay: 150,
                     midMaterialId: 'mat6',
@@ -550,9 +490,6 @@ var testMap = new Map({
             floorMaterialId: 'Water',
             ceilMaterialId: 'f1',
             floorTargetSectorId: 'sector21',
-            flags: 1,
-            floorOx: 0, floorOy: 0, floorMx: 1, floorMy: 1, floorRot: 0,
-            ceilOx: 0, ceilOy: 0, ceilMx: 1, ceilMy: 1, ceilRot: 0,
             segments: [
                 new MapSegment({ ax: 400, ay: 400,
                     midMaterialId: null,
@@ -582,9 +519,6 @@ var testMap = new Map({
             floorMaterialId: 'Default Floor',
             ceilMaterialId: 'Water',
             ceilTargetSectorId: 'sector20',
-            flags: 2,
-            floorOx: 0, floorOy: 0, floorMx: 1, floorMy: 1, floorRot: 0,
-            ceilOx: 0, ceilOy: 0, ceilMx: 1, ceilMy: 1, ceilRot: 0,
             segments: [
                 new MapSegment({ ax: 300, ay: 400,
                     midMaterialId: 'mat6',
@@ -606,9 +540,6 @@ var testMap = new Map({
             floorMaterialId: 'Default Floor',
             ceilMaterialId: 'Water',
             ceilTargetSectorId: 'sector23',
-            flags: 2,
-            floorOx: 0, floorOy: 0, floorMx: 1, floorMy: 1, floorRot: 0,
-            ceilOx: 0, ceilOy: 0, ceilMx: 1, ceilMy: 1, ceilRot: 0,
             segments: [
                 new MapSegment({ ax: 620, ay: 150,
                     midMaterialId: 'mat6',
@@ -630,9 +561,6 @@ var testMap = new Map({
             floorMaterialId: 'Water',
             ceilMaterialId: 'Default Floor',
             floorTargetSectorId: 'sector22',
-            flags: 1,
-            floorOx: 0, floorOy: 0, floorMx: 1, floorMy: 1, floorRot: 0,
-            ceilOx: 0, ceilOy: 0, ceilMx: 1, ceilMy: 1, ceilRot: 0,
             segments: [
                 new MapSegment({ ax: 620, ay: 150,
                     midMaterialId: 'mat6',
@@ -653,9 +581,6 @@ var testMap = new Map({
         new MapSector({ id: 'sector24', bottomZ: -10, topZ: 70,
             floorMaterialId: 'mat1',
             ceilMaterialId: 'Default',
-            flags: 0,
-            floorOx: 0, floorOy: 0, floorMx: 1, floorMy: 1, floorRot: 0,
-            ceilOx: 0, ceilOy: 0, ceilMx: 1, ceilMy: 1, ceilRot: 0,
             segments: [
                 new MapSegment({ ax: 620, ay: 150,
                     midMaterialId: 'mat6',
@@ -676,9 +601,6 @@ var testMap = new Map({
         new MapSectorVerticalDoor({ id: 'sector25', bottomZ: 0, topZ: 64,
             floorMaterialId: 'Default',
             ceilMaterialId: 'mat6',
-            flags: 4,
-            floorOx: 0, floorOy: 0, floorMx: 1, floorMy: 1, floorRot: 0,
-            ceilOx: 0, ceilOy: 0, ceilMx: 1, ceilMy: 1, ceilRot: 0,
             segments: [
                 new MapSegment({ ax: 105, ay: -30,
                     midMaterialId: null,

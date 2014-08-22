@@ -13,6 +13,8 @@ function MapSectorVerticalDoor(options) {
     this.oTopZ = this.topZ;
 }
 
+classes['MapSectorVerticalDoor'] = MapSectorVerticalDoor;
+
 MapSectorVerticalDoor.prototype.frame = function (lastFrameTime) {
     this.topZ += this.velZ * lastFrameTime / 30.0;
 
@@ -21,7 +23,7 @@ MapSectorVerticalDoor.prototype.frame = function (lastFrameTime) {
     if (this.topZ > this.oTopZ)
         this.topZ = this.oTopZ;
 
-    this.velZ = -3.0
+    this.velZ = -3.0;
 };
 
 MapSectorVerticalDoor.prototype.actOnEntity = function (entity) {
@@ -29,4 +31,22 @@ MapSectorVerticalDoor.prototype.actOnEntity = function (entity) {
 
     if (distance2D(this.centerX, this.centerY, entity.pos[0], entity.pos[1]) < 100.0)
         this.velZ = 3.0;
+};
+
+MapSectorVerticalDoor.prototype.serialize = function () {
+    var r = this.parent.serialize.call(this);
+
+    r.oTopZ = this.oTopZ;
+    r.velZ = this.velZ;
+
+    return r;
+};
+
+MapSectorVerticalDoor.deserialize = function (data, map) {
+    var sector = MapSector.deserialize(data, map);
+
+    sector.oTopZ = data.oTopZ;
+    sector.velZ = data.velZ;
+
+    return sector;
 };

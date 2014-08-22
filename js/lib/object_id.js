@@ -28,16 +28,20 @@ var ObjectId = (function () {
         document.cookie = 'mongoMachineId=' + machine + ';expires=Tue, 19 Jan 2038 05:00:00 GMT'
     }
     else {
-        var cookieList = document.cookie.split('; ');
-        for (var i in cookieList) {
-            var cookie = cookieList[i].split('=');
-            if (cookie[0] == 'mongoMachineId' && cookie[1] >= 0 && cookie[1] <= 16777215) {
-                machine = cookie[1];
-                break;
+        if (document.cookie) {
+            var cookieList = document.cookie.split('; ');
+            for (var i in cookieList) {
+                var cookie = cookieList[i].split('=');
+                if (cookie[0] == 'mongoMachineId' && cookie[1] >= 0 && cookie[1] <= 16777215) {
+                    machine = cookie[1];
+                    break;
+                }
             }
+            document.cookie = 'mongoMachineId=' + machine + ';expires=Tue, 19 Jan 2038 05:00:00 GMT';
         }
-        document.cookie = 'mongoMachineId=' + machine + ';expires=Tue, 19 Jan 2038 05:00:00 GMT';
+        else {
 
+        }
     }
 
     function ObjId() {

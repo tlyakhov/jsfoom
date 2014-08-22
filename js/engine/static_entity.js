@@ -8,6 +8,8 @@ function StaticEntity(options) {
     $.extend(true, this, options);
 }
 
+classes['StaticEntity'] = StaticEntity;
+
 StaticEntity.prototype.frame = function (lastFrameTime) {
     this.parent.frame.call(this, lastFrameTime);
 
@@ -17,3 +19,5 @@ StaticEntity.prototype.frame = function (lastFrameTime) {
 StaticEntity.prototype.hurt = function (amount) {
     this.parent.hurt.call(this, amount);
 };
+
+StaticEntity.deserialize = Entity.deserialize;

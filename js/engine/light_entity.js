@@ -16,6 +16,8 @@ function LightEntity(options) {
     $.extend(true, this, options);
 }
 
+classes['LightEntity'] = LightEntity;
+
 /*LightEntity.prototype.frame = function (lastFrameTime) {
  this.parent.frame.call(this, lastFrameTime);
 
@@ -24,3 +26,25 @@ function LightEntity(options) {
  if(this.pos[2] >= this.sector.topZ)
  this.vel[2] = -0.5;
  };*/
+
+LightEntity.prototype.serialize = function () {
+    var r = this.parent.serialize.call(this);
+
+    r.diffuse = this.diffuse;
+    r.specular = this.specular;
+    r.radius = this.radius;
+    r.strength = this.strength;
+
+    return r;
+};
+
+LightEntity.deserialize = function (data, map) {
+    var e = Entity.deserialize(data, map);
+
+    e.diffuse = data.diffuse;
+    e.specular = data.specular;
+    e.radius = data.radius;
+    e.strength = data.strength;
+
+    return e;
+};

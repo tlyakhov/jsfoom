@@ -4,6 +4,7 @@ function RenderSlice() {
     this.y = 0;
     this.yStart = 0;
     this.yEnd = 0;
+    this.targetX = 0;
     this.segment = null;
     this.ray = null;
     this.rayTable = 0;
@@ -24,6 +25,7 @@ RenderSlice.prototype.clone = function () {
     s.y = this.y;
     s.yStart = this.yStart;
     s.yEnd = this.yEnd;
+    s.targetX = this.targetX;
     s.segment = this.segment;
     s.ray = this.ray;
     s.rayTable = this.rayTable;

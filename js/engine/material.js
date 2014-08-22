@@ -16,6 +16,8 @@ function Material(options) {
     $.extend(true, this, options);
 }
 
+classes['Material'] = Material;
+
 Material.prototype.getTexture = function () {
     if (!this.textureSrc)
         return null;
@@ -160,4 +162,38 @@ Material.prototype.sample = function (slice, x, y, scaledHeight) {
 
     vec3clamp(sum, 0.0, 1.0, sum);
     return rgba2int((sum[0] * 255) & 0xFF, (sum[1] * 255) & 0xFF, (sum[2] * 255) & 0xFF, surface >> 24);
+};
+
+Material.prototype.serialize = function () {
+    var r = {
+        id: this.id,
+        textureSrc: this.textureSrc,
+        ambient: this.ambient,
+        diffuse: this.diffuse,
+        specular: this.specular,
+        shininess: this.shininess,
+        renderAsSky: this.renderAsSky,
+        staticBackground: this.staticBackground,
+        hurt: this.hurt,
+        isLiquid: this.isLiquid
+    };
+
+    return r;
+};
+
+Material.deserialize = function (data) {
+    var mat = new Material({
+        id: data.id,
+        textureSrc: data.textureSrc,
+        ambient: data.ambient,
+        diffuse: data.diffuse,
+        specular: data.specular,
+        shininess: data.shininess,
+        renderAsSky: data.renderAsSky,
+        staticBackground: data.staticBackground,
+        hurt: data.hurt,
+        isLiquid: data.isLiquid
+    });
+
+    return mat;
 };

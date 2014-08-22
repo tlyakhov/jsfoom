@@ -1,5 +1,5 @@
 function Renderer(options) {
-    this.canvas = '';
+    this.canvas = null;
     this.screenWidth = 640;
     this.screenHeight = 360;
     this.fov = GAME_CONSTANTS.fieldOfView;
@@ -7,11 +7,16 @@ function Renderer(options) {
     this.frame = 0;
     this.frameTint = 0;
     this.frameSectors = {};
+    this.workerWidth = 0;
 
     $.extend(true, this, options);
 
-    this.screenWidth = $(this.canvas).width();
-    this.screenHeight = $(this.canvas).height();
+    this.workerWidth = (globalWorkerId != undefined) ? this.screenWidth / globalWorkersTotal : this.screenWidth;
+
+    if (this.canvas) {
+        this.screenWidth = $(this.canvas).width();
+        this.screenHeight = $(this.canvas).height();
+    }
 
     this.initTables();
 }
@@ -34,8 +39,8 @@ Renderer.prototype.initTables = function () {
         this.viewFix[(this.screenWidth - 1) - i] = this.viewFix[i];
     }
 
-    this.zbuffer = new Float32Array(this.screenWidth * this.screenHeight);
-}
+    this.zbuffer = new Float32Array(this.workerWidth * this.screenHeight);
+};
 
 Renderer.prototype.renderFloor = function (slice, start, end) {
     var sector = slice.segment.sector;
@@ -51,7 +56,7 @@ Renderer.prototype.renderFloor = function (slice, start, end) {
 
         var distToFloor = (-sector.bottomZ + (map.player.pos[2] + map.player.height)) * this.viewFix[slice.x] / (slice.y - this.screenHeight / 2);
         var scaler = th * sector.floorScale / distToFloor;
-        var screenIndex = slice.x + slice.y * this.screenWidth;
+        var screenIndex = slice.targetX + slice.y * this.workerWidth;
 
         if (distToFloor < this.zbuffer[screenIndex]) {
             slice.world[0] = map.player.pos[0] + this.trigTable[slice.rayTable].cos * distToFloor;
@@ -83,7 +88,7 @@ Renderer.prototype.renderCeiling = function (slice, start, end) {
     for (slice.y = start; slice.y < end; slice.y++) {
         var distToCeiling = (sector.topZ - (map.player.pos[2] + map.player.height)) * this.viewFix[slice.x] / (this.screenHeight / 2 - 1 - slice.y);
         var scaler = th * sector.ceilScale / distToCeiling;
-        var screenIndex = slice.x + slice.y * this.screenWidth;
+        var screenIndex = slice.targetX + slice.y * this.workerWidth;
 
         if (distToCeiling < this.zbuffer[screenIndex]) {
             slice.world[0] = map.player.pos[0] + this.trigTable[slice.rayTable].cos * distToCeiling;
@@ -140,7 +145,7 @@ Renderer.prototype.renderSlice = function (slice) {
         var adjClippedBottom = fast_floor(Math.min(adjSliceBottom, clippedEnd));
 
         for (slice.y = clippedStart; slice.y < adjClippedTop; slice.y++) {
-            var screenIndex = slice.x + slice.y * this.screenWidth;
+            var screenIndex = slice.targetX + slice.y * this.workerWidth;
             if (slice.distance < this.zbuffer[screenIndex]) {
                 var ty = (slice.y - sliceStart) / (adjSliceTop - sliceStart);
                 slice.world[2] = sector.topZ - ty * (sector.topZ - adj.topZ);
@@ -150,7 +155,7 @@ Renderer.prototype.renderSlice = function (slice) {
         }
 
         for (slice.y = adjClippedBottom; slice.y < clippedEnd; slice.y++) {
-            var screenIndex = slice.x + slice.y * this.screenWidth;
+            var screenIndex = slice.targetX + slice.y * this.workerWidth;
             if (slice.distance < this.zbuffer[screenIndex]) {
                 var ty = (slice.y - adjClippedBottom) / (sliceEnd - adjSliceBottom);
                 slice.world[2] = adj.bottomZ - ty * (adj.bottomZ - sector.bottomZ);
@@ -172,7 +177,7 @@ Renderer.prototype.renderSlice = function (slice) {
         var midMaterial = segment.getMidMaterial();
 
         for (slice.y = clippedStart; slice.y < clippedEnd; slice.y++) {
-            var screenIndex = slice.x + slice.y * this.screenWidth;
+            var screenIndex = slice.targetX + slice.y * this.workerWidth;
             if (slice.distance < this.zbuffer[screenIndex]) {
                 var ty = (slice.y - sliceStart) / (sliceEnd - sliceStart);
 
@@ -236,13 +241,15 @@ Renderer.prototype.renderEntity = function (renderTarget, entity) {
     var x1 = fast_floor(x - scale * 0.5);
     var x2 = fast_floor(x + scale * 0.5);
 
-    var clippedX1 = Math.max(x1, 0);
-    var clippedX2 = Math.min(x2, this.screenWidth - 1);
+    var xStart = (globalWorkerId != undefined) ? globalWorkerId * this.workerWidth : 0;
+    var xEnd = (globalWorkerId != undefined) ? xStart + this.workerWidth : this.screenWidth;
+    var clippedX1 = Math.max(x1, xStart);
+    var clippedX2 = Math.min(x2, xEnd);
     var clippedY1 = Math.max(y1, 0);
     var clippedY2 = Math.min(y2, this.screenHeight - 1);
     for (var x = clippedX1; x < clippedX2; x++) {
         for (var y = clippedY1; y < clippedY2; y++) {
-            var screenIndex = y * this.screenWidth + x;
+            var screenIndex = y * this.workerWidth + x - xStart;
             if (d < this.zbuffer[screenIndex]) {
                 var pixel = texture.sample((x - x1) / scale, (y - y1) / (y2 - y1), y2 - y1);
                 if (((pixel >> 24) & 0xFF) > 0) {
@@ -255,11 +262,6 @@ Renderer.prototype.renderEntity = function (renderTarget, entity) {
 };
 
 Renderer.prototype.render = function (renderTarget) {
-    for (var i = 0; i < this.screenWidth * this.screenHeight; i++) {
-        renderTarget[i] = 255 << 24;
-        this.zbuffer[i] = this.maxViewDist;
-    }
-
     var lights = [];
 
     for (var i = 0; i < map.sectors.length; i++) {
@@ -271,13 +273,22 @@ Renderer.prototype.render = function (renderTarget) {
 
     this.frameSectors = {};
 
-    for (var x = 0; x < this.screenWidth; x++) {
+    var xStart = (globalWorkerId != undefined) ? globalWorkerId * this.workerWidth : 0;
+    var xEnd = (globalWorkerId != undefined) ? xStart + this.workerWidth : this.screenWidth;
+
+    for (var x = xStart; x < xEnd; x++) {
+        for (var i = 0; i < this.screenHeight; i++) {
+//            renderTarget[i * this.screenWidth + x] = 255 << 24;
+            this.zbuffer[i * this.workerWidth + x - xStart] = this.maxViewDist;
+        }
+
         var slice = _renderSliceCache.get();
 
         slice.lights = lights;
         slice.seenPortals = {};
         slice.renderTarget = renderTarget;
         slice.x = x;
+        slice.targetX = x - xStart;
         slice.yStart = 0;
         slice.yEnd = this.screenHeight - 1;
         //slice.rayAngle = normalizeAngle(map.player.angle + (x * this.fov) / (this.screenWidth - 1) - (this.fov / 2.0));
@@ -306,7 +317,7 @@ Renderer.prototype.render = function (renderTarget) {
         }
     }
 
-    for (var i = 0; i < this.screenWidth * this.screenHeight; i++) {
+    for (var i = 0; i < this.workerWidth * this.screenHeight; i++) {
         renderTarget[i] = colorTint(renderTarget[i], this.frameTint);
     }
 

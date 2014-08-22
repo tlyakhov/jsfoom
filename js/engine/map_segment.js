@@ -16,13 +16,15 @@ function MapSegment(options) {
     this.adjacentSectorId = null;
     this.adjacentSector = null;
     this.adjacentSegment = null;
-    this.playerPortal = false;
     this.flags = 0;
+    this.sector = null;
 
     $.extend(true, this, options);
 
     this.update();
 }
+
+classes['MapSegment'] = MapSegment;
 
 MapSegment.prototype.update = function () {
     this.length = Math.sqrt(sqr((this.ax - this.bx)) + sqr((this.ay - this.by)));
@@ -152,4 +154,45 @@ MapSegment.prototype.whichSide = function (x, y) {
     var dy = (this.by - this.ay);
 
     return sign(dy * x - dx * y - this.ax * this.by + this.bx * this.ay);
+};
+
+MapSegment.prototype.serialize = function () {
+    var r = {
+        id: this.id,
+        ax: this.ax,
+        ay: this.ay,
+        bx: this.bx,
+        by: this.by,
+        midMaterialId: this.midMaterialId,
+        loMaterialId: this.loMaterialId,
+        hiMaterialId: this.hiMaterialId,
+        length: this.length,
+        normalX: this.normalX,
+        normalY: this.normalY,
+        adjacentSectorId: this.adjacentSectorId,
+        flags: this.flags
+    };
+
+    return r;
+};
+
+MapSegment.deserialize = function (data, sector) {
+    var segment = new MapSegment({
+        id: data.id,
+        ax: data.ax,
+        ay: data.ay,
+        bx: data.bx,
+        by: data.by,
+        midMaterialId: data.midMaterialId,
+        loMaterialId: data.loMaterialId,
+        hiMaterialId: data.hiMaterialId,
+        length: data.length,
+        normalX: data.normalX,
+        normalY: data.normalY,
+        adjacentSectorId: data.adjacentSectorId,
+        flags: data.flags,
+        sector: sector
+    });
+
+    return segment;
 };
