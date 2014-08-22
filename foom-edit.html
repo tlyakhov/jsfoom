@@ -45,26 +45,22 @@
     <script src="js/game/test_map.js"></script>
     <script src="js/game/input.js"></script>
     <script src="js/game/main.js"></script>
+    <script src="js/engine/editor.js"></script>
 </head>
-<body onload="foomInit();" onkeydown="keyDown(event);return false;" onkeyup="keyUp(event); return false;">
-<canvas id="renderCanvas" width="640" height="360">
-</canvas>
-<script>
+<body onload="foomInit(); globalEditor.init('editCanvas');" onkeydown="keyDown(event);return false;"
+      onkeyup="keyUp(event); return false;">
+<table>
+    <tr>
+        <td>
+            <canvas id="editCanvas" width="720" height="720">
+            </canvas>
 
-
-</script>
-<h1>jsFoom Test</h1>
-
-<p>
-    Controls:
-<ul>
-    <li>Walk Forward: <b>W</b></li>
-    <li>Walk Backward: <b>S</b></li>
-    <li>Turn Left: <b>A</b></li>
-    <li>Turn Right: <b>D</b></li>
-    <li>Jump: <b>SPACE</b></li>
-    <li>Crouch: <b>C</b></li>
-</ul>
-</p>
+        </td>
+        <td>
+            <canvas id="renderCanvas" width="640" height="360">
+            </canvas>
+        </td>
+    </tr>
+</table>
 </body>
 </html>

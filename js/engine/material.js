@@ -131,7 +131,7 @@ Material.prototype.sample = function (slice, x, y, scaledHeight) {
             var distance = vec3length(l);
             vec3mul(l, 1.0 / distance, l);
 
-            var attenuation = light.strength / sqr((distance / light.radius) + 1.0);
+            var attenuation = light.strength / sqr((distance / light.boundingRadius) + 1.0);
 
             if (attenuation < GAME_CONSTANTS.lightAttenuationEpsilon)
                 continue;

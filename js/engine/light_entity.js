@@ -7,7 +7,7 @@ function LightEntity(options) {
 
     this.diffuse = vec3create(1.0, 1.0, 1.0);
     this.specular = vec3create(1.0, 1.0, 1.0);
-    this.radius = 5.0;
+    this.boundingRadius = 5.0;
     this.strength = 100.0;
     this.renderable = false;
     this.marked = false;
@@ -32,7 +32,6 @@ LightEntity.prototype.serialize = function () {
 
     r.diffuse = this.diffuse;
     r.specular = this.specular;
-    r.radius = this.radius;
     r.strength = this.strength;
 
     return r;
@@ -43,7 +42,6 @@ LightEntity.deserialize = function (data, map, entity) {
 
     entity.diffuse = data.diffuse;
     entity.specular = data.specular;
-    entity.radius = data.radius;
     entity.strength = data.strength;
 
     return entity;

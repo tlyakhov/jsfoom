@@ -1,6 +1,8 @@
+var VEC3_TYPE = Float64Array;
+
 // Not very OOP, but EXTREMELY fast for JS
 var _vec3pool = new ObjectCache(15000, function () {
-    return new Float32Array(3);
+    return new VEC3_TYPE(3);
 });
 
 function vec3create(x, y, z, pool) {
@@ -9,7 +11,7 @@ function vec3create(x, y, z, pool) {
     if (pool)
         v = _vec3pool.get();
     else
-        v = new Float32Array(3);
+        v = new VEC3_TYPE(3);
 
     v[0] = x;
     v[1] = y;
@@ -22,7 +24,7 @@ function vec3blank(pool) {
     if (pool)
         return _vec3pool.get();
     else
-        return new Float32Array(3);
+        return new VEC3_TYPE(3);
 }
 
 function vec3clone(v, pool) {
@@ -63,6 +65,10 @@ function vec3mul(v, x, vout) {
 
 function vec3length(v) {
     return Math.sqrt(sqr(v[0]) + sqr(v[1]) + sqr(v[2]));
+}
+
+function vec3dist2(v, v2) {
+    return sqr(v[0] - v2[0]) + sqr(v[1] - v2[1]) + sqr(v[2] - v2[2]);
 }
 
 function vec3normalize(v, vout) {

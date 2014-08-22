@@ -69,6 +69,14 @@ function int2b(i) {
     return (i >> 16) & 0xFF;
 }
 
+function int2hex(i) {
+    return (0x1000000 | (i & 0xFFFFFF)).toString(16).substring(1);
+}
+
+function rgb2hex(rgb) {
+    return int2hex((rgb[2] * 255) | ((rgb[1] * 255) << 8) | ((rgb[0] * 255) << 16));
+}
+
 function nearestPow2(n) {
     n--;
 
