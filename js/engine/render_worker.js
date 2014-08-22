@@ -1,6 +1,6 @@
 importScripts("../lib/jquery.nodom.js");
 importScripts("../lib/object_id.js");
-importScripts("../game/game_constants.js");
+importScripts("../game/constants.js");
 importScripts("utils.js");
 importScripts("object_cache.js");
 importScripts("vector3.js");
@@ -40,15 +40,14 @@ onmessage = function (e) {
         texture.width = data.texture.width;
         texture.height = data.texture.height;
         texture.loaded(null, null);
-        //console.log(texture);
     }
     else if (data.type == 'render') {
-        var globalRenderTarget = new Uint32Array(renderer.screenWidth * renderer.screenHeight / globalWorkersTotal);
-
+        var stime = performance.now();
         map = Map.deserialize(data.map);
+        var dstime = Math.round(performance.now() - stime);
 
         renderer.render(globalRenderTarget);
 
-        postMessage({ id: globalWorkerId, type: 'rendered', data: globalRenderTarget }, [ globalRenderTarget.buffer ]);
+        postMessage({ id: globalWorkerId, type: 'rendered', data: globalRenderTarget, dstime: dstime });
     }
 };
