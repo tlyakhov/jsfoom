@@ -39,7 +39,7 @@ Renderer.prototype.initTables = function () {
         this.viewFix[(this.screenWidth - 1) - i] = this.viewFix[i];
     }
 
-    this.zbuffer = new Float32Array(this.workerWidth * this.screenHeight);
+    this.zbuffer = new Float64Array(this.workerWidth * this.screenHeight);
 };
 
 Renderer.prototype.renderFloor = function (slice, start, end) {
@@ -278,7 +278,6 @@ Renderer.prototype.render = function (renderTarget) {
 
     for (var x = xStart; x < xEnd; x++) {
         for (var i = 0; i < this.screenHeight; i++) {
-//            renderTarget[i * this.screenWidth + x] = 255 << 24;
             this.zbuffer[i * this.workerWidth + x - xStart] = this.maxViewDist;
         }
 
@@ -315,10 +314,6 @@ Renderer.prototype.render = function (renderTarget) {
             if (sector.entities[i].renderable)
                 this.renderEntity(renderTarget, sector.entities[i]);
         }
-    }
-
-    for (var i = 0; i < this.workerWidth * this.screenHeight; i++) {
-        renderTarget[i] = colorTint(renderTarget[i], this.frameTint);
     }
 
     this.frame++;

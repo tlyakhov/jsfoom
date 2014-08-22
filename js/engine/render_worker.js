@@ -24,6 +24,7 @@ var renderer = null;
 var globalRenderTarget = null;
 var globalWorkerId = 0;
 var globalWorkersTotal = 0;
+var globalFrameTint = 0; // Has no effect in render workers, actually.
 
 onmessage = function (e) {
     var data = e.data;
@@ -42,11 +43,11 @@ onmessage = function (e) {
         texture.loaded(null, null);
     }
     else if (data.type == 'render') {
-        var stime = performance.now();
         map = Map.deserialize(data.map);
-        var dstime = Math.round(performance.now() - stime);
 
+        var stime = performance.now();
         renderer.render(globalRenderTarget);
+        var dstime = Math.round(performance.now() - stime);
 
         postMessage({ id: globalWorkerId, type: 'rendered', data: globalRenderTarget, dstime: dstime });
     }

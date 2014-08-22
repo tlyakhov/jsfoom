@@ -29,16 +29,16 @@ MapSectorWater.prototype.onEnter = function (entity) {
     this.parent.onEnter.call(this, entity);
 
     if (entity.constructor == Player)
-        renderer.frameTint = 75 | 147 << 8 | 255 << 16 | 90 << 24;
+        globalFrameTint = 75 | 147 << 8 | 255 << 16 | 90 << 24;
 };
 
 MapSectorWater.prototype.onExit = function (entity) {
     this.parent.onExit.call(this, entity);
 
     if (entity.constructor == Player)
-        renderer.frameTint = 0;
+        globalFrameTint = 0;
 };
 
-MapSectorWater.deserialize = function (data, map) {
-    return MapSector.deserialize(data, map);
+MapSectorWater.deserialize = function (data, map, sector) {
+    return MapSector.deserialize(data, map, sector);
 };

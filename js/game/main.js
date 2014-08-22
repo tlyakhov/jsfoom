@@ -6,6 +6,7 @@ var lastFrameTime = 0;
 var globalCtx = null;
 var globalScreenWidth = null;
 var globalScreenHeight = null;
+var globalFrameTint = 0;
 var globalImgData = null;
 var globalRenderBuffer = null;
 var globalRenderBuffer8 = null;
@@ -28,6 +29,12 @@ function onTextureLoad(worker, texture) {
 }
 
 function flipBuffers() {
+    if (globalFrameTint != 0) {
+        for (var i = 0; i < globalScreenWidth * globalScreenHeight; i++) {
+            globalRenderTarget[i] = colorTint(globalRenderTarget[i], globalFrameTint);
+        }
+    }
+
     globalImgData.data.set(globalRenderBuffer8);
     globalCtx.putImageData(globalImgData, 0, 0);
 

@@ -151,26 +151,27 @@ Entity.prototype.serialize = function () {
     return r;
 };
 
-Entity.deserialize = function (data, map) {
-    var entity = createFromName(data._type, {
-        pos: data.pos,
-        width: data.width,
-        height: data.height,
-        angle: data.angle,
-        vel: data.vel,
-        type: data.type,
-        renderable: data.renderable,
-        hurtTime: data.hurtTime,
-        boundingRadius: data.boundingRadius,
-        collisionResponse: data.collisionResponse,
-        health: data.health,
-        mountHeight: data.mountHeight,
-        zOffset: data.zOffset,
-        map: map
-    });
+Entity.deserialize = function (data, map, entity) {
+    if (!entity)
+        entity = createFromName(data._type, {});
+
+    entity.pos = data.pos;
+    entity.width = data.width;
+    entity.height = data.height;
+    entity.angle = data.angle;
+    entity.vel = data.vel;
+    entity.type = data.type;
+    entity.renderable = data.renderable;
+    entity.hurtTime = data.hurtTime;
+    entity.boundingRadius = data.boundingRadius;
+    entity.collisionResponse = data.collisionResponse;
+    entity.health = data.health;
+    entity.mountHeight = data.mountHeight;
+    entity.zOffset = data.zOffset;
+    entity.map = map;
 
     for (var s in data.sprites) {
-        entity.sprites[s] = Sprite.deserialize(data.sprites[s]);
+        entity.sprites[s] = Sprite.deserialize(data.sprites[s], entity.sprites[s]);
     }
 
     return entity;

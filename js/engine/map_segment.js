@@ -176,23 +176,24 @@ MapSegment.prototype.serialize = function () {
     return r;
 };
 
-MapSegment.deserialize = function (data, sector) {
-    var segment = new MapSegment({
-        id: data.id,
-        ax: data.ax,
-        ay: data.ay,
-        bx: data.bx,
-        by: data.by,
-        midMaterialId: data.midMaterialId,
-        loMaterialId: data.loMaterialId,
-        hiMaterialId: data.hiMaterialId,
-        length: data.length,
-        normalX: data.normalX,
-        normalY: data.normalY,
-        adjacentSectorId: data.adjacentSectorId,
-        flags: data.flags,
-        sector: sector
-    });
+MapSegment.deserialize = function (data, sector, segment) {
+    if (!segment)
+        segment = new MapSegment();
+
+    segment.id = data.id;
+    segment.ax = data.ax;
+    segment.ay = data.ay;
+    segment.bx = data.bx;
+    segment.by = data.by;
+    segment.midMaterialId = data.midMaterialId;
+    segment.loMaterialId = data.loMaterialId;
+    segment.hiMaterialId = data.hiMaterialId;
+    segment.length = data.length;
+    segment.normalX = data.normalX;
+    segment.normalY = data.normalY;
+    segment.adjacentSectorId = data.adjacentSectorId;
+    segment.flags = data.flags;
+    segment.sector = sector;
 
     return segment;
 };

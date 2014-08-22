@@ -193,30 +193,37 @@ MapSector.prototype.serialize = function () {
     return r;
 };
 
-MapSector.deserialize = function (data, map) {
-    var mapSector = createFromName(data._type, {
-        id: data.id,
-        bottomZ: data.bottomZ,
-        topZ: data.topZ,
-        floorMaterialId: data.floorMaterialId,
-        ceilMaterialId: data.ceilMaterialId,
-        centerX: data.centerX,
-        centerY: data.centerY,
-        floorScale: data.floorScale,
-        ceilScale: data.ceilScale,
-        hurt: data.hurt,
-        floorTargetSectorId: data.floorTargetSectorId,
-        ceilTargetSectorId: data.ceilTargetSectorId,
-        map: map
-    });
+MapSector.deserialize = function (data, map, sector) {
+    if (!sector)
+        sector = createFromName(data._type, {});
 
+    sector.id = data.id;
+    sector.bottomZ = data.bottomZ;
+    sector.topZ = data.topZ;
+    sector.floorMaterialId = data.floorMaterialId;
+    sector.ceilMaterialId = data.ceilMaterialId;
+    sector.centerX = data.centerX;
+    sector.centerY = data.centerY;
+    sector.floorScale = data.floorScale;
+    sector.ceilScale = data.ceilScale;
+    sector.hurt = data.hurt;
+    sector.floorTargetSectorId = data.floorTargetSectorId;
+    sector.ceilTargetSectorId = data.ceilTargetSectorId;
+    sector.map = map;
+    
     for (var i = 0; i < data.segments.length; i++) {
-        mapSector.segments.push(MapSegment.deserialize(data.segments[i], mapSector));
+        if (i >= sector.segments.length)
+            sector.segments.push(MapSegment.deserialize(data.segments[i], sector));
+        else
+            MapSegment.deserialize(data.segments[i], sector, sector.segments[i]);
     }
 
     for (var i = 0; i < data.entities.length; i++) {
-        mapSector.entities.push(classes[data.entities[i]._type].deserialize(data.entities[i], map));
+        if (i >= sector.entities.length)
+            sector.entities.push(classes[data.entities[i]._type].deserialize(data.entities[i], map));
+        else
+            classes[data.entities[i]._type].deserialize(data.entities[i], map, sector.entities[i]);
     }
 
-    return mapSector;
+    return sector;
 };

@@ -70,18 +70,30 @@ Map.prototype.serialize = function () {
     return r;
 };
 
-Map.deserialize = function (data) {
-    var map = new Map({ spawnX: data.spawnX, spawnY: data.spawnY });
+Map.deserialize = function (data, map) {
+    if (!map)
+        map = new Map();
+
+    map.spawnX = data.spawnX;
+    map.spawnY = data.spawnY;
 
     for (var i = 0; i < data.sectors.length; i++) {
-        map.sectors.push(classes[data.sectors[i]._type].deserialize(data.sectors[i], map));
+        if (i >= map.sectors.length)
+            map.sectors.push(classes[data.sectors[i]._type].deserialize(data.sectors[i], map));
+        else
+            classes[data.sectors[i]._type].deserialize(data.sectors[i], map, map.sectors[i]);
     }
 
     for (var i = 0; i < data.materials.length; i++) {
-        map.materials.push(Material.deserialize(data.materials[i]));
+        if (i >= map.materials.length)
+            map.materials.push(Material.deserialize(data.materials[i]));
+        else
+            Material.deserialize(data.materials[i], map.materials[i]);
     }
 
-    map.player = Player.deserialize(data.player, map);
+    Player.deserialize(data.player, map, map.player);
+
+    map.player.updateSector();
 
     return map;
 };

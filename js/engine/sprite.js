@@ -27,9 +27,12 @@ Sprite.prototype.serialize = function () {
     return r;
 };
 
-Sprite.deserialize = function (data) {
-    var s = new Sprite({ textureSrc: data.textureSrc,
-        angle: data.angle});
+Sprite.deserialize = function (data, sprite) {
+    if (!sprite)
+        sprite = new Sprite();
 
-    return s;
+    sprite.textureSrc = data.textureSrc;
+    sprite.angle = data.angle;
+
+    return sprite;
 };

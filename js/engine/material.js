@@ -13,6 +13,10 @@ function Material(options) {
     this.isLiquid = false;
     this.map = null;
 
+    this.lastDiffuse = null;
+    this.lastSpecular = null;
+    this.lastSampleWorld = null;
+
     $.extend(true, this, options);
 }
 
@@ -103,64 +107,70 @@ Material.prototype.sample = function (slice, x, y, scaledHeight) {
     else if (y >= 1.0)
         y -= fast_floor(y);
 
-    //if (!this.renderAsSky)
-    //this.shadows(slice, slice.sector, {}); // Shadows are SLOW
+    // Lighting!
+
+    // Cheat a little
+    if (!this.renderAsSky && (!this.lastSampleWorld || vec3dist2(this.lastSampleWorld, slice.world) > 0.5)) {
+        //if (!this.renderAsSky)
+        //this.shadows(slice, slice.sector, {}); // Shadows are SLOW
+
+        this.lastDiffuse = vec3clone(this.ambient, true);
+        this.lastSpecular = this.shininess > 0 ? vec3blank(true) : null;
+
+        var v = vec3blank(true);
+
+        vec3normalize(vec3sub(slice.world, map.player.pos, v), v);
+
+        var i = slice.lights.length;
+
+        while (i--) {
+            var light = slice.lights[i];
+
+            var l = vec3sub(slice.world, light.pos, vec3blank(true));
+
+            var distance = vec3length(l);
+            vec3mul(l, 1.0 / distance, l);
+
+            var attenuation = light.strength / sqr((distance / light.radius) + 1.0);
+
+            if (attenuation < GAME_CONSTANTS.lightAttenuationEpsilon)
+                continue;
+
+            var diffuseLight = Math.abs(vec3dot(slice.normal, l)) * attenuation;
+
+            if (diffuseLight > 0) {
+                var tempvec = vec3blank(true);
+                vec3add(this.lastDiffuse, vec3mul(light.diffuse, diffuseLight, tempvec), this.lastDiffuse);
+
+                if (this.shininess > 0) {
+                    var r = vec3reflect(l, slice.normal, vec3blank(true));
+                    var specularLight = vec3dot(v, r);
+
+                    if (specularLight > 0) {
+                        vec3mul3(this.specular, light.specular, tempvec);
+                        vec3mul(tempvec, Math.pow(specularLight, this.shininess) * attenuation, tempvec);
+                        vec3add(this.lastSpecular, tempvec, this.lastSpecular);
+                    }
+                }
+            }
+        }
+        this.lastSampleWorld = vec3clone(slice.world, true);
+    }
 
     var surface = this.getTexture().sample(x, y, scaledHeight);
 
     if (this.renderAsSky)
         return surface;
 
-    // Lighting!
-    var surfaceDiffuse = vec3create(int2r(surface) * this.diffuse[0] / 255.0,
+    var sum = vec3create(int2r(surface) * this.diffuse[0] / 255.0,
             int2g(surface) * this.diffuse[1] / 255.0,
             int2b(surface) * this.diffuse[2] / 255.0, true);
 
-    var sum = vec3clone(this.ambient, true);
-
-    var v = vec3blank(true);
-
-    vec3normalize(vec3sub(slice.world, map.player.pos, v), v);
-
-    var i = slice.lights.length;
-
-    while (i--) {
-        var light = slice.lights[i];
-
-        //if(!light.marked)
-        //    continue;
-
-        //light.marked = false;
-
-        var l = vec3sub(slice.world, light.pos, vec3blank(true));
-
-        var distance = vec3length(l);
-        vec3mul(l, 1.0 / distance, l);
-
-        var attenuation = light.strength / sqr((distance / light.radius) + 1.0);
-
-        if (attenuation < GAME_CONSTANTS.lightAttenuationEpsilon)
-            continue;
-
-        var diffuseLight = Math.abs(vec3dot(slice.normal, l)) * attenuation;
-
-        if (diffuseLight > 0) {
-            var tempvec = vec3blank(true);
-            vec3add(sum, vec3mul(vec3mul3(light.diffuse, surfaceDiffuse, tempvec), diffuseLight, tempvec), sum);
-
-            if (this.shininess > 0) {
-                var r = vec3reflect(l, slice.normal, vec3blank(true));
-                var specularLight = vec3dot(v, r);
-
-                if (specularLight > 0) {
-
-                    vec3add(sum, vec3mul(vec3mul3(this.specular, light.specular, tempvec), Math.pow(specularLight, this.shininess) * attenuation, tempvec), sum);
-                }
-            }
-        }
-    }
-
+    vec3mul3(sum, this.lastDiffuse, sum);
+    if (this.lastSpecular)
+        vec3add(sum, this.lastSpecular, sum);
     vec3clamp(sum, 0.0, 1.0, sum);
+
     return rgba2int((sum[0] * 255) & 0xFF, (sum[1] * 255) & 0xFF, (sum[2] * 255) & 0xFF, surface >> 24);
 };
 
@@ -181,19 +191,20 @@ Material.prototype.serialize = function () {
     return r;
 };
 
-Material.deserialize = function (data) {
-    var mat = new Material({
-        id: data.id,
-        textureSrc: data.textureSrc,
-        ambient: data.ambient,
-        diffuse: data.diffuse,
-        specular: data.specular,
-        shininess: data.shininess,
-        renderAsSky: data.renderAsSky,
-        staticBackground: data.staticBackground,
-        hurt: data.hurt,
-        isLiquid: data.isLiquid
-    });
+Material.deserialize = function (data, material) {
+    if (!material)
+        material = new Material();
 
-    return mat;
+    material.id = data.id;
+    material.textureSrc = data.textureSrc;
+    material.ambient = data.ambient;
+    material.diffuse = data.diffuse;
+    material.specular = data.specular;
+    material.shininess = data.shininess;
+    material.renderAsSky = data.renderAsSky;
+    material.staticBackground = data.staticBackground;
+    material.hurt = data.hurt;
+    material.isLiquid = data.isLiquid;
+
+    return material;
 };

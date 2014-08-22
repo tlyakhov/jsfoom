@@ -1,5 +1,5 @@
 var GAME_CONSTANTS = {
-    renderWorkers: 4,
+    renderWorkers: 8,
     velocityEpsilon: 0.00001,
     lightAttenuationEpsilon: 0.001,
     maxViewDistance: 1000000.0,

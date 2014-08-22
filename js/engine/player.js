@@ -32,7 +32,7 @@ Player.prototype.frame = function (lastFrameTime) {
     }
 
     if (this.hurtTime > 0) {
-        renderer.frameTint = 255 | ((fast_floor(this.hurtTime * 200 / GAME_CONSTANTS.playerHurtTime) & 0xFF) << 24);
+        globalFrameTint = 255 | ((fast_floor(this.hurtTime * 200 / GAME_CONSTANTS.playerHurtTime) & 0xFF) << 24);
         this.hurtTime--;
     }
 };
@@ -48,8 +48,8 @@ Player.prototype.move = function (angle, lastFrameTime) {
     this.vel[1] += Math.sin(angle * deg2rad) * GAME_CONSTANTS.playerSpeed;
 };
 
-Player.deserialize = function (data, map) {
-    var player = Entity.deserialize(data, map);
+Player.deserialize = function (data, map, entity) {
+    var player = Entity.deserialize(data, map, entity);
 
     return player;
 };

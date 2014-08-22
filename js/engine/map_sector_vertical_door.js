@@ -42,8 +42,8 @@ MapSectorVerticalDoor.prototype.serialize = function () {
     return r;
 };
 
-MapSectorVerticalDoor.deserialize = function (data, map) {
-    var sector = MapSector.deserialize(data, map);
+MapSectorVerticalDoor.deserialize = function (data, map, sector) {
+    sector = MapSector.deserialize(data, map, sector);
 
     sector.oTopZ = data.oTopZ;
     sector.velZ = data.velZ;

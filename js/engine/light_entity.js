@@ -38,13 +38,13 @@ LightEntity.prototype.serialize = function () {
     return r;
 };
 
-LightEntity.deserialize = function (data, map) {
-    var e = Entity.deserialize(data, map);
+LightEntity.deserialize = function (data, map, entity) {
+    entity = Entity.deserialize(data, map, entity);
 
-    e.diffuse = data.diffuse;
-    e.specular = data.specular;
-    e.radius = data.radius;
-    e.strength = data.strength;
+    entity.diffuse = data.diffuse;
+    entity.specular = data.specular;
+    entity.radius = data.radius;
+    entity.strength = data.strength;
 
-    return e;
+    return entity;
 };

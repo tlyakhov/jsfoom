@@ -368,6 +368,9 @@ var testMap = new Map({
             floorMaterialId: 'Water',
             ceilMaterialId: 'Sky',
             floorTargetSectorId: 'sector17',
+            entities: [
+                new LightEntity({ pos: vec3create(350, 80, 90), diffuse: vec3create(0.4, 0.6, 1.0), strength: 130 })
+            ],
             segments: [
                 new MapSegment({ ax: 300, ay: 20,
                     midMaterialId: 'mat6',
