@@ -304,6 +304,10 @@ Renderer.prototype.render = function (renderTarget) {
                 map.player.pos[1] + this.maxViewDist * this.trigTable[slice.rayTable].sin];
 
         slice.sector = map.player.sector;
+
+        if (!slice.sector)
+            continue;
+
         this.renderSector(slice);
     }
 

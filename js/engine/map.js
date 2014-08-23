@@ -44,9 +44,9 @@ Map.prototype.getSector = function (id) {
 Map.prototype.frame = function (lastFrameTime) {
     this.player.frame(lastFrameTime);
 
-    for (var i = 0; i < map.sectors.length; i++) {
-        map.sectors[i].actOnEntity(this.player);
-        map.sectors[i].frame(lastFrameTime);
+    for (var i = 0; i < this.sectors.length; i++) {
+        this.sectors[i].actOnEntity(this.player);
+        this.sectors[i].frame(lastFrameTime);
     }
 };
 

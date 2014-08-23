@@ -32,7 +32,7 @@ Player.prototype.frame = function (lastFrameTime) {
     }
 
     if (this.hurtTime > 0) {
-        globalFrameTint = 255 | ((fast_floor(this.hurtTime * 200 / GAME_CONSTANTS.playerHurtTime) & 0xFF) << 24);
+        globalGame.frameTint = 255 | ((fast_floor(this.hurtTime * 200 / GAME_CONSTANTS.playerHurtTime) & 0xFF) << 24);
         this.hurtTime--;
     }
 };

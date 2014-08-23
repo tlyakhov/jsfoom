@@ -1,0 +1,38 @@
+html,
+body {
+    height: 100%;
+    margin: 0;
+    padding: 0;
+}
+
+#main-splitter {
+    height: 100%;
+}
+
+#prop-splitter {
+    height: 100%;
+}
+
+#edit-view {
+    overflow: hidden;
+}
+
+#render-view {
+    overflow: hidden;
+}
+
+#edit-canvas {
+    width: 100%;
+    height: 100%;
+    border: 0;
+    padding: 0;
+    margin: 0;
+}
+
+#render-canvas {
+    width: 100%;
+    height: 100%;
+    border: 0;
+    padding: 0;
+    margin: 0;
+}

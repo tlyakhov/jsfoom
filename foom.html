@@ -21,6 +21,7 @@
     <script src="https://code.jquery.com/jquery.js"></script>
     <!-- Latest compiled and minified JavaScript -->
     <script src="http://netdna.bootstrapcdn.com/bootstrap/3.0.3/js/bootstrap.min.js"></script>
+    <link rel="stylesheet" href="css/game.css">
     <script src="js/game/constants.js"></script>
     <script src="js/lib/object_id.js"></script>
     <script src="js/engine/utils.js"></script>
@@ -45,24 +46,25 @@
     <script src="js/game/test_map.js"></script>
     <script src="js/game/input.js"></script>
     <script src="js/game/main.js"></script>
-</head>
-<body onload="foomInit();" onkeydown="keyDown(event);return false;" onkeyup="keyUp(event); return false;">
+    <script>
+        var globalGame = null;
 
-<canvas id="renderCanvas" width="640" height="360">
+        $(document).ready(function () {
+            globalGame = new GameMain({
+                screenWidth: 640,
+                screenHeight: 360,
+                canvasId: 'render-canvas',
+                map: testMap
+            });
+
+            globalGame.go();
+        });
+    </script>
+</head>
+<body onkeydown="keyDown(event);return false;" onkeyup="keyUp(event); return false;">
+
+<canvas id="render-canvas">
 </canvas>
 
-<h1>jsFoom Test</h1>
-
-<p>
-    Controls:
-<ul>
-    <li>Walk Forward: <b>W</b></li>
-    <li>Walk Backward: <b>S</b></li>
-    <li>Turn Left: <b>A</b></li>
-    <li>Turn Right: <b>D</b></li>
-    <li>Jump: <b>SPACE</b></li>
-    <li>Crouch: <b>C</b></li>
-</ul>
-</p>
 </body>
 </html>

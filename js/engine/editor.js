@@ -1,20 +1,75 @@
 function Editor(options) {
-    $.extend(true, this, options);
-}
-
-Editor.prototype.init = function (canvasId) {
-    this.context = document.getElementById(canvasId).getContext('2d');
-    this.width = $('#' + canvasId).width();
-    this.height = $('#' + canvasId).height();
+    this.canvasId = null;
+    this.map = null;
     this.pos = vec3blank();
+    this.mouse = vec3blank();
+
+    this.scale = 1.0;
     this.centerOnPlayer = true;
 
     this.sectorTypesVisible = true;
     this.entityTypesVisible = true;
     this.gridVisible = true;
     this.entitiesVisible = true;
+    this.gridSize = 10;
+
+    $.extend(true, this, options);
+}
+
+Editor.prototype.go = function () {
+    var canvas = document.getElementById(this.canvasId);
+    var jqCanvas = $('#' + this.canvasId);
+
+    this.context = canvas.getContext('2d');
+    this.width = jqCanvas.width();
+    this.height = jqCanvas.height();
+
+    if (canvas.addEventListener) {
+        canvas.addEventListener('mousewheel', $.proxy(this.onMouseWheel, this), false);
+        canvas.addEventListener('DOMMouseScroll', $.proxy(this.onMouseWheel, this), false);
+    }
+    else
+        canvas.attachEvent('onmousewheel', $.proxy(this.onMouseWheel, this));
+
+    jqCanvas.on('mousedown', $.proxy(this.onMouseDown, this));
+    jqCanvas.on('mousemove', $.proxy(this.onMouseMove, this));
+    jqCanvas.on('mouseup', $.proxy(this.onMouseUp, this));
 
     setInterval($.proxy(this.timer, this), 16);
+};
+
+Editor.prototype.screenToWorld = function (x, y) {
+    return vec3create((x - this.width / 2) / this.scale + this.pos[0],
+            (y - this.height / 2) / this.scale + this.pos[1], 0);
+};
+
+Editor.prototype.worldToScreen = function (x, y) {
+    return vec3create((x - this.pos[0]) * this.scale + this.width / 2,
+            (y - this.pos[1]) * this.scale + this.height / 2, 0);
+};
+
+Editor.prototype.onMouseDown = function (e) {
+    console.log(e);
+};
+
+Editor.prototype.onMouseMove = function (e) {
+    this.mouse = vec3create(e.offsetX, e.offsetY, 0);
+};
+
+Editor.prototype.onMouseUp = function (e) {
+    console.log(e);
+};
+
+Editor.prototype.onMouseWheel = function (e) {
+    var e = window.event || e;
+    var delta = Math.max(-1, Math.min(1, (e.wheelDelta || -e.detail)));
+
+    if (this.scale > 0.15)
+        this.scale += delta * 0.1;
+    else if (this.scale > 0.015)
+        this.scale += delta * 0.01;
+    else if (this.scale > 0.0015)
+        this.scale += delta * 0.001;
 };
 
 Editor.prototype.drawEntity = function (entity) {
@@ -35,6 +90,7 @@ Editor.prototype.drawEntity = function (entity) {
     if (this.entityTypesVisible) {
         this.context.fillStyle = '#555';
         this.context.textAlign = 'center';
+        this.context.textBaseline = 'middle';
         this.context.fillText(entity.constructor.name, entity.pos[0], entity.pos[1]);
     }
 };
@@ -62,29 +118,59 @@ Editor.prototype.drawSector = function (sector) {
         this.context.moveTo(segment.ax, segment.ay);
         this.context.lineTo(nextSegment.ax, nextSegment.ay);
         this.context.stroke();
+
+        var v = this.worldToScreen(segment.ax, segment.ay);
+        if (vec3length(vec3sub(this.mouse, v, vec3blank(true))) < 5.0) {
+            var v1 = this.screenToWorld(v[0] - 3.0, v[1] - 3.0);
+            var v2 = this.screenToWorld(v[0] + 3.0, v[1] + 3.0);
+            this.context.strokeStyle = '#FFF';
+            this.context.strokeRect(v1[0], v1[1], v2[0] - v1[0], v2[1] - v1[1]);
+        }
     }
 
     if (this.sectorTypesVisible) {
         this.context.fillStyle = '#333';
         this.context.textAlign = 'center';
+        this.context.textBaseline = 'middle';
         this.context.fillText(sector.constructor.name, sector.centerX, sector.centerY);
     }
 };
 
 Editor.prototype.timer = function () {
+    this.width = $('#' + this.canvasId).width();
+    this.height = $('#' + this.canvasId).height();
+    //var canvas = document.getElementById(this.canvasId);
+    //this.context = canvas.getContext('2d');
+
+
     if (this.centerOnPlayer)
-        this.pos = map.player.pos;
+        this.pos = this.map.player.pos;
 
     this.context.setTransform(1.0, 0.0, 0.0, 1.0, 0.0, 0.0);
     this.context.fillStyle = '#000';
     this.context.fillRect(0, 0, this.width, this.height);
-    this.context.translate(-this.pos[0] + this.width / 2, -this.pos[1] + this.height / 2);
+    this.context.translate(-this.pos[0] * this.scale + this.width / 2, -this.pos[1] * this.scale + this.height / 2);
+    this.context.scale(this.scale, this.scale);
 
-    for (var i = 0; i < map.sectors.length; i++) {
-        this.drawSector(map.sectors[i]);
+    if (this.gridVisible && this.scale * this.gridSize > 3.0) {
+        this.context.fillStyle = '#333';
+        var vStart = this.screenToWorld(0, 0);
+        var vEnd = this.screenToWorld(this.width, this.height);
+        var xStart = fast_floor(vStart[0] / this.gridSize) * this.gridSize;
+        var xEnd = fast_floor(vEnd[0] / this.gridSize) * this.gridSize;
+        var yStart = fast_floor(vStart[1] / this.gridSize + 1.0) * this.gridSize;
+        var yEnd = fast_floor(vEnd[1] / this.gridSize + 1.0) * this.gridSize;
+
+        for (var x = xStart; x < xEnd; x += 10) {
+            for (var y = yStart; y < yEnd; y += 10) {
+                this.context.fillRect(x, y, 1, 1);
+            }
+        }
     }
 
-    this.drawEntity(map.player);
-};
+    for (var i = 0; i < this.map.sectors.length; i++) {
+        this.drawSector(this.map.sectors[i]);
+    }
 
-var globalEditor = new Editor();
+    this.drawEntity(this.map.player);
+};
