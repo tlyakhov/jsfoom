@@ -12,8 +12,6 @@ classes['StaticEntity'] = StaticEntity;
 
 StaticEntity.prototype.frame = function (lastFrameTime) {
     this.parent.frame.call(this, lastFrameTime);
-
-    this.angle += 20.0 * (Math.random() - 0.5);
 };
 
 StaticEntity.prototype.hurt = function (amount) {

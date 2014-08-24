@@ -73,6 +73,7 @@
         var globalEditor = new Editor({
             canvasId: 'edit-canvas',
             propEditorId: 'prop-editor',
+            toolbarId: 'toolbar',
             map: testMap
         });
 
@@ -105,23 +106,26 @@
 </head>
 <body onkeydown="keyDown(event);return false;"
       onkeyup="keyUp(event); return false;">
-
-<div id="main-splitter">
-    <div id="edit-view">
-        <canvas id="edit-canvas">
-        </canvas>
+<div class="container">
+    <div id="toolbar">
     </div>
-    <div id="prop-view">
-        <div id="prop-splitter">
-            <div id="render-view">
-                <canvas id="render-canvas">
-                </canvas>
+    <div id="main-splitter">
+        <div id="edit-view">
+            <canvas id="edit-canvas">
+            </canvas>
             </div>
-            <div id="prop-editor-view">
-                <table cellpadding="0" cellspacing="0" border="0" id="prop-editor" class="display compact"></table>
+        <div id="prop-view">
+            <div id="prop-splitter">
+                <div id="render-view">
+                    <canvas id="render-canvas">
+                    </canvas>
+                </div>
+                <div id="prop-editor-view">
+                    <table cellpadding="0" cellspacing="0" border="0" id="prop-editor" class="display compact"></table>
+                </div>
             </div>
         </div>
-    </div>
+        </div>
 </div>
 </body>
 </html>

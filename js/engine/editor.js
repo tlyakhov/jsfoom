@@ -1,15 +1,25 @@
+var EDITOR_CONSTANTS = {
+    segmentSelectionEpsilon: 5.0
+};
+
 function Editor(options) {
     this.canvasId = null;
     this.propEditorId = null;
+    this.toolbarId = null;
+
+    this.editState = 'idle';
     this.map = null;
     this.pos = vec3blank();
+    this.scale = 1.0;
+
+    this.selectionStart = vec3blank();
     this.mouse = vec3blank();
+    this.mouseWorld = vec3blank();
+
     this.selectedObjects = [];
     this.hoveringObjects = [];
 
-    this.scale = 1.0;
     this.centerOnPlayer = true;
-
     this.sectorTypesVisible = true;
     this.entityTypesVisible = true;
     this.gridVisible = true;
@@ -23,6 +33,7 @@ Editor.prototype.go = function () {
     var canvas = document.getElementById(this.canvasId);
     var jqCanvas = $('#' + this.canvasId);
     var jqPropEditor = $('#' + this.propEditorId);
+    var jqToolbar = $('#' + this.toolbarId);
 
     this.context = canvas.getContext('2d');
     this.width = jqCanvas.width();
@@ -50,12 +61,21 @@ Editor.prototype.go = function () {
         data: []
     });
 
+    jqToolbar.kendoToolBar({
+        items: [
+            { type: 'button', text: 'Show Entity Types', togglable: true }
+        ]
+    });
+
     setInterval($.proxy(this.timer, this), 16);
 };
 
 Editor.prototype.selectObject = function (objects) {
     var jqPropEditor = $('#' + this.propEditorId);
     var dt = jqPropEditor.DataTable();
+
+    if (!objects || objects.length == 0)
+        objects = [ this.map ];
 
     this.selectedObjects = objects;
 
@@ -74,6 +94,8 @@ Editor.prototype.selectObject = function (objects) {
         dt.row.add([ 'Selected objects have multiple types', '']);
         return;
     }
+
+    dt.row.add([ 'Type', objects[0].constructor.name ]);
 
     var properties = objects[0].constructor.editableProperties;
     for (var i = 0; i < properties.length; i++) {
@@ -100,14 +122,30 @@ Editor.prototype.worldToScreen = function (x, y) {
 };
 
 Editor.prototype.onMouseDown = function (e) {
+    if (this.editState == 'idle') {
+        this.selectionStart = this.screenToWorld(e.offsetX, e.offsetY);
+        this.editState = 'selectionStart';
+        console.log(e);
+    }
 };
 
 Editor.prototype.onMouseMove = function (e) {
+    if (this.editState == 'selectionStart') {
+        this.editState = 'selectingSectors';
+    }
+
     this.mouse = vec3create(e.offsetX, e.offsetY, 0);
+    this.mouseWorld = this.screenToWorld(this.mouse[0], this.mouse[1]);
 };
 
 Editor.prototype.onMouseUp = function (e) {
-    this.selectObject(this.hoveringObjects);
+    if (this.editState == 'idle') {
+        this.selectObject(this.hoveringObjects);
+    }
+    else if (this.editState == 'selectingSectors') {
+        this.editState = 'idle';
+        this.selectObject(this.hoveringObjects);
+    }
 };
 
 Editor.prototype.onMouseWheel = function (e) {
@@ -122,6 +160,16 @@ Editor.prototype.onMouseWheel = function (e) {
         this.scale += delta * 0.001;
 };
 
+Editor.prototype.drawEntityAngle = function (entity) {
+    this.context.lineWidth = 2;
+    this.context.beginPath();
+    this.context.moveTo(entity.pos[0], entity.pos[1]);
+    this.context.lineTo(entity.pos[0] + Math.cos(deg2rad * entity.angle) * entity.boundingRadius * 2,
+            entity.pos[1] + Math.sin(deg2rad * entity.angle) * entity.boundingRadius * 2);
+    this.context.stroke();
+    this.context.lineWidth = 1;
+};
+
 Editor.prototype.drawEntity = function (entity) {
     if (entity.constructor == Player) {
         // Let's get fancy:
@@ -131,17 +179,16 @@ Editor.prototype.drawEntity = function (entity) {
         this.context.stroke();
         this.context.strokeStyle = '#FFF';
 
-        this.context.lineWidth = 2;
         this.context.strokeStyle = '#555';
-        this.context.beginPath();
-        this.context.moveTo(entity.pos[0], entity.pos[1]);
-        this.context.lineTo(entity.pos[0] + Math.cos(deg2rad * entity.angle) * entity.boundingRadius * 2,
-                entity.pos[1] + Math.sin(deg2rad * entity.angle) * entity.boundingRadius * 2);
-        this.context.stroke();
-        this.context.lineWidth = 1;
+        this.drawEntityAngle(entity);
     }
     else if (entity.constructor == LightEntity)
         this.context.strokeStyle = '#' + rgb2hex(entity.diffuse);
+    else if (entity.constructor == StaticEntity) {
+        this.context.strokeStyle = '#AAA';
+        this.drawEntityAngle(entity);
+        this.context.strokeStyle = '#888';
+    }
 
     this.context.beginPath();
     this.context.arc(entity.pos[0], entity.pos[1], entity.boundingRadius, 0, 2 * Math.PI, false);
@@ -156,15 +203,36 @@ Editor.prototype.drawEntity = function (entity) {
     }
 };
 
+Editor.prototype.hoverSegment = function (segment) {
+    var hov = this.hoveringObjects[0] || null;
+    var isSameLocation = hov && hov.constructor == MapSegment && hov.ax == segment.ax && hov.ay == segment.ay;
+
+    if (!hov || isSameLocation) {
+        var v = this.worldToScreen(segment.ax, segment.ay);
+        if (vec3length(vec3sub(this.mouse, v, vec3blank(true))) < EDITOR_CONSTANTS.segmentSelectionEpsilon) {
+            var v1 = this.screenToWorld(v[0] - 3.0, v[1] - 3.0);
+            var v2 = this.screenToWorld(v[0] + 3.0, v[1] + 3.0);
+            this.context.strokeStyle = '#FFF';
+            this.context.strokeRect(v1[0], v1[1], v2[0] - v1[0], v2[1] - v1[1]);
+            this.hoveringObjects.push(segment);
+        }
+    }
+};
+
 Editor.prototype.drawSector = function (sector) {
     if (sector.segments.length == 0)
         return;
+
+    var sectorHovering = ($.inArray(sector, this.hoveringObjects) != -1);
+    var sectorSelected = ($.inArray(sector, this.selectedObjects) != -1);
 
     if (this.entitiesVisible) {
         for (var j = 0; j < sector.entities.length; j++) {
             this.drawEntity(sector.entities[j]);
         }
     }
+
+    var selectionEnd = this.screenToWorld(this.mouse[0], this.mouse[1]);
 
     for (var j = 0; j < sector.segments.length; j++) {
         var segment = sector.segments[j];
@@ -173,7 +241,26 @@ Editor.prototype.drawSector = function (sector) {
         if (segment.midMaterialId)
             this.context.strokeStyle = '#FFF';
         else
-            this.context.strokeStyle = '#F00';
+            this.context.strokeStyle = '#FF0';
+
+
+        if (this.editState == 'selectingSectors') {
+            if (segment.ax >= this.selectionStart[0] && segment.ay >= this.selectionStart[1] &&
+                segment.ax <= this.mouseWorld[0] && segment.ay <= this.mouseWorld[1]) {
+
+                if (!sectorHovering) {
+                    this.hoveringObjects.push(sector);
+                    sectorHovering = true;
+                }
+            }
+        }
+
+        if (sectorHovering || sectorSelected) {
+            if (segment.midMaterialId)
+                this.context.strokeStyle = '#0F0';
+            else
+                this.context.strokeStyle = '#4F0';
+        }
 
         this.context.beginPath();
         this.context.moveTo(segment.ax, segment.ay);
@@ -188,18 +275,8 @@ Editor.prototype.drawSector = function (sector) {
             this.context.strokeRect(v1[0], v1[1], v2[0] - v1[0], v2[1] - v1[1]);
         }
 
-        if (this.hoveringObjects.length == 0 ||
-            (this.hoveringObjects[0].constructor == MapSegment &&
-                this.hoveringObjects[0].ax == segment.ax &&
-                this.hoveringObjects[0].ay == segment.ay)) {
-            var v = this.worldToScreen(segment.ax, segment.ay);
-            if (vec3length(vec3sub(this.mouse, v, vec3blank(true))) < 5.0) {
-                var v1 = this.screenToWorld(v[0] - 3.0, v[1] - 3.0);
-                var v2 = this.screenToWorld(v[0] + 3.0, v[1] + 3.0);
-                this.context.strokeStyle = '#FFF';
-                this.context.strokeRect(v1[0], v1[1], v2[0] - v1[0], v2[1] - v1[1]);
-                this.hoveringObjects.push(segment);
-            }
+        if (this.editState == 'idle') {
+            this.hoverSegment(segment);
         }
     }
 
@@ -247,6 +324,18 @@ Editor.prototype.timer = function () {
 
     for (var i = 0; i < this.map.sectors.length; i++) {
         this.drawSector(this.map.sectors[i]);
+    }
+
+    if (this.editState == 'selectingSectors') {
+        var v1 = this.selectionStart;
+        var v2 = this.mouseWorld;
+
+        this.context.globalAlpha = 0.3;
+        this.context.fillStyle = '#33F';
+        this.context.fillRect(v1[0], v1[1], v2[0] - v1[0], v2[1] - v1[1]);
+        this.context.strokeStyle = '#AAF';
+        this.context.strokeRect(v1[0], v1[1], v2[0] - v1[0], v2[1] - v1[1]);
+        this.context.globalAlpha = 1;
     }
 
     this.drawEntity(this.map.player);

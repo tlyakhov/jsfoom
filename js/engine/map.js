@@ -21,7 +21,12 @@ function Map(options) {
 
 }
 
-classes['Map'] = Map
+classes['Map'] = Map;
+
+Map.editableProperties = [
+    { name: 'spawnX', friendly: 'Player Spawn X', type: 'float' },
+    { name: 'spawnY', friendly: 'Player Spawn Y', type: 'float' }
+];
 
 Map.prototype.getMaterial = function (id) {
     for (var i = 0; i < this.materials.length; i++) {
