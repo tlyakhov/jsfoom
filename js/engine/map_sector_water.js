@@ -28,14 +28,14 @@ MapSectorWater.prototype.actOnEntity = function (entity) {
 MapSectorWater.prototype.onEnter = function (entity) {
     this.parent.onEnter.call(this, entity);
 
-    if (entity.constructor == Player)
+    if (globalGame && entity.constructor == Player)
         globalGame.frameTint = 75 | 147 << 8 | 255 << 16 | 90 << 24;
 };
 
 MapSectorWater.prototype.onExit = function (entity) {
     this.parent.onExit.call(this, entity);
 
-    if (entity.constructor == Player)
+    if (globalGame && entity.constructor == Player)
         globalGame.frameTint = 0;
 };
 

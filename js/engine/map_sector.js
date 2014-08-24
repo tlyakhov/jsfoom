@@ -24,6 +24,15 @@ function MapSector(options) {
         this.update();
 }
 
+MapSector.editableProperties = [
+    { name: 'id', friendly: 'ID', type: 'string' },
+    { name: 'topZ', friendly: 'Top Height', type: 'float' },
+    { name: 'bottomZ', friendly: 'Bottom Height', type: 'float' },
+    { name: 'hurt', friendly: 'Hit points', type: 'float' },
+    { name: 'floorScale', friendly: 'Floor Texture Scale', type: 'float' },
+    { name: 'ceilScale', friendly: 'Ceiling Texture Scale', type: 'float' }
+];
+
 classes['MapSector'] = MapSector;
 
 MapSector.prototype.update = function () {

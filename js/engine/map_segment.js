@@ -24,6 +24,12 @@ function MapSegment(options) {
     this.update();
 }
 
+MapSegment.editableProperties = [
+    { name: 'id', friendly: 'ID', type: 'string' },
+    { name: 'ax', friendly: 'X', type: 'float' },
+    { name: 'ay', friendly: 'Y', type: 'float' }
+];
+
 classes['MapSegment'] = MapSegment;
 
 MapSegment.prototype.update = function () {

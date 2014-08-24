@@ -24,7 +24,7 @@ var renderer = null;
 var globalRenderTarget = null;
 var globalWorkerId = 0;
 var globalWorkersTotal = 0;
-var globalFrameTint = 0; // Has no effect in render workers, actually.
+var globalGame = null; // We're a worker!
 
 onmessage = function (e) {
     var data = e.data;
