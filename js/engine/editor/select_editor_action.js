@@ -3,7 +3,6 @@ inherit(EditorAction, SelectEditorAction);
 function SelectEditorAction(editor) {
     this.parent.constructor.call(this, editor);
 
-    this.editor = editor;
     this.originalObjects = [];
     this.selectedObjects = [];
 }
@@ -15,15 +14,14 @@ SelectEditorAction.prototype.onMouseDown = function (e) {
 };
 
 SelectEditorAction.prototype.onMouseMove = function (e) {
-    if (this.editor.editState == 'selectionStart') {
-        this.editor.editState = 'selecting';
-    }
+    this.editor.editState = 'selecting';
 };
 
 SelectEditorAction.prototype.onMouseUp = function (e) {
     this.selectedObjects = this.editor.hoveringObjects.slice(0);
     this.editor.selectObject(this.editor.hoveringObjects);
     this.editor.editState = 'idle';
+    this.editor.currentAction = null;
 };
 
 SelectEditorAction.prototype.frame = function () {

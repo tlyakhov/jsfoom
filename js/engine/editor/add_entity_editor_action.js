@@ -28,26 +28,24 @@ AddEntityEditorAction.prototype.addToMap = function (sector) {
 
 AddEntityEditorAction.prototype.onMouseDown = function (e) {
 };
+
 AddEntityEditorAction.prototype.onMouseMove = function (e) {
-    if (this.editor.editState == 'addEntity') {
-        var sector = this.editor.findSector();
+    var sector = this.editor.findSector();
 
-        if (sector) {
-            this.removeFromMap();
-            this.addToMap(sector);
+    if (sector) {
+        this.removeFromMap();
+        this.addToMap(sector);
 
-            this.sector = sector;
-            this.entity.pos = vec3clone(this.editor.mouseWorld);
-            this.entity.pos[2] = (sector.topZ + sector.bottomZ) / 2;
-        }
+        this.sector = sector;
+        this.entity.pos = vec3clone(this.editor.mouseWorld);
+        this.entity.pos[2] = (sector.topZ + sector.bottomZ) / 2;
     }
 };
 AddEntityEditorAction.prototype.onMouseUp = function (e) {
     this.editor.editState = 'idle';
+    this.editor.currentAction = null;
 };
 
-AddEntityEditorAction.prototype.frame = function () {
-};
 AddEntityEditorAction.prototype.undo = function () {
     this.removeFromMap();
 };

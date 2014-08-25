@@ -2,6 +2,7 @@ inherit(EditorAction, MoveEditorAction);
 
 function MoveEditorAction(editor) {
     this.parent.constructor.call(this, editor);
+
     this.originalPositions = {};
     this.selectedObjects = [];
     this.dx = 0;
@@ -43,6 +44,9 @@ MoveEditorAction.prototype.move = function (toOriginal) {
             object.sector.update();
         }
         else if (isA(object, Entity)) {
+            if (isA(object, Player) && editor.centerOnPlayer)
+                continue; // Otherwise weird things happen.
+
             object.pos[0] = op[0] + dx;
             object.pos[1] = op[1] + dy;
             object.updateSector();
@@ -53,25 +57,19 @@ MoveEditorAction.prototype.move = function (toOriginal) {
 MoveEditorAction.prototype.onMouseMove = function (e) {
     var editor = this.editor;
 
-    if (editor.editState == 'movingStart') {
-        editor.editState = 'moving';
-    }
+    editor.editState = 'moving';
 
-    if (editor.editState == 'moving') {
-        this.dx = editor.mouseWorld[0] - editor.mouseDownWorld[0];
-        this.dy = editor.mouseWorld[1] - editor.mouseDownWorld[1];
-        this.move(false);
-    }
+    this.dx = editor.mouseWorld[0] - editor.mouseDownWorld[0];
+    this.dy = editor.mouseWorld[1] - editor.mouseDownWorld[1];
+    this.move(false);
 };
 
 MoveEditorAction.prototype.onMouseUp = function (e) {
     var editor = this.editor;
 
-    if (editor.editState == 'moving') {
-        editor.selectObject(editor.selectedObjects); // Updates properties.
-    }
-
+    editor.selectObject(editor.selectedObjects); // Updates properties.
     editor.editState = 'idle';
+    this.editor.currentAction = null;
 };
 
 MoveEditorAction.prototype.undo = function () {

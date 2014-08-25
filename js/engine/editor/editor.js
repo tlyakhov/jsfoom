@@ -8,12 +8,14 @@ function Editor(options) {
     this.canvasId = null;
     this.propEditorId = null;
     this.toolbarId = null;
+    this.menuId = null;
 
     this.editState = 'idle';
     this.map = null;
     this.pos = vec3blank();
     this.scale = 1.0;
 
+    this.mouseDown = vec3blank();
     this.mouseDownWorld = vec3blank();
     this.mouse = vec3blank();
     this.mouseWorld = vec3blank();
@@ -22,7 +24,6 @@ function Editor(options) {
     this.undoHistory = [];
     this.redoHistory = [];
 
-    this.newObjects = [];
     this.selectedObjects = [];
     this.hoveringObjects = [];
 
@@ -41,6 +42,7 @@ Editor.prototype.go = function () {
     var jqCanvas = $('#' + this.canvasId);
     var jqPropEditor = $('#' + this.propEditorId);
     var jqToolbar = $('#' + this.toolbarId);
+    var jqMenu = $('#' + this.menuId);
 
     this.context = canvas.getContext('2d');
     this.width = jqCanvas.width();
@@ -74,6 +76,8 @@ Editor.prototype.go = function () {
 
     var entityTypes = [ LightEntity, StaticEntity ];
     var entityButtons = [];
+    var sectorTypes = [ MapSector, MapSectorWater, MapSectorVerticalDoor ];
+    var sectorButtons = [];
 
     for (var i = 0; i < entityTypes.length; i++) {
         entityButtons.push({
@@ -82,19 +86,68 @@ Editor.prototype.go = function () {
             click: $.proxy(this.addEntity, this)
         })
     }
+
+    for (var i = 0; i < sectorTypes.length; i++) {
+        sectorButtons.push({
+            id: sectorTypes[i].name,
+            text: sectorTypes[i].name,
+            click: $.proxy(this.addSector, this)
+        })
+    }
+
     jqToolbar.kendoToolBar({
         items: [
-            { id: 'undo', type: 'button', text: 'Undo', click: $.proxy(this.undo, this) },
-            { id: 'redo', type: 'button', text: 'Redo', click: $.proxy(this.redo, this) },
-            { id: 'addEntity', type: 'splitButton', text: 'Add', menuButtons: entityButtons  }
+            { id: 'undo', type: 'button', spriteCssClass: 'toolbar-fa fa fa-undo fa-fw', text: '', encoded: false, click: $.proxy(this.undo, this) },
+            { id: 'redo', type: 'button', spriteCssClass: 'toolbar-fa fa fa-repeat fa-fw', text: '', click: $.proxy(this.redo, this) },
+            { id: 'addEntity', type: 'splitButton', spriteCssClass: 'toolbar-fa fa fa-plus fa-fw', text: 'Add Entity', menuButtons: entityButtons  },
+            { id: 'addSector', type: 'splitButton', spriteCssClass: 'toolbar-fa fa fa-plus fa-fw', text: 'Add Sector', menuButtons: sectorButtons  }
         ]
+    });
+
+    jqMenu.kendoMenu({
+        select: $.proxy(this.menuSelect, this)
     });
 
     setInterval($.proxy(this.timer, this), 16);
 };
 
+Editor.prototype.menuCheckToggle = function (item) {
+    var icon = $(item).find("[class*='fa-check']").first();
+
+    icon.toggle();
+};
+
+Editor.prototype.menuSelect = function (e) {
+    var item = e.item;
+
+    if (item.id == 'menu-edit-undo')
+        this.undo();
+    else if (item.id == 'menu-edit-redo')
+        this.redo();
+    else if (item.id == 'menu-view-show-entity-types') {
+        this.entityTypesVisible = !this.entityTypesVisible;
+        this.menuCheckToggle(item);
+    }
+    else if (item.id == 'menu-view-show-sector-types') {
+        this.sectorTypesVisible = !this.sectorTypesVisible;
+        this.menuCheckToggle(item);
+    }
+    else if (item.id == 'menu-view-show-entities') {
+        this.entitiesVisible = !this.entitiesVisible;
+        this.menuCheckToggle(item);
+    }
+    else if (item.id == 'menu-view-center-on-player') {
+        this.centerOnPlayer = !this.centerOnPlayer;
+        this.menuCheckToggle(item);
+    }
+};
+
 Editor.prototype.addEntity = function (e) {
     this.newAction(AddEntityEditorAction).act(new classes[e.id]());
+};
+
+Editor.prototype.addSector = function (e) {
+    this.newAction(AddSectorEditorAction).act(new classes[e.id]());
 };
 
 Editor.prototype.renderPropertyName = function (row, type, set, meta) {
@@ -247,16 +300,27 @@ Editor.prototype.redo = function () {
 };
 
 Editor.prototype.onKeyPress = function (e) {
-    console.log(e);
+    if (e.keyCode == KEY_Z && e.ctrlKey) {
+        this.undo();
+    }
+    else if (e.keyCode == KEY_Y && e.ctrlKey) {
+        this.redo();
+    }
 };
 
 Editor.prototype.onMouseDown = function (e) {
     e.preventDefault();
 
+    $('#' + this.canvasId).focus();
+
+    this.mouseDown = vec3create(e.offsetX, e.offsetY, 0);
     this.mouseDownWorld = this.screenToWorld(e.offsetX, e.offsetY);
 
     if (e.button == 2 && this.editState == 'idle') {
         this.newAction(SelectEditorAction);
+    }
+    if (e.button == 1 && this.editState == 'idle') {
+        this.newAction(PanEditorAction);
     }
     else if (e.button == 0 && this.editState == 'idle' && this.selectedObjects.length > 0) {
         this.newAction(MoveEditorAction);
@@ -430,7 +494,7 @@ Editor.prototype.timer = function () {
         this.currentAction.frame();
 
     if (this.centerOnPlayer)
-        this.pos = this.map.player.pos;
+        this.pos = vec3clone(this.map.player.pos);
 
     this.context.setTransform(1.0, 0.0, 0.0, 1.0, 0.0, 0.0);
     this.context.fillStyle = '#000';
@@ -506,8 +570,8 @@ Editor.prototype.timer = function () {
             for (var j = 0; j < sector.entities.length; j++) {
                 var entity = sector.entities[j];
 
-                if (entity.pos[0] - entity.boundingRadius >= v1[0] && entity.pos[0] + entity.boundingRadius <= v2[0] &&
-                    entity.pos[1] - entity.boundingRadius >= v1[1] && entity.pos[1] + entity.boundingRadius <= v2[1]) {
+                if (entity.pos[0] + entity.boundingRadius >= v1[0] && entity.pos[0] - entity.boundingRadius <= v2[0] &&
+                    entity.pos[1] + entity.boundingRadius >= v1[1] && entity.pos[1] - entity.boundingRadius <= v2[1]) {
                     if ($.inArray(entity, this.hoveringObjects) == -1) {
                         this.hoveringObjects.push(entity);
                     }
@@ -517,8 +581,8 @@ Editor.prototype.timer = function () {
     }
 
     if (this.editState == 'selecting') {
-        if (this.map.player.pos[0] - this.map.player.boundingRadius >= v1[0] && this.map.player.pos[0] + this.map.player.boundingRadius <= v2[0] &&
-            this.map.player.pos[1] - this.map.player.boundingRadius >= v1[1] && this.map.player.pos[1] + this.map.player.boundingRadius <= v2[1]) {
+        if (this.map.player.pos[0] + this.map.player.boundingRadius >= v1[0] && this.map.player.pos[0] - this.map.player.boundingRadius <= v2[0] &&
+            this.map.player.pos[1] + this.map.player.boundingRadius >= v1[1] && this.map.player.pos[1] - this.map.player.boundingRadius <= v2[1]) {
             if ($.inArray(this.map.player, this.hoveringObjects) == -1) {
                 this.hoveringObjects.push(this.map.player);
             }
