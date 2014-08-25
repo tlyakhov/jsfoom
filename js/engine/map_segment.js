@@ -27,7 +27,10 @@ function MapSegment(options) {
 MapSegment.editableProperties = [
     { name: 'id', friendly: 'ID', type: 'string' },
     { name: 'ax', friendly: 'X', type: 'float' },
-    { name: 'ay', friendly: 'Y', type: 'float' }
+    { name: 'ay', friendly: 'Y', type: 'float' },
+    { name: 'midMaterialId', friendly: 'Middle Material', type: 'material_id' },
+    { name: 'loMaterialId', friendly: 'Low Material', type: 'material_id' },
+    { name: 'hiMaterialId', friendly: 'High Material', type: 'material_id' }
 ];
 
 classes['MapSegment'] = MapSegment;

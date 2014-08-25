@@ -26,11 +26,13 @@ function MapSector(options) {
 
 MapSector.editableProperties = [
     { name: 'id', friendly: 'ID', type: 'string' },
-    { name: 'topZ', friendly: 'Top Height', type: 'float' },
-    { name: 'bottomZ', friendly: 'Bottom Height', type: 'float' },
+    { name: 'topZ', friendly: 'Ceiling Height', type: 'float' },
+    { name: 'bottomZ', friendly: 'Floor Height', type: 'float' },
     { name: 'hurt', friendly: 'Hit points', type: 'float' },
     { name: 'floorScale', friendly: 'Floor Texture Scale', type: 'float' },
-    { name: 'ceilScale', friendly: 'Ceiling Texture Scale', type: 'float' }
+    { name: 'ceilScale', friendly: 'Ceiling Texture Scale', type: 'float' },
+    { name: 'ceilMaterialId', friendly: 'Ceiling Material', type: 'material_id' },
+    { name: 'floorMaterialId', friendly: 'Floor Material', type: 'material_id' }
 ];
 
 classes['MapSector'] = MapSector;
@@ -52,7 +54,7 @@ MapSector.prototype.update = function () {
     this.centerY /= this.segments.length;
 
     for (var i = 0; i < this.entities.length; i++) {
-        this.entities[i].map = this;
+        this.entities[i].map = this.map;
         this.entities[i].sector = this;
     }
 };

@@ -67,14 +67,14 @@
             screenWidth: 640,
             screenHeight: 360,
             canvasId: 'render-canvas',
-            map: testMap
+            map: Map.deserialize(testMap)
         });
 
         var globalEditor = new Editor({
             canvasId: 'edit-canvas',
             propEditorId: 'prop-editor',
             toolbarId: 'toolbar',
-            map: testMap
+            map: globalGame.map
         });
 
         function triggerResize() {

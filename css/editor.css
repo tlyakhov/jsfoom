@@ -49,3 +49,7 @@ body {
     padding: 0;
     margin: 0;
 }
+
+.editor-property-image {
+    height: 16px;
+}

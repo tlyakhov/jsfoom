@@ -10,6 +10,8 @@ function StaticEntity(options) {
 
 classes['StaticEntity'] = StaticEntity;
 
+StaticEntity.editableProperties = Entity.editableProperties;
+
 StaticEntity.prototype.frame = function (lastFrameTime) {
     this.parent.frame.call(this, lastFrameTime);
 };

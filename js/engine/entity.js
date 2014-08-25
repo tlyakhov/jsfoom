@@ -1,4 +1,5 @@
 function Entity(options) {
+    this.id = "Entity_" + (new ObjectId().toString());
     this.map = null;
     this.sector = null;
     this.pos = vec3create(0.0, 0.0, 0.0);
@@ -25,6 +26,17 @@ function Entity(options) {
 }
 
 classes['Entity'] = Entity;
+
+Entity.editableProperties = [
+    { name: 'id', friendly: 'ID', type: 'string' },
+    { name: 'pos', friendly: 'Position', type: 'vector' },
+    { name: 'angle', friendly: 'Angle', type: 'float' },
+    { name: 'width', friendly: 'Width', type: 'float' },
+    { name: 'height', friendly: 'Height', type: 'float' },
+    { name: 'boundingRadius', friendly: 'Bounding Radius', type: 'float' },
+    { name: 'collisionResponse', friendly: 'Collision Response', type: [ 'slide', 'bounce', 'stop' ] },
+    { name: 'zOffset', friendly: 'Vertical Offset', type: 'float' }
+];
 
 Entity.prototype.angleTo = function (x, y) {
     var dx = this.pos[0] - x;

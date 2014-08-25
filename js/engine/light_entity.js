@@ -16,6 +16,8 @@ function LightEntity(options) {
     $.extend(true, this, options);
 }
 
+LightEntity.editableProperties = Entity.editableProperties;
+
 classes['LightEntity'] = LightEntity;
 
 /*LightEntity.prototype.frame = function (lastFrameTime) {

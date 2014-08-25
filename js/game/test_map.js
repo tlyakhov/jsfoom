@@ -621,4 +621,4 @@ var testMap = new Map({
                     midMaterialId: 'Doom Garage Door',
                     adjacentSectorId: null,
                     loMaterialId: 'Default', hiMaterialId: 'Doom Garage Door', flags: 0 })]
-        }) ] });
+        }) ] }).serialize();
