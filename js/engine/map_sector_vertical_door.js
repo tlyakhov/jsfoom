@@ -1,6 +1,4 @@
-MapSectorVerticalDoor.prototype = new MapSector();
-MapSectorVerticalDoor.prototype.constructor = MapSectorVerticalDoor;
-MapSectorVerticalDoor.prototype.parent = MapSector.prototype;
+inherit(MapSector, MapSectorVerticalDoor);
 
 function MapSectorVerticalDoor(options) {
     this.parent.constructor.call(this, options);

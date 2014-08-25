@@ -8,6 +8,37 @@ function createFromName(name, opts) {
     return o;
 }
 
+function inherit(clazz, subclass) {
+    subclass.prototype = new clazz();
+    subclass.prototype.constructor = subclass;
+    subclass.prototype.parent = clazz.prototype;
+    subclass.superclasses = [ clazz ];
+
+    if (clazz.superclasses) {
+        for (var i = 0; i < clazz.superclasses; i++) {
+            subclass.superclasses.push(clazz.superclasses[i]);
+        }
+    }
+}
+
+function isA(object, clazz) {
+    if (!object)
+        return false;
+
+    if (object.constructor == clazz)
+        return true;
+
+    if (!object.constructor.superclasses)
+        return false;
+
+    for (var i = 0; i < object.constructor.superclasses.length; i++) {
+        if (object.constructor.superclasses[i] == clazz)
+            return true;
+    }
+
+    return false;
+}
+
 function fast_floor(v) {
     return v | 0;
 }

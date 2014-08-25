@@ -18,7 +18,11 @@ function Editor(options) {
     this.mouse = vec3blank();
     this.mouseWorld = vec3blank();
 
-    this.originalPositions = {}; // For moving
+    this.currentAction = null;
+    this.undoHistory = [];
+    this.redoHistory = [];
+
+    this.newObjects = [];
     this.selectedObjects = [];
     this.hoveringObjects = [];
 
@@ -55,6 +59,7 @@ Editor.prototype.go = function () {
     jqCanvas.on('contextmenu', function () {
         return false;
     });
+    jqCanvas.on('keydown', $.proxy(this.onKeyPress, this));
 
     jqPropEditor.DataTable({
         paging: false,
@@ -67,13 +72,29 @@ Editor.prototype.go = function () {
         data: []
     });
 
+    var entityTypes = [ LightEntity, StaticEntity ];
+    var entityButtons = [];
+
+    for (var i = 0; i < entityTypes.length; i++) {
+        entityButtons.push({
+            id: entityTypes[i].name,
+            text: entityTypes[i].name,
+            click: $.proxy(this.addEntity, this)
+        })
+    }
     jqToolbar.kendoToolBar({
         items: [
-            { type: 'button', text: 'Show Entity Types', togglable: true }
+            { id: 'undo', type: 'button', text: 'Undo', click: $.proxy(this.undo, this) },
+            { id: 'redo', type: 'button', text: 'Redo', click: $.proxy(this.redo, this) },
+            { id: 'addEntity', type: 'splitButton', text: 'Add', menuButtons: entityButtons  }
         ]
     });
 
     setInterval($.proxy(this.timer, this), 16);
+};
+
+Editor.prototype.addEntity = function (e) {
+    this.newAction(AddEntityEditorAction).act(new classes[e.id]());
 };
 
 Editor.prototype.renderPropertyName = function (row, type, set, meta) {
@@ -102,6 +123,11 @@ Editor.prototype.renderPropertyValue = function (row, type, set, meta) {
         for (var i = 0; i < materialIds.length; i++) {
             if (result.length > 0)
                 result += ', ';
+
+            if (!materialIds[i]) {
+                result += '<i>[empty]</i>';
+                continue;
+            }
 
             var material = this.map.getMaterial(materialIds[i]);
 
@@ -155,8 +181,9 @@ Editor.prototype.selectObject = function (objects) {
         uniqueTypes[objects[i].constructor.name] = true;
     }
 
-    if (uniqueTypes.length > 1) {
-        dt.row.add({ name: 'Error', value: 'Selected objects have multiple types', type: 'string' });
+    if (Object.keys(uniqueTypes).length > 1) {
+        dt.row.add({ name: '', value: 'Selected objects have multiple types', type: 'string' });
+        dt.rows().invalidate().draw();
         return;
     }
 
@@ -186,104 +213,81 @@ Editor.prototype.worldToScreen = function (x, y) {
             (y - this.pos[1]) * this.scale + this.height / 2, 0);
 };
 
+Editor.prototype.newAction = function (clazz) {
+    this.currentAction = new clazz(this);
+    this.undoHistory.push(this.currentAction);
+    if (this.undoHistory.length > 100) {
+        this.undoHistory = this.undoHistory.slice(this.undoHistory.length - 100);
+    }
+    this.redoHistory = [];
+
+    return this.currentAction;
+};
+
+Editor.prototype.undo = function () {
+    var action = this.undoHistory.pop();
+
+    if (!action)
+        return;
+
+    action.undo();
+
+    this.redoHistory.push(action);
+};
+
+Editor.prototype.redo = function () {
+    var action = this.redoHistory.pop();
+
+    if (!action)
+        return;
+
+    action.redo();
+
+    this.undoHistory.push(action);
+};
+
+Editor.prototype.onKeyPress = function (e) {
+    console.log(e);
+};
+
 Editor.prototype.onMouseDown = function (e) {
     e.preventDefault();
 
     this.mouseDownWorld = this.screenToWorld(e.offsetX, e.offsetY);
 
     if (e.button == 2 && this.editState == 'idle') {
-        this.editState = 'selectionStart';
+        this.newAction(SelectEditorAction);
     }
     else if (e.button == 0 && this.editState == 'idle' && this.selectedObjects.length > 0) {
-        this.editState = 'movingStart';
+        this.newAction(MoveEditorAction);
+    }
 
-        this.originalPositions = {};
-        for (var i = 0; i < this.selectedObjects.length; i++) {
-            var object = this.selectedObjects[i];
-            var op = null;
+    if (this.currentAction)
+        this.currentAction.onMouseDown(e);
 
-            if (object.constructor.name == 'MapSegment') {
-                op = vec3create(object.ax, object.ay, 0);
-            }
-            else if (object.parent.constructor.name == 'Entity') {
-                op = vec3clone(object.pos);
-            }
-            else if (object.constructor.name == 'MapSector') {
-                op = { segments: [], entities: [], adj: {} };
-                for (var j = 0; j < object.segments.length; j++) {
-                    op.segments.push(vec3create(object.segments[j].ax, object.segments[j].ay, 0));
+    return false;
+};
 
-                    var adj = object.segments[j].getAdjacentSegment();
+Editor.prototype.findSector = function () {
+    for (var i = 0; i < this.map.sectors.length; i++) {
+        var sector = this.map.sectors[i];
 
-                    if (adj) {
-                        op.adj[adj.id] = vec3create(adj.ax, adj.ay, 0);
-                    }
-                }
-                for (var j = 0; j < object.entities.length; j++) {
-                    op.entities.push(vec3clone(object.entities[j].pos));
-                }
-
-            }
-            this.originalPositions[object.constructor.name + '|' + object.id] = op;
+        if (sector.isPointInside(this.mouseWorld[0], this.mouseWorld[1])) {
+            return sector;
         }
     }
 
-    return false;
+    return null;
 };
 
 Editor.prototype.onMouseMove = function (e) {
     e.preventDefault();
 
-    if (this.editState == 'selectionStart') {
-        this.editState = 'selecting';
-    }
-    else if (this.editState == 'movingStart') {
-        this.editState = 'moving';
-    }
-
     this.mouse = vec3create(e.offsetX, e.offsetY, 0);
     this.mouseWorld = this.screenToWorld(this.mouse[0], this.mouse[1]);
 
-    if (this.editState == 'moving') {
-        var dx = this.mouseWorld[0] - this.mouseDownWorld[0];
-        var dy = this.mouseWorld[1] - this.mouseDownWorld[1];
-
-        for (var i = 0; i < this.selectedObjects.length; i++) {
-            var object = this.selectedObjects[i];
-            var op = this.originalPositions[object.constructor.name + '|' + object.id];
-            if (object.constructor.name == 'MapSegment') {
-                object.ax = op[0] + dx;
-                object.ay = op[1] + dy;
-                object.sector.update();
-            }
-            else if (object.parent.constructor.name == 'Entity') {
-                object.pos[0] = op[0] + dx;
-                object.pos[1] = op[1] + dy;
-                object.updateSector();
-            }
-            else if (object.constructor.name == 'MapSector') {
-                for (var j = 0; j < object.segments.length; j++) {
-                    var segment = object.segments[j];
-
-                    segment.ax = op.segments[j][0] + dx;
-                    segment.ay = op.segments[j][1] + dy;
-
-                    var adj = segment.getAdjacentSegment();
-
-                    if (adj) {
-                        adj.ax = op.adj[adj.id][0] + dx;
-                        adj.ay = op.adj[adj.id][1] + dy;
-                        adj.sector.update();
-                    }
-                }
-                for (var j = 0; j < object.entities.length; j++) {
-                    object.entities[j].pos[0] = op.entities[j][0] + dx;
-                    object.entities[j].pos[1] = op.entities[j][1] + dy;
-                }
-                object.update();
-            }
-        }
-    }
+    if (this.currentAction)
+        this.currentAction.onMouseMove(e);
 
     return false;
 };
@@ -291,15 +295,9 @@ Editor.prototype.onMouseMove = function (e) {
 Editor.prototype.onMouseUp = function (e) {
     e.preventDefault();
 
-    if (e.button == 2) {
-        this.selectObject(this.hoveringObjects);
-    }
+    if (this.currentAction)
+        this.currentAction.onMouseUp(e);
 
-    if (this.editState == 'moving') {
-        this.selectObject(this.selectedObjects); // Updates properties.
-    }
-
-    this.editState = 'idle';
     return false;
 };
 
@@ -329,7 +327,7 @@ Editor.prototype.drawEntity = function (entity) {
     var entityHovering = ($.inArray(entity, this.hoveringObjects) != -1);
     var entitySelected = ($.inArray(entity, this.selectedObjects) != -1);
 
-    if (entity.constructor == Player) {
+    if (isA(entity, Player)) {
         // Let's get fancy:
         this.context.strokeStyle = '#999';
         this.context.beginPath();
@@ -340,9 +338,9 @@ Editor.prototype.drawEntity = function (entity) {
         this.context.strokeStyle = '#555';
         this.drawEntityAngle(entity);
     }
-    else if (entity.constructor == LightEntity)
+    else if (isA(entity, LightEntity))
         this.context.strokeStyle = '#' + rgb2hex(entity.diffuse);
-    else if (entity.constructor == StaticEntity) {
+    else if (isA(entity, StaticEntity)) {
         this.context.strokeStyle = '#AAA';
         this.drawEntityAngle(entity);
         this.context.strokeStyle = '#888';
@@ -428,6 +426,8 @@ Editor.prototype.timer = function () {
     //var canvas = document.getElementById(this.canvasId);
     //this.context = canvas.getContext('2d');
 
+    if (this.currentAction)
+        this.currentAction.frame();
 
     if (this.centerOnPlayer)
         this.pos = this.map.player.pos;
@@ -471,7 +471,7 @@ Editor.prototype.timer = function () {
         v2[1] = tmp;
     }
 
-    // Selection
+    // Hovering
     for (var i = 0; i < this.map.sectors.length; i++) {
         var sector = this.map.sectors[i];
 
@@ -502,14 +502,25 @@ Editor.prototype.timer = function () {
             }
         }
 
-        for (var j = 0; j < sector.entities.length; j++) {
-            var entity = sector.entities[j];
+        if (this.editState == 'selecting') {
+            for (var j = 0; j < sector.entities.length; j++) {
+                var entity = sector.entities[j];
 
-            if (entity.pos[0] - entity.boundingRadius >= v1[0] && entity.pos[0] + entity.boundingRadius <= v2[0] &&
-                entity.pos[1] - entity.boundingRadius >= v1[1] && entity.pos[1] + entity.boundingRadius <= v2[1]) {
-                if ($.inArray(entity, this.hoveringObjects) == -1) {
-                    this.hoveringObjects.push(entity);
+                if (entity.pos[0] - entity.boundingRadius >= v1[0] && entity.pos[0] + entity.boundingRadius <= v2[0] &&
+                    entity.pos[1] - entity.boundingRadius >= v1[1] && entity.pos[1] + entity.boundingRadius <= v2[1]) {
+                    if ($.inArray(entity, this.hoveringObjects) == -1) {
+                        this.hoveringObjects.push(entity);
+                    }
                 }
+            }
+        }
+    }
+
+    if (this.editState == 'selecting') {
+        if (this.map.player.pos[0] - this.map.player.boundingRadius >= v1[0] && this.map.player.pos[0] + this.map.player.boundingRadius <= v2[0] &&
+            this.map.player.pos[1] - this.map.player.boundingRadius >= v1[1] && this.map.player.pos[1] + this.map.player.boundingRadius <= v2[1]) {
+            if ($.inArray(this.map.player, this.hoveringObjects) == -1) {
+                this.hoveringObjects.push(this.map.player);
             }
         }
     }

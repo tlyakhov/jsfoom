@@ -1,6 +1,4 @@
-StaticEntity.prototype = new Entity();
-StaticEntity.prototype.constructor = StaticEntity;
-StaticEntity.prototype.parent = Entity.prototype;
+inherit(Entity, StaticEntity);
 
 function StaticEntity(options) {
     this.parent.constructor.call(this, options);

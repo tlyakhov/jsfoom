@@ -1,6 +1,4 @@
-MapSectorWater.prototype = new MapSector();
-MapSectorWater.prototype.constructor = MapSectorWater;
-MapSectorWater.prototype.parent = MapSector.prototype;
+inherit(MapSector, MapSectorWater);
 
 function MapSectorWater(options) {
     this.parent.constructor.call(this, options);

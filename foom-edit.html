@@ -61,7 +61,11 @@
     <script src="js/game/test_map.js"></script>
     <script src="js/game/input.js"></script>
     <script src="js/game/main.js"></script>
-    <script src="js/engine/editor.js"></script>
+    <script src="js/engine/editor/editor.js"></script>
+    <script src="js/engine/editor/editor_action.js"></script>
+    <script src="js/engine/editor/select_editor_action.js"></script>
+    <script src="js/engine/editor/move_editor_action.js"></script>
+    <script src="js/engine/editor/add_entity_editor_action.js"></script>
     <script>
         var globalGame = new GameMain({
             screenWidth: 640,
@@ -104,20 +108,20 @@
         });
     </script>
 </head>
-<body onkeydown="keyDown(event);return false;"
-      onkeyup="keyUp(event); return false;">
+<body>
 <div class="container">
     <div id="toolbar">
     </div>
     <div id="main-splitter">
         <div id="edit-view">
-            <canvas id="edit-canvas">
+            <canvas id="edit-canvas" tabindex="1">
             </canvas>
             </div>
         <div id="prop-view">
             <div id="prop-splitter">
                 <div id="render-view">
-                    <canvas id="render-canvas">
+                    <canvas id="render-canvas" tabindex="2" onkeydown="keyDown(event);return false;"
+                            onkeyup="keyUp(event); return false;">
                     </canvas>
                 </div>
                 <div id="prop-editor-view">

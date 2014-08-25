@@ -1,6 +1,4 @@
-Player.prototype = new Entity();
-Player.prototype.constructor = Player;
-Player.prototype.parent = Entity.prototype;
+inherit(Entity, Player);
 
 function Player(options) {
     this.parent.constructor.call(this, options);
@@ -15,6 +13,8 @@ function Player(options) {
 }
 
 classes['Player'] = Player;
+
+Player.editableProperties = Entity.editableProperties;
 
 Player.prototype.frame = function (lastFrameTime) {
     this.parent.frame.call(this, lastFrameTime);

@@ -228,7 +228,14 @@ Renderer.prototype.renderEntity = function (renderTarget, entity) {
         ang -= 360.0;
 
     var sprite = entity.getSprite(normalizeAngle(360 - etop + entity.angle));
+
+    if (!sprite)
+        return;
+
     var texture = sprite.getTexture();
+
+    if (!texture)
+        return;
 
     var d = map.player.distanceTo(entity.pos[0], entity.pos[1]);
     var x = (ang + this.fov / 2.0) * this.screenWidth / this.fov;
