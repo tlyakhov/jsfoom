@@ -9,6 +9,7 @@ function AddEntityEditorAction(editor) {
 AddEntityEditorAction.prototype.act = function (newEntity) {
     this.editor.editState = 'addEntity';
     this.entity = newEntity;
+    this.editor.selectObject([newEntity]);
 };
 
 AddEntityEditorAction.prototype.removeFromMap = function () {
@@ -39,6 +40,11 @@ AddEntityEditorAction.prototype.onMouseMove = function (e) {
         this.sector = sector;
         this.entity.pos = vec3clone(this.editor.mouseWorld);
         this.entity.pos[2] = (sector.topZ + sector.bottomZ) / 2;
+
+        if (this.editor.gridVisible) {
+            this.entity.pos[0] = Math.round(this.entity.pos[0] / this.editor.gridSize) * this.editor.gridSize;
+            this.entity.pos[1] = Math.round(this.entity.pos[1] / this.editor.gridSize) * this.editor.gridSize;
+        }
     }
 };
 AddEntityEditorAction.prototype.onMouseUp = function (e) {

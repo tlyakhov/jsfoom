@@ -1,13 +1,12 @@
 inherit(Entity, Player);
 
 function Player(options) {
-    this.parent.constructor.call(this, options);
+    Entity.call(this, options);
 
     this.height = GAME_CONSTANTS.playerHeight;
     this.boundingRadius = GAME_CONSTANTS.playerBoundingRadius;
     this.standing = true;
     this.crouching = false;
-    this.renderable = false;
 
     $.extend(true, this, options);
 }
@@ -17,7 +16,7 @@ classes['Player'] = Player;
 Player.editableProperties = Entity.editableProperties;
 
 Player.prototype.frame = function (lastFrameTime) {
-    this.parent.frame.call(this, lastFrameTime);
+    Entity.prototype.frame.call(this, lastFrameTime);
 
     if (Math.abs(this.pos[2] - this.sector.bottomZ) < 0.01)
         this.standing = true;
@@ -38,7 +37,7 @@ Player.prototype.frame = function (lastFrameTime) {
 };
 
 Player.prototype.hurt = function (amount) {
-    this.parent.hurt.call(this, amount);
+    Entity.prototype.hurt.call(this, amount);
 
     this.hurtTime = GAME_CONSTANTS.playerHurtTime;
 };

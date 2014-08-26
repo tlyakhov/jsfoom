@@ -18,5 +18,6 @@ var GAME_CONSTANTS = {
     playerMountHeight: 30.0,
     collisionCheck: 2.0,
     liquidChurnSpeed: 2.0,
-    liquidChurnSize: 0.03
+    liquidChurnSize: 0.03,
+    doorSpeed: 3.0
 };

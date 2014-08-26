@@ -3,19 +3,13 @@ function Entity(options) {
     this.map = null;
     this.sector = null;
     this.pos = vec3create(0.0, 0.0, 0.0);
-    this.width = 64.0;
-    this.height = 64.0;
     this.angle = 0.0;
     this.vel = vec3blank(false);
-    this.type = null;
-    this.renderable = true;
     this.hurtTime = 0;
     this.boundingRadius = 10.0;
     this.collisionResponse = 'slide'; // can be 'slide', 'bounce', or 'stop'
     this.health = 100;
     this.mountHeight = GAME_CONSTANTS.playerMountHeight;
-    this.sprites = {};
-    this.zOffset = 0.0;
 
     if (options) {
         $.extend(true, this, options);
@@ -31,11 +25,8 @@ Entity.editableProperties = [
     { name: 'id', friendly: 'ID', type: 'string' },
     { name: 'pos', friendly: 'Position', type: 'vector' },
     { name: 'angle', friendly: 'Angle', type: 'float' },
-    { name: 'width', friendly: 'Width', type: 'float' },
-    { name: 'height', friendly: 'Height', type: 'float' },
     { name: 'boundingRadius', friendly: 'Bounding Radius', type: 'float' },
-    { name: 'collisionResponse', friendly: 'Collision Response', type: [ 'slide', 'bounce', 'stop' ] },
-    { name: 'zOffset', friendly: 'Vertical Offset', type: 'float' }
+    { name: 'collisionResponse', friendly: 'Collision Response', type: [ 'slide', 'bounce', 'stop' ] }
 ];
 
 Entity.prototype.angleTo = function (x, y) {
@@ -47,12 +38,6 @@ Entity.prototype.angleTo = function (x, y) {
 
 Entity.prototype.distanceTo = function (x, y) {
     return Math.sqrt(sqr(x - this.pos[0]) + sqr(y - this.pos[1]));
-};
-
-Entity.prototype.getSprite = function (angle) {
-    var index = fast_floor(angle * Object.keys(this.sprites).length / 360.0);
-
-    return this.sprites[index];
 };
 
 Entity.prototype.collide = function (frameScale) {
@@ -141,24 +126,14 @@ Entity.prototype.serialize = function () {
     var r = {
         _type: this.constructor.name,
         pos: this.pos,
-        width: this.width,
-        height: this.height,
         angle: this.angle,
         vel: this.vel,
-        type: this.type,
-        renderable: this.renderable,
         hurtTime: this.hurtTime,
         boundingRadius: this.boundingRadius,
         collisionResponse: this.collisionResponse,
         health: this.health,
         mountHeight: this.mountHeight,
-        zOffset: this.zOffset,
-        sprites: {}
     };
-
-    for (var s in this.sprites) {
-        r.sprites[s] = this.sprites[s].serialize();
-    }
 
     return r;
 };
@@ -168,23 +143,14 @@ Entity.deserialize = function (data, map, entity) {
         entity = createFromName(data._type, {});
 
     entity.pos = data.pos;
-    entity.width = data.width;
-    entity.height = data.height;
     entity.angle = data.angle;
     entity.vel = data.vel;
-    entity.type = data.type;
-    entity.renderable = data.renderable;
     entity.hurtTime = data.hurtTime;
     entity.boundingRadius = data.boundingRadius;
     entity.collisionResponse = data.collisionResponse;
     entity.health = data.health;
     entity.mountHeight = data.mountHeight;
-    entity.zOffset = data.zOffset;
     entity.map = map;
-
-    for (var s in data.sprites) {
-        entity.sprites[s] = Sprite.deserialize(data.sprites[s], entity.sprites[s]);
-    }
 
     return entity;
 };

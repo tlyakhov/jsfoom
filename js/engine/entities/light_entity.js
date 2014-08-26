@@ -1,32 +1,28 @@
 inherit(Entity, LightEntity);
 
 function LightEntity(options) {
-    this.parent.constructor.call(this, options);
+    Entity.call(this, options);
 
     this.diffuse = vec3create(1.0, 1.0, 1.0);
     this.specular = vec3create(1.0, 1.0, 1.0);
     this.boundingRadius = 5.0;
     this.strength = 50.0;
-    this.renderable = false;
 
     $.extend(true, this, options);
 }
 
-LightEntity.editableProperties = Entity.editableProperties;
+LightEntity.editableProperties = Entity.editableProperties.concat([
+    { name: 'diffuse', friendly: 'Diffuse', type: 'vector' },
+    { name: 'specular', friendly: 'Specular', type: 'vector' },
+    { name: 'strength', friendly: 'Strength', type: 'float' }
+]).filter(function (element) {
+    return element.name != 'angle';
+});
 
 classes['LightEntity'] = LightEntity;
 
-/*LightEntity.prototype.frame = function (lastFrameTime) {
- this.parent.frame.call(this, lastFrameTime);
-
- if(this.pos[2] <= this.sector.bottomZ)
- this.vel[2] = 0.5;
- if(this.pos[2] >= this.sector.topZ)
- this.vel[2] = -0.5;
- };*/
-
 LightEntity.prototype.serialize = function () {
-    var r = this.parent.serialize.call(this);
+    var r = Entity.prototype.serialize.call(this);
 
     r.diffuse = this.diffuse;
     r.specular = this.specular;

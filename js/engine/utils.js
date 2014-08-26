@@ -131,3 +131,7 @@ function sqr(x) {
 function dist2(ax, ay, bx, by) {
     return sqr(bx - ax) + sqr(by - ay);
 }
+
+function typeof2(object) {
+    return Object.prototype.toString.call(object);
+}

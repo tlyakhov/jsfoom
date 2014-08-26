@@ -2,6 +2,9 @@ function EditorAction(editor) {
     this.editor = editor;
 }
 
+EditorAction.prototype.act = function () {
+};
+
 EditorAction.prototype.onMouseDown = function (e) {
 };
 EditorAction.prototype.onMouseMove = function (e) {

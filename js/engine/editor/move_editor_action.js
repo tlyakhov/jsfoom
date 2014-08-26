@@ -1,7 +1,7 @@
 inherit(EditorAction, MoveEditorAction);
 
 function MoveEditorAction(editor) {
-    this.parent.constructor.call(this, editor);
+    EditorAction.call(this, editor);
 
     this.originalPositions = {};
     this.selectedObjects = [];
@@ -34,6 +34,11 @@ MoveEditorAction.prototype.move = function (toOriginal) {
     var editor = this.editor;
     var dx = toOriginal ? 0 : this.dx;
     var dy = toOriginal ? 0 : this.dy;
+
+    if (editor.gridVisible) {
+        dx = Math.round(dx / editor.gridSize) * editor.gridSize;
+        dy = Math.round(dy / editor.gridSize) * editor.gridSize;
+    }
 
     for (var i = 0; i < this.selectedObjects.length; i++) {
         var object = this.selectedObjects[i];

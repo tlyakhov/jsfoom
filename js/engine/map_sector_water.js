@@ -1,12 +1,14 @@
 inherit(MapSector, MapSectorWater);
 
 function MapSectorWater(options) {
-    this.parent.constructor.call(this, options);
+    MapSector.call(this, options);
 
     $.extend(true, this, options);
 }
 
 classes['MapSectorWater'] = MapSectorWater;
+
+MapSectorWater.editableProperties = MapSector.editableProperties;
 
 MapSectorWater.prototype.actOnEntity = function (entity) {
     if (entity.sector.id != this.id)
@@ -24,14 +26,14 @@ MapSectorWater.prototype.actOnEntity = function (entity) {
 };
 
 MapSectorWater.prototype.onEnter = function (entity) {
-    this.parent.onEnter.call(this, entity);
+    MapSector.prototype.onEnter.call(this, entity);
 
     if (globalGame && entity.constructor == Player)
         globalGame.frameTint = 75 | 147 << 8 | 255 << 16 | 90 << 24;
 };
 
 MapSectorWater.prototype.onExit = function (entity) {
-    this.parent.onExit.call(this, entity);
+    MapSector.prototype.onExit.call(this, entity);
 
     if (globalGame && entity.constructor == Player)
         globalGame.frameTint = 0;

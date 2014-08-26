@@ -1,5 +1,6 @@
 var EDITOR_CONSTANTS = {
     segmentSelectionEpsilon: 5.0,
+    gridSize: 10.0,
     colorSelectionPrimary: '#0F0',
     colorSelectionSecondary: '#0FF'
 };
@@ -27,12 +28,12 @@ function Editor(options) {
     this.selectedObjects = [];
     this.hoveringObjects = [];
 
-    this.centerOnPlayer = true;
+    this.centerOnPlayer = false;
     this.sectorTypesVisible = true;
     this.entityTypesVisible = true;
     this.gridVisible = true;
     this.entitiesVisible = true;
-    this.gridSize = 10;
+    this.gridSize = EDITOR_CONSTANTS.gridSize;
 
     $.extend(true, this, options);
 }
@@ -67,9 +68,10 @@ Editor.prototype.go = function () {
         paging: false,
         info: false,
         searching: false,
+        rowCallback: $.proxy(this.propertyRowCallback, this),
         columns: [
             { title: 'Name', name: 'name', data: $.proxy(this.renderPropertyName, this) },
-            { title: 'Value', name: 'value', data: $.proxy(this.renderPropertyValue, this) }
+            { title: 'Value', name: 'value', render: $.proxy(this.renderPropertyValue, this), data: $.proxy(this.dataPropertyValue, this) }
         ],
         data: []
     });
@@ -120,6 +122,11 @@ Editor.prototype.menuCheckToggle = function (item) {
 Editor.prototype.menuSelect = function (e) {
     var item = e.item;
 
+    if (item.id == 'menu-file-download') {
+        var s = this.map.stringSerialize();
+
+        window.open('data:application/json;base64,' + (window.btoa ? btoa(s) : s));
+    }
     if (item.id == 'menu-edit-undo')
         this.undo();
     else if (item.id == 'menu-edit-redo')
@@ -150,110 +157,12 @@ Editor.prototype.addSector = function (e) {
     this.newAction(AddSectorEditorAction).act(new classes[e.id]());
 };
 
-Editor.prototype.renderPropertyName = function (row, type, set, meta) {
-    if (type == 'sort') {
-        if (row.name == 'id')
-            return '!!!' + row.name;
-        else if (row.type == 'type')
-            return '!!' + row.name;
-        else if (row.type == 'material_id')
-            return '!' + row.name;
-        else
-            return row.name;
-    }
-
-    return row.name;
-};
-
-Editor.prototype.renderPropertyValue = function (row, type, set, meta) {
-    var isArray = Object.prototype.toString.call(row.value) === '[object Array]';
-    var isEnum = Object.prototype.toString.call(row.type) === '[object Array]';
-
-    if (row.type == 'material_id') {
-        var result = '';
-        var materialIds = isArray ? row.value : [ row.value ];
-
-        for (var i = 0; i < materialIds.length; i++) {
-            if (result.length > 0)
-                result += ', ';
-
-            if (!materialIds[i]) {
-                result += '<i>[empty]</i>';
-                continue;
-            }
-
-            var material = this.map.getMaterial(materialIds[i]);
-
-            if (!material) {
-                result += 'ERROR - ' + materialIds[i];
-                continue;
-            }
-
-            result += "<img src=\"" + material.textureSrc + "\" class=\"editor-property-image\" /><b>" + material.id + "</b>";
-        }
-
-        return result;
-    }
-    else if (row.type == 'vector') {
-        var result = '';
-        var vectors = isArray ? row.value : [ row.value ];
-
-        for (var i = 0; i < vectors.length; i++) {
-            if (result.length > 0)
-                result += ', ';
-
-            result += '[<b>' + vectors[i][0] + '</b>,<b>' + vectors[i][1] + '</b>,<b>' + vectors[i][2] + '</b>]';
-        }
-
-        return result;
-    }
-
-    if (isArray)
-        return row.value.join(', ');
-    else
-        return row.value;
-};
-
 Editor.prototype.selectObject = function (objects) {
-    var jqPropEditor = $('#' + this.propEditorId);
-    var dt = jqPropEditor.DataTable();
-
     if (!objects || objects.length == 0)
         objects = [ this.map ];
 
     this.selectedObjects = objects;
-
-    dt.rows().clear();
-
-    if (objects.length == 0)
-        return;
-
-    var uniqueTypes = {};
-
-    for (var i = 0; i < objects.length; i++) {
-        uniqueTypes[objects[i].constructor.name] = true;
-    }
-
-    if (Object.keys(uniqueTypes).length > 1) {
-        dt.row.add({ name: '', value: 'Selected objects have multiple types', type: 'string' });
-        dt.rows().invalidate().draw();
-        return;
-    }
-
-    dt.row.add({ name: 'Type', value: objects[0].constructor.name, type: 'type' });
-
-    var properties = objects[0].constructor.editableProperties;
-    for (var i = 0; i < properties.length; i++) {
-        var prop = properties[i];
-
-        var all = [];
-        for (var j = 0; j < objects.length; j++) {
-            all.push(objects[j][prop.name]);
-        }
-        dt.row.add({ name: prop.friendly, value: all, type: prop.type });
-    }
-
-    dt.rows().invalidate().draw();
+    this.refreshPropertyGrid();
 };
 
 Editor.prototype.screenToWorld = function (x, y) {
@@ -447,13 +356,13 @@ Editor.prototype.drawSector = function (sector) {
         var segmentHovering = ($.inArray(segment, this.hoveringObjects) != -1);
         var segmentSelected = ($.inArray(segment, this.selectedObjects) != -1);
 
-        if (segment.midMaterialId)
+        if (!segment.adjacentSectorId)
             this.context.strokeStyle = '#FFF';
         else
             this.context.strokeStyle = '#FF0';
 
         if (sectorHovering || sectorSelected) {
-            if (segment.midMaterialId)
+            if (!segment.adjacentSectorId)
                 this.context.strokeStyle = EDITOR_CONSTANTS.colorSelectionPrimary;
             else
                 this.context.strokeStyle = EDITOR_CONSTANTS.colorSelectionSecondary;
@@ -502,7 +411,7 @@ Editor.prototype.timer = function () {
     this.context.translate(-this.pos[0] * this.scale + this.width / 2, -this.pos[1] * this.scale + this.height / 2);
     this.context.scale(this.scale, this.scale);
 
-    if (this.gridVisible && this.scale * this.gridSize > 3.0) {
+    if (this.gridVisible && this.scale * this.gridSize > 5.0) {
         this.context.fillStyle = '#333';
         var vStart = this.screenToWorld(0, 0);
         var vEnd = this.screenToWorld(this.width, this.height);
@@ -607,4 +516,11 @@ Editor.prototype.timer = function () {
     }
 
     this.drawEntity(this.map.player);
+};
+
+Editor.prototype.setCursor = function (cursor) {
+    if (cursor)
+        $('#' + this.canvasId).css('cursor', cursor);
+    else
+        $('#' + this.canvasId).css('cursor', 'auto');
 };

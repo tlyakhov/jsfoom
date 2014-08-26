@@ -1,7 +1,7 @@
 inherit(EditorAction, PanEditorAction);
 
 function PanEditorAction(editor) {
-    this.parent.constructor.call(this, editor);
+    EditorAction.call(this, editor);
     this.delta = null;
     this.originalPosition = null;
 }

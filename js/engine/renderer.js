@@ -273,7 +273,7 @@ Renderer.prototype.render = function (renderTarget) {
 
     for (var i = 0; i < map.sectors.length; i++) {
         for (var j = 0; j < map.sectors[i].entities.length; j++) {
-            if (map.sectors[i].entities[j].constructor == LightEntity)
+            if (isA(map.sectors[i].entities[j], LightEntity))
                 lights.push(map.sectors[i].entities[j]);
         }
     }
@@ -322,7 +322,7 @@ Renderer.prototype.render = function (renderTarget) {
         var sector = this.frameSectors[sid];
 
         for (var i = 0; i < sector.entities.length; i++) {
-            if (sector.entities[i].renderable)
+            if (isA(sector.entities[i], RenderableEntity))
                 this.renderEntity(renderTarget, sector.entities[i]);
         }
     }

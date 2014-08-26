@@ -137,17 +137,19 @@ MapSector.prototype.collide = function (entity) {
 
     var fm = this.getFloorMaterial();
 
-    if (fm.hurt > 0 && entity.pos[2] <= this.bottomZ && entity.hurtTime == 0) {
-        entity.hurt(fm.hurt);
+    if (fm) {
+        if (fm.hurt > 0 && entity.pos[2] <= this.bottomZ && entity.hurtTime == 0) {
+            entity.hurt(fm.hurt);
+        }
     }
 
     var cm = this.getCeilMaterial();
 
-    if (cm.hurt > 0 && entityTop >= this.topZ && entity.hurtTime == 0) {
-        entity.hurt(cm.hurt);
+    if (cm) {
+        if (cm.hurt > 0 && entityTop >= this.topZ && entity.hurtTime == 0) {
+            entity.hurt(cm.hurt);
+        }
     }
-
-
 };
 
 MapSector.prototype.actOnEntity = function (entity) {
@@ -221,7 +223,7 @@ MapSector.deserialize = function (data, map, sector) {
     sector.floorTargetSectorId = data.floorTargetSectorId;
     sector.ceilTargetSectorId = data.ceilTargetSectorId;
     sector.map = map;
-    
+
     for (var i = 0; i < data.segments.length; i++) {
         if (i >= sector.segments.length)
             sector.segments.push(MapSegment.deserialize(data.segments[i], sector));

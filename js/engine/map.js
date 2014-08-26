@@ -102,3 +102,16 @@ Map.deserialize = function (data, map) {
 
     return map;
 };
+
+Map.prototype.stringSerialize = function () {
+    var replacer = function (key, value) {
+        var type = typeof2(value);
+
+        if (type == '[object Float64Array]')
+            return Array.apply([], value);
+        else
+            return value;
+    };
+
+    return JSON.stringify(this.serialize(), replacer);
+};

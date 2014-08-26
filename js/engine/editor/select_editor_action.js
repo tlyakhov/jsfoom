@@ -1,7 +1,7 @@
 inherit(EditorAction, SelectEditorAction);
 
 function SelectEditorAction(editor) {
-    this.parent.constructor.call(this, editor);
+    EditorAction.call(this, editor);
 
     this.originalObjects = [];
     this.selectedObjects = [];
