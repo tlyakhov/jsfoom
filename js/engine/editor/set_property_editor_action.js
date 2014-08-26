@@ -9,6 +9,8 @@ function SetPropertyEditorAction(editor) {
     this.originalValues = [];
 }
 
+classes['SetPropertyEditorAction'] = SetPropertyEditorAction;
+
 SetPropertyEditorAction.prototype.act = function (property, value) {
     this.selectedObjects = this.editor.selectedObjects;
     this.property = property;
@@ -18,7 +20,7 @@ SetPropertyEditorAction.prototype.act = function (property, value) {
         this.originalValues.push(this.selectedObjects[i][property]);
         this.selectedObjects[i][property] = value;
     }
-    this.editor.currentAction = null;
+    this.editor.actionFinished();
 };
 
 SetPropertyEditorAction.prototype.undo = function () {

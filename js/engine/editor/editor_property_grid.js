@@ -15,10 +15,15 @@ Editor.prototype.renderPropertyName = function (row, type, set, meta) {
 
 Editor.prototype.dataPropertyValue = function (row, type, set, meta) {
     if (type == 'set') {
-        if (row.type == 'float')
+        if (row.type == 'float') {
             set = parseFloat(set);
-
+        }
+        else if (row.type == 'vector') {
+            var split = set.split(',')
+            set = vec3create(parseFloat(split[0]), parseFloat(split[1]), parseFloat(split[2]));
+        }
         row.value = set;
+
         var sp = this.newAction(SetPropertyEditorAction);
         sp.act(row.name, set);
     }
@@ -97,7 +102,7 @@ Editor.prototype.propertyRowCallback = function (row, data) {
         var cellData = cell.data();
         var rowData = dt.row(cell.index().row).data();
 
-        if (rowData.name == 'type' || cell.index().column == 0)
+        if (rowData.name.length == 0 || rowData.name == 'type' || cell.index().column == 0)
             return;
 
         var isEnum = typeof2(rowData.type) == '[object Array]';
@@ -105,6 +110,17 @@ Editor.prototype.propertyRowCallback = function (row, data) {
         element.editable({
             success: function (response, value) {
                 dt.cell(this).data(value).draw();
+            },
+            value: function (value, element) {
+                var isArray = typeof2(cellData) === '[object Array]';
+                if (isArray)
+                    cellData = cellData[0];
+
+                if (rowData.type == 'vector') {
+                    return cellData[0] + ', ' + cellData[1] + ', ' + cellData[2];
+                }
+
+                return cellData;
             },
             display: function (value) {
                 var cell = dt.cell(this);
@@ -114,14 +130,6 @@ Editor.prototype.propertyRowCallback = function (row, data) {
                 var isArray = typeof2(cellData) === '[object Array]';
                 if (isArray)
                     cellData = cellData[0];
-
-                if (rowData.type == 'material_id') {
-                    var result = {};
-                    for (var i = 0; i < map.materials.length; i++) {
-                        result[map.materials[i].id] = editor.renderMaterial(map.materials[i].id);
-                    }
-                    return result;
-                }
 
                 return cellData;
             },
@@ -162,19 +170,49 @@ Editor.prototype.propertyRowCallback = function (row, data) {
     });
 };
 
+Editor.prototype.addPropertyGridExtraSector = function (sector) {
+    var jqPropExtras = $('#' + this.propExtrasId);
+
+    var anchor = $('<a></a>').html('Select <b>' + sector.id + '</b><br/>');
+    anchor.on('click', $.proxy(function (e) {
+        this.selectObject([sector]);
+    }, this));
+    anchor.appendTo(jqPropExtras);
+};
+
 Editor.prototype.refreshPropertyGrid = function () {
     var jqPropEditor = $('#' + this.propEditorId);
-    var dt = jqPropEditor.DataTable();
+    var jqPropExtras = $('#' + this.propExtrasId);
 
+    jqPropExtras.empty();
+
+    var dt = jqPropEditor.DataTable();
     dt.rows().clear();
 
     if (this.selectedObjects.length == 0)
         return;
 
     var uniqueTypes = {};
+    var type = null;
+    var sectors = [];
 
     for (var i = 0; i < this.selectedObjects.length; i++) {
-        uniqueTypes[this.selectedObjects[i].constructor.name] = true;
+        var selectedObject = this.selectedObjects[i];
+
+        if (isA(selectedObject, MapPoint)) // Ignore points, they have no properties
+            continue;
+        else if (isA(selectedObject, MapSegment)) {
+            if ($.inArray(selectedObject.sector, sectors) == -1)
+                sectors.push(selectedObject.sector);
+        }
+
+        var key = selectedObject.constructor.name;
+        if (!uniqueTypes[key]) {
+            uniqueTypes[key] = true;
+            dt.row.add({ friendly: 'Type', name: 'type', value: key, type: 'type' });
+        }
+
+        type = selectedObject.constructor;
     }
 
     if (Object.keys(uniqueTypes).length > 1) {
@@ -183,18 +221,24 @@ Editor.prototype.refreshPropertyGrid = function () {
         return;
     }
 
-    dt.row.add({ friendly: 'Type', name: 'type', value: this.selectedObjects[0].constructor.name, type: 'type' });
+    var properties = type.editableProperties;
 
-    var properties = this.selectedObjects[0].constructor.editableProperties;
     for (var i = 0; i < properties.length; i++) {
         var prop = properties[i];
 
         var all = [];
         for (var j = 0; j < this.selectedObjects.length; j++) {
+            if (isA(this.selectedObjects[j], MapPoint)) // Ignore points, they have no properties
+                continue;
+
             all.push(this.selectedObjects[j][prop.name]);
         }
         dt.row.add({ name: prop.name, friendly: prop.friendly, value: all, type: prop.type });
     }
 
     dt.rows().invalidate().draw();
+
+    for (var i = 0; i < sectors.length; i++) {
+        this.addPropertyGridExtraSector(sectors[i]);
+    }
 };

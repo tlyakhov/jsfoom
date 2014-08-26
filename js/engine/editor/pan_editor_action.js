@@ -6,9 +6,12 @@ function PanEditorAction(editor) {
     this.originalPosition = null;
 }
 
+classes['PanEditorAction'] = PanEditorAction;
+
 PanEditorAction.prototype.onMouseDown = function (e) {
     this.editor.editState = 'panStart';
     this.originalPosition = vec3clone(this.editor.pos);
+    this.editor.setCursor('all-scroll');
 };
 
 PanEditorAction.prototype.onMouseMove = function (e) {
@@ -20,8 +23,7 @@ PanEditorAction.prototype.onMouseMove = function (e) {
 };
 
 PanEditorAction.prototype.onMouseUp = function (e) {
-    this.editor.editState = 'idle';
-    this.editor.currentAction = null;
+    this.editor.actionFinished();
 };
 
 PanEditorAction.prototype.undo = function () {

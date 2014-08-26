@@ -10,6 +10,7 @@ function Editor(options) {
     this.propEditorId = null;
     this.toolbarId = null;
     this.menuId = null;
+    this.propExtrasId = null;
 
     this.editState = 'idle';
     this.map = null;
@@ -21,6 +22,7 @@ function Editor(options) {
     this.mouse = vec3blank();
     this.mouseWorld = vec3blank();
 
+    this.currentTool = 'default'; // 'addEntity', 'addSector'
     this.currentAction = null;
     this.undoHistory = [];
     this.redoHistory = [];
@@ -29,7 +31,7 @@ function Editor(options) {
     this.hoveringObjects = [];
 
     this.centerOnPlayer = false;
-    this.sectorTypesVisible = true;
+    this.sectorTypesVisible = false;
     this.entityTypesVisible = true;
     this.gridVisible = true;
     this.entitiesVisible = true;
@@ -77,23 +79,21 @@ Editor.prototype.go = function () {
     });
 
     var entityTypes = [ LightEntity, StaticEntity ];
-    var entityButtons = [];
+    var entityList = [];
     var sectorTypes = [ MapSector, MapSectorWater, MapSectorVerticalDoor ];
-    var sectorButtons = [];
+    var sectorList = [];
 
     for (var i = 0; i < entityTypes.length; i++) {
-        entityButtons.push({
+        entityList.push({
             id: entityTypes[i].name,
-            text: entityTypes[i].name,
-            click: $.proxy(this.addEntity, this)
+            text: entityTypes[i].name
         })
     }
 
     for (var i = 0; i < sectorTypes.length; i++) {
-        sectorButtons.push({
+        sectorList.push({
             id: sectorTypes[i].name,
-            text: sectorTypes[i].name,
-            click: $.proxy(this.addSector, this)
+            text: sectorTypes[i].name
         })
     }
 
@@ -101,10 +101,34 @@ Editor.prototype.go = function () {
         items: [
             { id: 'undo', type: 'button', spriteCssClass: 'toolbar-fa fa fa-undo fa-fw', text: '', encoded: false, click: $.proxy(this.undo, this) },
             { id: 'redo', type: 'button', spriteCssClass: 'toolbar-fa fa fa-repeat fa-fw', text: '', click: $.proxy(this.redo, this) },
-            { id: 'addEntity', type: 'splitButton', spriteCssClass: 'toolbar-fa fa fa-plus fa-fw', text: 'Add Entity', menuButtons: entityButtons  },
-            { id: 'addSector', type: 'splitButton', spriteCssClass: 'toolbar-fa fa fa-plus fa-fw', text: 'Add Sector', menuButtons: sectorButtons  }
+            { type: 'separator' },
+            { id: 'toolDefault', type: 'button', spriteCssClass: 'toolbar-fa fa fa-arrows fa-fw', togglable: true, text: '', selected: true, group: 'tools', toggle: $.proxy(this.toggleTool, this) },
+            { type: 'separator' },
+            { id: 'toolEntity', type: 'button', spriteCssClass: 'toolbar-fa fa fa-plus fa-fw', togglable: true, text: 'Entity', group: 'tools', toggle: $.proxy(this.toggleTool, this) },
+            { id: 'dropdownEntity', template: "<input id='toolbar-dropdown-entity' class='toolbar-dropdown' />", overflow: 'never' },
+            { type: 'separator' },
+            { id: 'toolSector', type: 'button', spriteCssClass: 'toolbar-fa fa fa-plus fa-fw', togglable: true, text: 'Sector', group: 'tools', toggle: $.proxy(this.toggleTool, this) },
+            { id: 'dropdownSector', template: "<input id='toolbar-dropdown-sector' class='toolbar-dropdown' />", overflow: 'never' }
         ]
     });
+
+    $('#toolbar-dropdown-entity').kendoDropDownList({
+        dataTextField: 'text',
+        dataValueField: 'id',
+        dataSource: entityList
+    });
+
+    $('#toolbar-dropdown-sector').kendoDropDownList({
+        dataTextField: 'text',
+        dataValueField: 'id',
+        dataSource: sectorList
+    });
+
+    this.menuCheckToggle('#menu-view-show-sector-types', this.sectorTypesVisible);
+    this.menuCheckToggle('#menu-view-show-entity-types', this.entityTypesVisible);
+    this.menuCheckToggle('#menu-view-show-entities', this.entitiesVisible);
+    this.menuCheckToggle('#menu-view-show-grid', this.gridVisible);
+    this.menuCheckToggle('#menu-view-center-on-player', this.centerOnPlayer);
 
     jqMenu.kendoMenu({
         select: $.proxy(this.menuSelect, this)
@@ -113,10 +137,32 @@ Editor.prototype.go = function () {
     setInterval($.proxy(this.timer, this), 16);
 };
 
-Editor.prototype.menuCheckToggle = function (item) {
+Editor.prototype.toggleTool = function (e) {
+    if (e.id == 'toolEntity') {
+        this.currentTool = 'addEntity';
+    }
+    else if (e.id == 'toolSector') {
+        this.currentTool = 'addSector';
+    }
+    else if (e.id == 'toolDefault') {
+        this.currentTool = 'default';
+    }
+
+    if (this.currentAction)
+        this.currentAction.cancel();
+    else
+        this.actTool();
+};
+
+Editor.prototype.menuCheckToggle = function (item, checked) {
     var icon = $(item).find("[class*='fa-check']").first();
 
-    icon.toggle();
+    if (checked == undefined)
+        icon.toggle();
+    else if (checked)
+        icon.show();
+    else
+        icon.hide();
 };
 
 Editor.prototype.menuSelect = function (e) {
@@ -143,18 +189,14 @@ Editor.prototype.menuSelect = function (e) {
         this.entitiesVisible = !this.entitiesVisible;
         this.menuCheckToggle(item);
     }
+    else if (item.id == 'menu-view-show-grid') {
+        this.gridVisible = !this.gridVisible;
+        this.menuCheckToggle(item);
+    }
     else if (item.id == 'menu-view-center-on-player') {
         this.centerOnPlayer = !this.centerOnPlayer;
         this.menuCheckToggle(item);
     }
-};
-
-Editor.prototype.addEntity = function (e) {
-    this.newAction(AddEntityEditorAction).act(new classes[e.id]());
-};
-
-Editor.prototype.addSector = function (e) {
-    this.newAction(AddSectorEditorAction).act(new classes[e.id]());
 };
 
 Editor.prototype.selectObject = function (objects) {
@@ -184,6 +226,24 @@ Editor.prototype.newAction = function (clazz) {
     this.redoHistory = [];
 
     return this.currentAction;
+};
+
+Editor.prototype.actionFinished = function () {
+    this.setCursor();
+    this.editState = 'idle';
+    this.currentAction = null;
+    this.actTool();
+};
+
+Editor.prototype.actTool = function () {
+    if (this.currentTool == 'addEntity') {
+        var ddl = $('#toolbar-dropdown-entity').data('kendoDropDownList');
+        this.newAction(AddEntityEditorAction).act(new classes[ddl.dataItem().id]());
+    }
+    else if (this.currentTool == 'addSector') {
+        var ddl = $('#toolbar-dropdown-sector').data('kendoDropDownList');
+        this.newAction(AddSectorEditorAction).act(new classes[ddl.dataItem().id]());
+    }
 };
 
 Editor.prototype.undo = function () {
@@ -225,13 +285,13 @@ Editor.prototype.onMouseDown = function (e) {
     this.mouseDown = vec3create(e.offsetX, e.offsetY, 0);
     this.mouseDownWorld = this.screenToWorld(e.offsetX, e.offsetY);
 
-    if (e.button == 2 && this.editState == 'idle') {
+    if (e.button == 2 && !this.currentAction) {
         this.newAction(SelectEditorAction);
     }
-    if (e.button == 1 && this.editState == 'idle') {
+    if (e.button == 1 && !this.currentAction) {
         this.newAction(PanEditorAction);
     }
-    else if (e.button == 0 && this.editState == 'idle' && this.selectedObjects.length > 0) {
+    else if (e.button == 0 && !this.currentAction && this.selectedObjects.length > 0) {
         this.newAction(MoveEditorAction);
     }
 
@@ -278,12 +338,12 @@ Editor.prototype.onMouseWheel = function (e) {
     var e = window.event || e;
     var delta = Math.max(-1, Math.min(1, (e.wheelDelta || -e.detail)));
 
-    if (this.scale > 0.15)
-        this.scale += delta * 0.1;
-    else if (this.scale > 0.015)
-        this.scale += delta * 0.01;
-    else if (this.scale > 0.0015)
-        this.scale += delta * 0.001;
+    if (this.scale > 0.25)
+        this.scale += delta * 0.2;
+    else if (this.scale > 0.025)
+        this.scale += delta * 0.02;
+    else if (this.scale > 0.0025)
+        this.scale += delta * 0.002;
 };
 
 Editor.prototype.drawEntityAngle = function (entity) {
@@ -336,6 +396,21 @@ Editor.prototype.drawEntity = function (entity) {
     }
 };
 
+Editor.prototype.drawHandle = function (x, y, style) {
+    var v = this.worldToScreen(x, y);
+    var v1 = this.screenToWorld(v[0] - 3.0, v[1] - 3.0);
+    var v2 = this.screenToWorld(v[0] + 3.0, v[1] + 3.0);
+    this.context.strokeStyle = style;
+    this.context.strokeRect(v1[0], v1[1], v2[0] - v1[0], v2[1] - v1[1]);
+};
+
+Editor.prototype.mapPoint = function (segment) {
+    if (!segment.mapPoint)
+        segment.mapPoint = new MapPoint(segment);
+
+    return segment.mapPoint;
+};
+
 Editor.prototype.drawSector = function (sector) {
     if (sector.segments.length == 0)
         return;
@@ -376,12 +451,11 @@ Editor.prototype.drawSector = function (sector) {
         this.context.lineTo(nextSegment.ax, nextSegment.ay);
         this.context.stroke();
 
-        if (segmentHovering || segmentSelected) {
-            var v = this.worldToScreen(segment.ax, segment.ay);
-            var v1 = this.screenToWorld(v[0] - 3.0, v[1] - 3.0);
-            var v2 = this.screenToWorld(v[0] + 3.0, v[1] + 3.0);
-            this.context.strokeStyle = segmentHovering ? EDITOR_CONSTANTS.colorSelectionSecondary : EDITOR_CONSTANTS.colorSelectionPrimary;
-            this.context.strokeRect(v1[0], v1[1], v2[0] - v1[0], v2[1] - v1[1]);
+        var mapPointHovering = ($.inArray(this.mapPoint(segment), this.hoveringObjects) != -1);
+        var mapPointSelected = ($.inArray(this.mapPoint(segment), this.selectedObjects) != -1);
+
+        if (mapPointHovering || mapPointSelected) {
+            this.drawHandle(segment.ax, segment.ay, mapPointHovering ? EDITOR_CONSTANTS.colorSelectionSecondary : EDITOR_CONSTANTS.colorSelectionPrimary);
         }
     }
 
@@ -453,7 +527,7 @@ Editor.prototype.timer = function () {
         for (var j = 0; j < sector.segments.length; j++) {
             var segment = sector.segments[j];
 
-            if (this.editState == 'idle' || this.editState == 'selecting') {
+            if (!this.currentAction) {
                 var hov = this.hoveringObjects[0] || null;
                 var isSameLocation = hov && hov.constructor == MapSegment && hov.ax == segment.ax && hov.ay == segment.ay;
 
@@ -464,7 +538,14 @@ Editor.prototype.timer = function () {
                     }
                 }
             }
-            if (this.editState == 'selecting') {
+            if (isA(this.currentAction, SelectEditorAction)) {
+                if (segment.ax >= v1[0] && segment.ay >= v1[1] &&
+                    segment.ax <= v2[0] && segment.ay <= v2[1]) {
+
+                    if ($.inArray(this.mapPoint(segment), this.hoveringObjects) == -1) {
+                        this.hoveringObjects.push(this.mapPoint(segment));
+                    }
+                }
                 if (segment.aabbIntersect(v1[0], v1[1], v2[0], v2[1])) {
 
                     if ($.inArray(segment, this.hoveringObjects) == -1) {
@@ -474,7 +555,7 @@ Editor.prototype.timer = function () {
             }
         }
 
-        if (this.editState == 'selecting') {
+        if (isA(this.currentAction, SelectEditorAction)) {
             for (var j = 0; j < sector.entities.length; j++) {
                 var entity = sector.entities[j];
 
@@ -488,7 +569,7 @@ Editor.prototype.timer = function () {
         }
     }
 
-    if (this.editState == 'selecting') {
+    if (isA(this.currentAction, SelectEditorAction)) {
         if (this.map.player.pos[0] + this.map.player.boundingRadius >= v1[0] && this.map.player.pos[0] - this.map.player.boundingRadius <= v2[0] &&
             this.map.player.pos[1] + this.map.player.boundingRadius >= v1[1] && this.map.player.pos[1] - this.map.player.boundingRadius <= v2[1]) {
             if ($.inArray(this.map.player, this.hoveringObjects) == -1) {
@@ -502,7 +583,14 @@ Editor.prototype.timer = function () {
         this.drawSector(this.map.sectors[i]);
     }
 
-    if (this.editState == 'selecting') {
+    if (isA(this.currentAction, AddSectorEditorAction)) {
+        var gridMouse = vec3clone(this.mouseWorld);
+        gridMouse[0] = Math.round(gridMouse[0] / this.gridSize) * this.gridSize;
+        gridMouse[1] = Math.round(gridMouse[1] / this.gridSize) * this.gridSize;
+        this.drawHandle(gridMouse[0], gridMouse[1], EDITOR_CONSTANTS.colorSelectionPrimary);
+    }
+
+    if (isA(this.currentAction, SelectEditorAction)) {
         var v1 = this.mouseDownWorld;
         var v2 = this.mouseWorld;
 

@@ -69,6 +69,7 @@
     <script src="js/game/test_map.js"></script>
     <script src="js/game/input.js"></script>
     <script src="js/game/main.js"></script>
+    <script src="js/engine/editor/map_point.js"></script>
     <script src="js/engine/editor/editor.js"></script>
     <script src="js/engine/editor/editor_property_grid.js"></script>
     <script src="js/engine/editor/editor_action.js"></script>
@@ -92,6 +93,7 @@
             propEditorId: 'prop-editor',
             toolbarId: 'toolbar',
             menuId: 'menu',
+            propExtrasId: 'prop-extras',
             map: globalGame.map
         });
 
@@ -142,7 +144,7 @@
             <li>
                 View
                 <ul>
-                    <li id="menu-view-center-on-player"><i class="fa fa-check fa-fw" style="display: none;"></i> Center
+                    <li id="menu-view-center-on-player"><i class="fa fa-check fa-fw"></i> Center
                         on Player
                     </li>
                     <li id="menu-view-show-grid"><i class="fa fa-check fa-fw"></i> Show Grid</li>
@@ -169,6 +171,8 @@
                     </canvas>
                 </div>
                 <div id="prop-editor-view">
+                    <div id="prop-extras">
+                    </div>
                     <table cellpadding="0" cellspacing="0" border="0" id="prop-editor" class="display compact"></table>
                 </div>
             </div>

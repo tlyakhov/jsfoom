@@ -5,12 +5,21 @@ function AddSectorEditorAction(editor) {
     this.sector = null;
 }
 
+classes['AddSectorEditorAction'] = AddSectorEditorAction;
+
 AddSectorEditorAction.prototype.act = function (newSector) {
     this.editor.editState = 'addSector';
     this.editor.setCursor('crosshair');
     this.sector = newSector;
     this.editor.selectObject([ newSector ]);
 };
+
+AddSectorEditorAction.prototype.cancel = function () {
+    this.removeFromMap();
+    this.editor.selectObject();
+    EditorAction.prototype.cancel.call(this);
+};
+
 
 AddSectorEditorAction.prototype.removeFromMap = function () {
     var index = $.inArray(this.sector, this.editor.map.sectors);
@@ -31,8 +40,7 @@ AddSectorEditorAction.prototype.onMouseDown = function (e) {
 
     var segment = new MapSegment({
         ax: this.editor.mouseDownWorld[0],
-        ay: this.editor.mouseDownWorld[1],
-        id: 'Segment ' + this.sector.segments.length
+        ay: this.editor.mouseDownWorld[1]
     });
 
     if (this.editor.gridVisible) {
@@ -70,18 +78,14 @@ AddSectorEditorAction.prototype.onMouseUp = function (e) {
                 Math.abs(firstSegment.ay - lastSegment.ay) < EDITOR_CONSTANTS.segmentSelectionEpsilon) {
                 this.sector.segments.splice(this.sector.segments.length - 1, 1); // Remove last segment
                 this.autoPortal();
-                this.editor.setCursor();
-                this.editor.editState = 'idle';
-                this.editor.currentAction = null;
+                this.editor.actionFinished();
             }
         }
 
     }
     else if (e.button == 2) {
         this.autoPortal();
-        this.editor.setCursor();
-        this.editor.editState = 'idle';
-        this.editor.currentAction = null;
+        this.editor.actionFinished();
     }
 };
 

@@ -9,9 +9,12 @@ function MoveEditorAction(editor) {
     this.dy = 0;
 }
 
+classes['MoveEditorAction'] = MoveEditorAction;
+
 MoveEditorAction.prototype.onMouseDown = function (e) {
     var editor = this.editor;
 
+    editor.setCursor('move');
     editor.editState = 'movingStart';
     this.selectedObjects = editor.selectedObjects.slice(0);
 
@@ -19,8 +22,8 @@ MoveEditorAction.prototype.onMouseDown = function (e) {
         var object = this.selectedObjects[i];
         var op = null;
 
-        if (isA(object, MapSegment)) {
-            op = vec3create(object.ax, object.ay, 0);
+        if (isA(object, MapPoint)) {
+            op = vec3create(object.segment.ax, object.segment.ay, 0);
         }
         else if (isA(object, Entity)) {
             op = vec3clone(object.pos);
@@ -43,10 +46,10 @@ MoveEditorAction.prototype.move = function (toOriginal) {
     for (var i = 0; i < this.selectedObjects.length; i++) {
         var object = this.selectedObjects[i];
         var op = this.originalPositions[object.constructor.name + '|' + object.id];
-        if (isA(object, MapSegment)) {
-            object.ax = op[0] + dx;
-            object.ay = op[1] + dy;
-            object.sector.update();
+        if (isA(object, MapPoint)) {
+            object.segment.ax = op[0] + dx;
+            object.segment.ay = op[1] + dy;
+            object.segment.sector.update();
         }
         else if (isA(object, Entity)) {
             if (isA(object, Player) && editor.centerOnPlayer)
@@ -73,8 +76,7 @@ MoveEditorAction.prototype.onMouseUp = function (e) {
     var editor = this.editor;
 
     editor.selectObject(editor.selectedObjects); // Updates properties.
-    editor.editState = 'idle';
-    this.editor.currentAction = null;
+    this.editor.actionFinished();
 };
 
 MoveEditorAction.prototype.undo = function () {

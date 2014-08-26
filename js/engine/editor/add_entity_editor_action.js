@@ -6,10 +6,18 @@ function AddEntityEditorAction(editor) {
     this.sector = null;
 }
 
+classes['AddEntityEditorAction'] = AddEntityEditorAction;
+
 AddEntityEditorAction.prototype.act = function (newEntity) {
     this.editor.editState = 'addEntity';
     this.entity = newEntity;
     this.editor.selectObject([newEntity]);
+};
+
+AddEntityEditorAction.prototype.cancel = function () {
+    this.removeFromMap();
+    this.editor.selectObject();
+    EditorAction.prototype.cancel.call(this);
 };
 
 AddEntityEditorAction.prototype.removeFromMap = function () {
@@ -48,8 +56,7 @@ AddEntityEditorAction.prototype.onMouseMove = function (e) {
     }
 };
 AddEntityEditorAction.prototype.onMouseUp = function (e) {
-    this.editor.editState = 'idle';
-    this.editor.currentAction = null;
+    this.editor.actionFinished();
 };
 
 AddEntityEditorAction.prototype.undo = function () {
