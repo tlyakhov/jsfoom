@@ -1,9 +1,9 @@
 Editor.prototype.renderPropertyName = function (row, type, set, meta) {
     if (type == 'sort') {
         if (row.name == 'id')
-            return '!!!' + row.friendly;
-        else if (row.type == 'type')
             return '!!' + row.friendly;
+        else if (row.type == 'type')
+            return '!!!' + row.friendly;
         else if (row.type == 'material_id')
             return '!' + row.friendly;
         else
@@ -34,7 +34,7 @@ Editor.prototype.renderMaterial = function (m) {
     var material = this.map.getMaterial(m);
 
     if (!material) {
-        return 'ERROR - ' + value;
+        return 'ERROR - ' + m;
     }
 
     return "<img src=\"" + material.textureSrc + "\" class=\"editor-property-image\" /><b>" + material.id + "</b>";
@@ -66,6 +66,26 @@ Editor.prototype.renderPropertyValue = function (data, type, row, meta) {
     return result;
 };
 
+var EDITOR_PROPERTY_TYPE_MAP = {
+    float: 'text',
+    string: 'text',
+    material_id: 'select2',
+    vector: 'text'
+};
+
+Editor.prototype.propertySelectFormatter = function (option) {
+    var isEnum = typeof2(option.type) === '[object Array]';
+
+    if (isEnum) {
+        return option.id;
+    }
+    else if (option.type == 'material_id') {
+        return this.renderMaterial(option.id);
+    }
+
+    return option.id;
+};
+
 Editor.prototype.propertyRowCallback = function (row, data) {
     var editor = this;
     var map = this.map;
@@ -77,10 +97,16 @@ Editor.prototype.propertyRowCallback = function (row, data) {
         var cellData = cell.data();
         var rowData = dt.row(cell.index().row).data();
 
-        element.editable(function (value, settings) {
-            dt.cell(this).data(value).draw();
-        }, {
-            data: function (value, settings) {
+        if (rowData.name == 'type' || cell.index().column == 0)
+            return;
+
+        var isEnum = typeof2(rowData.type) == '[object Array]';
+
+        element.editable({
+            success: function (response, value) {
+                dt.cell(this).data(value).draw();
+            },
+            display: function (value) {
                 var cell = dt.cell(this);
                 var cellData = cell.data();
                 var rowData = dt.row(cell.index().row).data();
@@ -99,8 +125,38 @@ Editor.prototype.propertyRowCallback = function (row, data) {
 
                 return cellData;
             },
-            type: rowData.type == 'material_id' ? 'select' : 'text',
+            source: function () {
+                var cell = dt.cell(this);
+                var cellData = cell.data();
+                var rowData = dt.row(cell.index().row).data();
+
+                var result = [];
+
+                if (isEnum) {
+                    for (var i = 0; i < rowData.type.length; i++) {
+                        result.push({ type: rowData.type, id: rowData.type[i] });
+                    }
+                }
+                else if (rowData.type == 'material_id') {
+                    for (var i = 0; i < map.materials.length; i++) {
+                        result.push({
+                            type: rowData.type,
+                            id: map.materials[i].id
+                        });
+                    }
+                }
+
+                return result;
+            },
+            select2: {
+                formatResult: $.proxy(editor.propertySelectFormatter, editor),
+                formatSelection: $.proxy(editor.propertySelectFormatter, editor),
+                width: '300px'
+            },
+            mode: 'inline',
+            type: isEnum ? 'select2' : EDITOR_PROPERTY_TYPE_MAP[rowData.type],
             event: 'dblclick',
+            showbuttons: false,
             onblur: 'submit'
         });
     });

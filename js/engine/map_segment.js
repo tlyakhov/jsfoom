@@ -134,6 +134,57 @@ MapSegment.prototype.intersect = function (s2ax, s2ay, s2bx, s2by) {
     return vec3create(s1.ax + r * s1dx, s1.ay + r * s1dy, 0.0, true);
 };
 
+MapSegment.prototype.aabbIntersect = function (xMin, yMin, xMax, yMax) {
+    // Find min and max X for the segment
+
+    var minX = this.ax;
+    var maxX = this.bx;
+
+    if (this.ax > this.bx) {
+        minX = this.bx;
+        maxX = this.ax;
+    }
+
+    // Find the intersection of the segment's and rectangle's x-projections
+
+    if (maxX > xMax)
+        maxX = xMax;
+
+    if (minX < xMin)
+        minX = xMin;
+
+    if (minX > maxX) // If their projections do not intersect return false
+        return false;
+
+    // Find corresponding min and max Y for min and max X we found before
+    var minY = this.ay;
+    var maxY = this.by;
+    var dx = this.bx - this.ax;
+
+    if (Math.abs(dx) > 0.0000001) {
+        var a = (this.by - this.ay) / dx;
+        var b = this.ay - a * this.ax;
+        minY = a * minX + b;
+        maxY = a * maxX + b;
+    }
+
+    if (minY > maxY) {
+        var tmp = maxY;
+        maxY = minY;
+        minY = tmp;
+    }
+
+    // Find the intersection of the segment's and rectangle's y-projections
+
+    if (maxY > yMax)
+        maxY = yMax;
+
+    if (minY < yMin)
+        minY = yMin;
+
+    return minY <= maxY; // If Y-projections do not intersect return false
+};
+
 /*MapSegment.prototype.distanceToPoint = function (x, y) {
  var dx = (this.bx - this.ax);
  var dy = (this.by - this.ay);

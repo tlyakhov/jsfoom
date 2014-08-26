@@ -465,8 +465,7 @@ Editor.prototype.timer = function () {
                 }
             }
             if (this.editState == 'selecting') {
-                if (segment.ax >= v1[0] && segment.ay >= v1[1] &&
-                    segment.ax <= v2[0] && segment.ay <= v2[1]) {
+                if (segment.aabbIntersect(v1[0], v1[1], v2[0], v2[1])) {
 
                     if ($.inArray(segment, this.hoveringObjects) == -1) {
                         this.hoveringObjects.push(segment);

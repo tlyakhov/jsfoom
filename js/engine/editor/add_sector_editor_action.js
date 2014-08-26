@@ -31,7 +31,8 @@ AddSectorEditorAction.prototype.onMouseDown = function (e) {
 
     var segment = new MapSegment({
         ax: this.editor.mouseDownWorld[0],
-        ay: this.editor.mouseDownWorld[1]
+        ay: this.editor.mouseDownWorld[1],
+        id: 'Segment ' + this.sector.segments.length
     });
 
     if (this.editor.gridVisible) {
