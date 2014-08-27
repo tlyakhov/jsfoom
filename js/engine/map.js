@@ -1,4 +1,5 @@
 function Map(options) {
+    this.id = null;
     this.sectors = [];
     this.materials = [];
     this.spawnX = 0;
@@ -57,6 +58,7 @@ Map.prototype.frame = function (lastFrameTime) {
 
 Map.prototype.serialize = function () {
     var r = {
+        id: this.id,
         spawnX: this.spawnX,
         spawnY: this.spawnY,
         player: this.player.serialize(),
@@ -79,6 +81,7 @@ Map.deserialize = function (data, map) {
     if (!map)
         map = new Map();
 
+    map.id = data.id;
     map.spawnX = data.spawnX;
     map.spawnY = data.spawnY;
 
@@ -89,12 +92,18 @@ Map.deserialize = function (data, map) {
             classes[data.sectors[i]._type].deserialize(data.sectors[i], map, map.sectors[i]);
     }
 
+    if (map.sectors.length > data.sectors.length)
+        map.sectors.splice(data.sectors.length, map.sectors.length - data.sectors.length);
+
     for (var i = 0; i < data.materials.length; i++) {
         if (i >= map.materials.length)
             map.materials.push(Material.deserialize(data.materials[i]));
         else
             Material.deserialize(data.materials[i], map.materials[i]);
     }
+
+    if (map.materials.length > data.materials.length)
+        map.materials.splice(data.materials.length, map.materials.length - data.materials.length);
 
     Player.deserialize(data.player, map, map.player);
 

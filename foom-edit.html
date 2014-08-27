@@ -42,6 +42,8 @@
     <script type="text/javascript"
             src="//cdn.datatables.net/plug-ins/725b2a2115b/integration/bootstrap/3/dataTables.bootstrap.js"></script>
 
+    <!-- Bootbox -->
+    <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/bootbox.js/4.2.0/bootbox.min.js"></script>
     <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/font-awesome/4.1.0/css/font-awesome.min.css">
     <link rel="stylesheet" href="css/editor.css">
     <script src="js/lib/object_id.js"></script>
@@ -69,8 +71,10 @@
     <script src="js/game/test_map.js"></script>
     <script src="js/game/input.js"></script>
     <script src="js/game/main.js"></script>
+    <script src="js/engine/editor/default_map.js"></script>
     <script src="js/engine/editor/map_point.js"></script>
     <script src="js/engine/editor/editor.js"></script>
+    <script src="js/engine/editor/editor_storage.js"></script>
     <script src="js/engine/editor/editor_property_grid.js"></script>
     <script src="js/engine/editor/editor_action.js"></script>
     <script src="js/engine/editor/select_editor_action.js"></script>
@@ -132,6 +136,10 @@
             <li>
                 File
                 <ul>
+                    <li id="menu-file-new">New (CTRL+N)</li>
+                    <li id="menu-file-open">Open (CTRL+O)</li>
+                    <li id="menu-file-save">Save (CTRL+S)</li>
+                    <li id="menu-file-save-as">Save As (CTRL+A)</li>
                     <li id="menu-file-download">Download</li>
                 </ul>
             </li>
@@ -140,6 +148,7 @@
                 <ul>
                     <li id="menu-edit-undo">Undo (CTRL+Z)</li>
                     <li id="menu-edit-redo">Redo (CTRL+Y)</li>
+                    <li id="menu-edit-delete">Delete (DEL/BACKSPACE)</li>
                 </ul>
             </li>
             <li>

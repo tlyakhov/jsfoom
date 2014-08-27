@@ -144,29 +144,33 @@ Renderer.prototype.renderSlice = function (slice) {
         var adjClippedTop = fast_floor(Math.max(adjSliceTop, clippedStart));
         var adjClippedBottom = fast_floor(Math.min(adjSliceBottom, clippedEnd));
 
-        for (slice.y = clippedStart; slice.y < adjClippedTop; slice.y++) {
-            var screenIndex = slice.targetX + slice.y * this.workerWidth;
-            if (slice.distance < this.zbuffer[screenIndex]) {
-                var ty = (slice.y - sliceStart) / (adjSliceTop - sliceStart);
-                slice.world[2] = sector.topZ - ty * (sector.topZ - adj.topZ);
-                if (adjSegment.hiBehavior == 'scaleWidth' || adjSegment.hiBehavior == 'scaleNone')
-                    ty = (ty * (adj.topZ - sector.topZ) - adj.topZ) / 64.0;
+        if (hiMaterial) {
+            for (slice.y = clippedStart; slice.y < adjClippedTop; slice.y++) {
+                var screenIndex = slice.targetX + slice.y * this.workerWidth;
+                if (slice.distance < this.zbuffer[screenIndex]) {
+                    var ty = (slice.y - sliceStart) / (adjSliceTop - sliceStart);
+                    slice.world[2] = sector.topZ - ty * (sector.topZ - adj.topZ);
+                    if (adjSegment.hiBehavior == 'scaleWidth' || adjSegment.hiBehavior == 'scaleNone')
+                        ty = (ty * (adj.topZ - sector.topZ) - adj.topZ) / 64.0;
 
-                slice.renderTarget[screenIndex] = hiMaterial.sample(slice, slice.textureX, ty, adjSliceTop - sliceStart);
-                this.zbuffer[screenIndex] = slice.distance;
+                    slice.renderTarget[screenIndex] = hiMaterial.sample(slice, slice.textureX, ty, adjSliceTop - sliceStart);
+                    this.zbuffer[screenIndex] = slice.distance;
+                }
             }
         }
 
-        for (slice.y = adjClippedBottom; slice.y < clippedEnd; slice.y++) {
-            var screenIndex = slice.targetX + slice.y * this.workerWidth;
-            if (slice.distance < this.zbuffer[screenIndex]) {
-                var ty = (slice.y - adjClippedBottom) / (sliceEnd - adjSliceBottom);
-                slice.world[2] = adj.bottomZ - ty * (adj.bottomZ - sector.bottomZ);
-                if (adjSegment.loBehavior == 'scaleWidth' || adjSegment.loBehavior == 'scaleNone')
-                    ty = (ty * (sector.bottomZ - adj.bottomZ) - sector.bottomZ) / 64.0;
+        if (loMaterial) {
+            for (slice.y = adjClippedBottom; slice.y < clippedEnd; slice.y++) {
+                var screenIndex = slice.targetX + slice.y * this.workerWidth;
+                if (slice.distance < this.zbuffer[screenIndex]) {
+                    var ty = (slice.y - adjClippedBottom) / (sliceEnd - adjSliceBottom);
+                    slice.world[2] = adj.bottomZ - ty * (adj.bottomZ - sector.bottomZ);
+                    if (adjSegment.loBehavior == 'scaleWidth' || adjSegment.loBehavior == 'scaleNone')
+                        ty = (ty * (sector.bottomZ - adj.bottomZ) - sector.bottomZ) / 64.0;
 
-                slice.renderTarget[screenIndex] = loMaterial.sample(slice, slice.textureX, ty, sliceEnd - adjSliceBottom);
-                this.zbuffer[screenIndex] = slice.distance;
+                    slice.renderTarget[screenIndex] = loMaterial.sample(slice, slice.textureX, ty, sliceEnd - adjSliceBottom);
+                    this.zbuffer[screenIndex] = slice.distance;
+                }
             }
         }
 
@@ -181,6 +185,9 @@ Renderer.prototype.renderSlice = function (slice) {
     }
     else {
         var midMaterial = segment.getMidMaterial();
+
+        if (!midMaterial)
+            return;
 
         for (slice.y = clippedStart; slice.y < clippedEnd; slice.y++) {
             var screenIndex = slice.targetX + slice.y * this.workerWidth;

@@ -168,18 +168,96 @@ Editor.prototype.menuCheckToggle = function (item, checked) {
         icon.hide();
 };
 
+Editor.prototype.saveAs = function () {
+    var levels = EditorStorage.allLevelNames();
+
+    bootbox.prompt({
+        title: 'Save Level',
+        message: 'Please enter the name of your level:',
+        value: 'Untitled Level',
+        callback: $.proxy(function (resultName) {
+            if (!resultName)
+                return;
+
+            if ($.inArray(resultName, levels) != -1) {
+                bootbox.confirm('"' + resultName + '" already exists. Do you want to overwrite?', $.proxy(function (resultOverwrite) {
+                    if (!resultOverwrite)
+                        return;
+
+                    this.map.id = resultName;
+                    EditorStorage.saveLevel(resultName, this.map);
+                }, this));
+            }
+            else {
+                this.map.id = resultName;
+                EditorStorage.saveLevel(resultName, this.map);
+            }
+        }, this) });
+};
+
 Editor.prototype.menuSelect = function (e) {
     var item = e.item;
 
-    if (item.id == 'menu-file-download') {
+    if (item.id == 'menu-file-new') {
+        bootbox.confirm('Are you sure you want to create a new level?', $.proxy(function (result) {
+            if (!result)
+                return;
+            this.map = Map.deserialize(globalDefaultMap);
+            globalGame.map = this.map;
+        }, this));
+    }
+    else if (item.id == 'menu-file-open') {
+        var levels = EditorStorage.allLevelNames();
+        var div = $('<div></div>');
+        var select = $('<select></select>').attr('id', 'menu-file-open-select').appendTo(div);
+        var data = [];
+        for (var i = 0; i < levels.length; i++) {
+            var name = levels[i];
+
+            var option = $('<option></option>').attr('value', name).text(name);
+
+            option.appendTo(select);
+        }
+
+        bootbox.confirm({
+            title: 'Open Level',
+            message: div.html(),
+            callback: $.proxy(function (result) {
+                if (!result)
+                    return;
+                var v = $('#menu-file-open-select').val();
+
+                this.map = EditorStorage.loadLevel(v);
+                globalGame.map = this.map;
+                this.pos = vec3blank();
+                this.scale = 1.0;
+
+            }, this)
+        });
+
+        $('#menu-file-open-select').select2({
+            width: '100%'
+        });
+    }
+    else if (item.id == 'menu-file-save') {
+        if (this.map.id == null)
+            this.saveAs();
+        EditorStorage.saveLevel(this.map.id, this.map);
+    }
+    else if (item.id == 'menu-file-save-as') {
+        this.saveAs();
+    }
+    else if (item.id == 'menu-file-download') {
         var s = this.map.stringSerialize();
 
         window.open('data:application/json;base64,' + (window.btoa ? btoa(s) : s));
     }
-    if (item.id == 'menu-edit-undo')
+    else if (item.id == 'menu-edit-undo')
         this.undo();
     else if (item.id == 'menu-edit-redo')
         this.redo();
+    else if (item.id == 'menu-edit-delete')
+        this.delete();
     else if (item.id == 'menu-view-show-entity-types') {
         this.entityTypesVisible = !this.entityTypesVisible;
         this.menuCheckToggle(item);
