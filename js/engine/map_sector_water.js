@@ -11,7 +11,7 @@ classes['MapSectorWater'] = MapSectorWater;
 MapSectorWater.editableProperties = MapSector.editableProperties;
 
 MapSectorWater.prototype.actOnEntity = function (entity) {
-    if (entity.sector.id != this.id)
+    if (!entity.sector || entity.sector.id != this.id)
         return;
 
     if (entity.constructor == Player) {

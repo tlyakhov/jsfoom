@@ -18,6 +18,9 @@ Player.editableProperties = Entity.editableProperties;
 Player.prototype.frame = function (lastFrameTime) {
     Entity.prototype.frame.call(this, lastFrameTime);
 
+    if (!this.sector)
+        return;
+
     if (Math.abs(this.pos[2] - this.sector.bottomZ) < 0.01)
         this.standing = true;
     else

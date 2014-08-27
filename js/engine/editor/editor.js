@@ -99,8 +99,11 @@ Editor.prototype.go = function () {
 
     jqToolbar.kendoToolBar({
         items: [
+            { id: 'editGroup', type: 'buttonGroup', buttons: [
             { id: 'undo', type: 'button', spriteCssClass: 'toolbar-fa fa fa-undo fa-fw', text: '', encoded: false, click: $.proxy(this.undo, this) },
             { id: 'redo', type: 'button', spriteCssClass: 'toolbar-fa fa fa-repeat fa-fw', text: '', click: $.proxy(this.redo, this) },
+                { id: 'delete', type: 'button', spriteCssClass: 'toolbar-fa fa fa-times fa-fw', text: '', click: $.proxy(this.delete, this) }
+            ] },
             { type: 'separator' },
             { id: 'toolDefault', type: 'button', spriteCssClass: 'toolbar-fa fa fa-arrows fa-fw', togglable: true, text: '', selected: true, group: 'tools', toggle: $.proxy(this.toggleTool, this) },
             { type: 'separator' },
@@ -268,12 +271,19 @@ Editor.prototype.redo = function () {
     this.undoHistory.push(action);
 };
 
+Editor.prototype.delete = function () {
+    this.newAction(DeleteEditorAction).act();
+};
+
 Editor.prototype.onKeyPress = function (e) {
     if (e.keyCode == KEY_Z && e.ctrlKey) {
         this.undo();
     }
     else if (e.keyCode == KEY_Y && e.ctrlKey) {
         this.redo();
+    }
+    else if (e.keyCode == KEY_DEL || e.keyCode == KEY_BACKSPACE) {
+        this.delete();
     }
 };
 
@@ -569,15 +579,6 @@ Editor.prototype.timer = function () {
         }
     }
 
-    if (isA(this.currentAction, SelectEditorAction)) {
-        if (this.map.player.pos[0] + this.map.player.boundingRadius >= v1[0] && this.map.player.pos[0] - this.map.player.boundingRadius <= v2[0] &&
-            this.map.player.pos[1] + this.map.player.boundingRadius >= v1[1] && this.map.player.pos[1] - this.map.player.boundingRadius <= v2[1]) {
-            if ($.inArray(this.map.player, this.hoveringObjects) == -1) {
-                this.hoveringObjects.push(this.map.player);
-            }
-        }
-    }
-
     // Drawing
     for (var i = 0; i < this.map.sectors.length; i++) {
         this.drawSector(this.map.sectors[i]);
@@ -601,8 +602,6 @@ Editor.prototype.timer = function () {
         this.context.strokeRect(v1[0], v1[1], v2[0] - v1[0], v2[1] - v1[1]);
         this.context.globalAlpha = 1;
     }
-
-    this.drawEntity(this.map.player);
 };
 
 Editor.prototype.setCursor = function (cursor) {

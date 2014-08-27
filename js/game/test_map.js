@@ -610,7 +610,7 @@ var testMap = new Map({
                     adjacentSectorId: 'sector12',
                     loMaterialId: 'Default', hiMaterialId: 'Doom Garage Door', flags: 0 }),
                 new MapSegment({ ax: 105, ay: 30,
-                    midMaterialId: 'Doom Garage Door',
+                    midMaterialId: 'Default',
                     adjacentSectorId: null,
                     loMaterialId: 'Default', hiMaterialId: 'Doom Garage Door', flags: 0 }),
                 new MapSegment({ ax: 100, ay: 30,
@@ -618,7 +618,7 @@ var testMap = new Map({
                     adjacentSectorId: 'sector1',
                     loMaterialId: 'Default', hiMaterialId: 'Doom Garage Door', flags: 0 }),
                 new MapSegment({ax: 100, ay: -30,
-                    midMaterialId: 'Doom Garage Door',
+                    midMaterialId: 'Default',
                     adjacentSectorId: null,
                     loMaterialId: 'Default', hiMaterialId: 'Doom Garage Door', flags: 0 })]
         }) ] }).serialize();

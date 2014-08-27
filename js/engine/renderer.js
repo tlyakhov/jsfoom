@@ -149,6 +149,9 @@ Renderer.prototype.renderSlice = function (slice) {
             if (slice.distance < this.zbuffer[screenIndex]) {
                 var ty = (slice.y - sliceStart) / (adjSliceTop - sliceStart);
                 slice.world[2] = sector.topZ - ty * (sector.topZ - adj.topZ);
+                if (adjSegment.hiBehavior == 'scaleWidth' || adjSegment.hiBehavior == 'scaleNone')
+                    ty = (ty * (adj.topZ - sector.topZ) - adj.topZ) / 64.0;
+
                 slice.renderTarget[screenIndex] = hiMaterial.sample(slice, slice.textureX, ty, adjSliceTop - sliceStart);
                 this.zbuffer[screenIndex] = slice.distance;
             }
@@ -159,6 +162,9 @@ Renderer.prototype.renderSlice = function (slice) {
             if (slice.distance < this.zbuffer[screenIndex]) {
                 var ty = (slice.y - adjClippedBottom) / (sliceEnd - adjSliceBottom);
                 slice.world[2] = adj.bottomZ - ty * (adj.bottomZ - sector.bottomZ);
+                if (adjSegment.loBehavior == 'scaleWidth' || adjSegment.loBehavior == 'scaleNone')
+                    ty = (ty * (sector.bottomZ - adj.bottomZ) - sector.bottomZ) / 64.0;
+
                 slice.renderTarget[screenIndex] = loMaterial.sample(slice, slice.textureX, ty, sliceEnd - adjSliceBottom);
                 this.zbuffer[screenIndex] = slice.distance;
             }
@@ -180,8 +186,10 @@ Renderer.prototype.renderSlice = function (slice) {
             var screenIndex = slice.targetX + slice.y * this.workerWidth;
             if (slice.distance < this.zbuffer[screenIndex]) {
                 var ty = (slice.y - sliceStart) / (sliceEnd - sliceStart);
-
                 slice.world[2] = sector.topZ + ty * (sector.bottomZ - sector.topZ);
+                if (segment.midBehavior == 'scaleWidth' || segment.midBehavior == 'scaleNone')
+                    ty = (ty * (sector.topZ - sector.bottomZ) - sector.topZ) / 64.0;
+
                 slice.renderTarget[screenIndex] = midMaterial.sample(slice, slice.textureX, ty, sliceEnd - sliceStart);
                 this.zbuffer[screenIndex] = slice.distance;
             }

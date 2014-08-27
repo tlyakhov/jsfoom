@@ -6,10 +6,13 @@ function MapSegment(options) {
     this.by = 0.0;
     this.midMaterialId = 'Default';
     this.midMaterial = null;
+    this.midBehavior = 'scaleWidth'; // or 'scaleHeight', 'scaleAll', or 'scaleNone'
     this.loMaterialId = 'Default';
     this.loMaterial = null;
+    this.loBehavior = 'scaleWidth'; // or 'scaleHeight', 'scaleAll', or 'scaleNone'
     this.hiMaterialId = 'Default';
     this.hiMaterial = null;
+    this.hiBehavior = 'scaleWidth'; // or 'scaleHeight', 'scaleAll', or 'scaleNone'
     this.length = 0;
     this.normalX = 0;
     this.normalY = 0;
@@ -30,7 +33,10 @@ MapSegment.editableProperties = [
     { name: 'ay', friendly: 'Y', type: 'float' },
     { name: 'midMaterialId', friendly: 'Middle Material', type: 'material_id' },
     { name: 'loMaterialId', friendly: 'Low Material', type: 'material_id' },
-    { name: 'hiMaterialId', friendly: 'High Material', type: 'material_id' }
+    { name: 'hiMaterialId', friendly: 'High Material', type: 'material_id' },
+    { name: 'midBehavior', friendly: 'Middle Mapping', type: [ 'scaleNone', 'scaleWidth', 'scaleHeight', 'scaleAll']},
+    { name: 'loBehavior', friendly: 'High Mapping', type: [ 'scaleNone', 'scaleWidth', 'scaleHeight', 'scaleAll']},
+    { name: 'hiBehavior', friendly: 'Low Mapping', type: [ 'scaleNone', 'scaleWidth', 'scaleHeight', 'scaleAll']}
 ];
 
 classes['MapSegment'] = MapSegment;

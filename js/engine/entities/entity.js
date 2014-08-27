@@ -104,6 +104,14 @@ Entity.prototype.updateSector = function () {
     if (this.sector && this.sector.isPointInside(this.pos[0], this.pos[1]))
         return true;
 
+    if (this.sector) {
+        this.sector.onExit(this);
+        var index = $.inArray(this, this.sector.entities);
+        if (index != -1)
+            this.sector.entities.splice(index, 1);
+    }
+    this.sector = null;
+
     for (var i = 0; i < this.map.sectors.length; i++) {
         var sector = this.map.sectors[i];
 
@@ -111,9 +119,8 @@ Entity.prototype.updateSector = function () {
             continue;
 
         if (sector.isPointInside(this.pos[0], this.pos[1])) {
-            if (this.sector)
-                this.sector.onExit(this);
             this.sector = sector;
+            this.sector.entities.push(this);
             this.sector.onEnter(this);
             return true;
         }
@@ -141,6 +148,10 @@ Entity.prototype.serialize = function () {
 Entity.deserialize = function (data, map, entity) {
     if (!entity)
         entity = createFromName(data._type, {});
+
+    if (entity.constructor.name != data._type) {
+        entity.__proto__ = classes[data._type];
+    }
 
     entity.pos = data.pos;
     entity.angle = data.angle;

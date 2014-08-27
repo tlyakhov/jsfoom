@@ -103,6 +103,9 @@ MapSector.prototype.isPointInside = function (x, y) {
 
 MapSector.prototype.frame = function (lastFrameTime) {
     for (var i = 0; i < this.entities.length; i++) {
+        if (this.entities[i] == this.map.player)
+            continue;
+
         this.entities[i].frame(lastFrameTime);
     }
 };
@@ -153,10 +156,10 @@ MapSector.prototype.collide = function (entity) {
 };
 
 MapSector.prototype.actOnEntity = function (entity) {
-    if (entity.sector.id != this.id)
+    if (!entity.sector || entity.sector.id != this.id)
         return;
 
-    if (entity.constructor == Player) {
+    if (isA(entity, Player)) {
         entity.vel[0] = 0;
         entity.vel[1] = 0;
     }
@@ -200,6 +203,8 @@ MapSector.prototype.serialize = function () {
     }
 
     for (var i = 0; i < this.entities.length; i++) {
+        if (isA(this.entities[i], Player))
+            continue;
         r.entities.push(this.entities[i].serialize());
     }
 
@@ -209,6 +214,10 @@ MapSector.prototype.serialize = function () {
 MapSector.deserialize = function (data, map, sector) {
     if (!sector)
         sector = createFromName(data._type, {});
+
+    if (sector.constructor.name != data._type) {
+        sector.__proto__ = classes[data._type];
+    }
 
     sector.id = data.id;
     sector.bottomZ = data.bottomZ;
@@ -230,6 +239,8 @@ MapSector.deserialize = function (data, map, sector) {
         else
             MapSegment.deserialize(data.segments[i], sector, sector.segments[i]);
     }
+    if (sector.segments.length > data.segments.length)
+        sector.segments.splice(data.segments.length, sector.segments.length - data.segments.length);
 
     for (var i = 0; i < data.entities.length; i++) {
         if (i >= sector.entities.length)
@@ -237,6 +248,8 @@ MapSector.deserialize = function (data, map, sector) {
         else
             classes[data.entities[i]._type].deserialize(data.entities[i], map, sector.entities[i]);
     }
+    if (sector.entities.length > data.entities.length)
+        sector.entities.splice(data.entities.length, sector.entities.length - data.entities.length);
 
     return sector;
 };

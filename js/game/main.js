@@ -82,10 +82,12 @@ GameMain.prototype.flipBuffers = function () {
     this.renderContext.fillStyle = '#FFF';
     this.renderContext.fillText('Game FPS: ' + Math.round(1000.0 / this.lastGameTime), 5, 15);
     this.renderContext.fillText('Render FPS: ' + Math.round(1000.0 / this.lastFrameTime), 5, 25);
-    this.renderContext.fillText('Current sector: ' + this.map.player.sector.id +
-        ', x: ' + Math.round(this.map.player.pos[0]) +
-        ', y: ' + Math.round(this.map.player.pos[1]) +
-        ', z: ' + Math.round(this.map.player.pos[2]), 5, 35);
+    if (this.map.player.sector) {
+        this.renderContext.fillText('Current sector: ' + this.map.player.sector.id +
+            ', x: ' + Math.round(this.map.player.pos[0]) +
+            ', y: ' + Math.round(this.map.player.pos[1]) +
+            ', z: ' + Math.round(this.map.player.pos[2]), 5, 35);
+    }
     this.renderContext.fillText('Health: ' + this.map.player.health, 5, 45);
 
     for (var i = 0; i < this.workerDbgMeasure.length; i++) {
