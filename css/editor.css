@@ -62,3 +62,13 @@ body {
 .toolbar-fa {
     font-size: 1em !important;
 }
+
+li.k-ext-menu-separator {
+    border-bottom-style: solid;
+    border-bottom-width: 1px !important;
+    height: 1px;
+}
+
+li.k-ext-menu-separator * {
+    display: none;
+}

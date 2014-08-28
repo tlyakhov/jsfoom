@@ -124,3 +124,37 @@ Map.prototype.stringSerialize = function () {
 
     return JSON.stringify(this.serialize(), replacer);
 };
+
+Map.prototype.autoPortal = function (sectors) {
+    if (!sectors)
+        sectors = this.sectors;
+
+    for (var m = 0; m < this.sectors.length; m++) {
+        var mapSector2 = this.sectors[m];
+
+        for (var i = 0; i < sectors.length; i++) {
+            var mapSector = sectors[i];
+
+            if (mapSector == mapSector2)
+                continue;
+
+            for (var j = 0; j < mapSector.segments.length; j++) {
+                var mapSegment = mapSector.segments[j];
+
+                for (var k = 0; k < mapSector2.segments.length; k++) {
+                    var mapSegment2 = mapSector2.segments[k];
+
+                    if ((mapSegment.ax == mapSegment2.ax && mapSegment.ay == mapSegment2.ay &&
+                        mapSegment.bx == mapSegment2.bx && mapSegment.by == mapSegment2.by) ||
+                        (mapSegment.ax == mapSegment2.bx && mapSegment.ay == mapSegment2.by &&
+                            mapSegment.bx == mapSegment2.ax && mapSegment.by == mapSegment2.ay)) {
+                        mapSegment.adjacentSectorId = mapSector2.id;
+                        mapSegment2.adjacentSectorId = mapSector.id;
+                        mapSegment.midMaterialId = null;
+                        mapSegment2.midMaterialId = null;
+                    }
+                }
+            }
+        }
+    }
+};

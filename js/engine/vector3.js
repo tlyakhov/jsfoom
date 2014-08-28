@@ -71,6 +71,10 @@ function vec3dist2(v, v2) {
     return sqr(v[0] - v2[0]) + sqr(v[1] - v2[1]) + sqr(v[2] - v2[2]);
 }
 
+function vec3dist(v, v2) {
+    return Math.sqrt(sqr(v[0] - v2[0]) + sqr(v[1] - v2[1]) + sqr(v[2] - v2[2]));
+}
+
 function vec3normalize(v, vout) {
     var l = Math.sqrt(sqr(v[0]) + sqr(v[1]) + sqr(v[2]));
 

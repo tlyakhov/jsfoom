@@ -5,6 +5,7 @@ var KEY_D = 68;
 var KEY_E = 69;
 var KEY_H = 72;
 var KEY_I = 73;
+var KEY_O = 79;
 var KEY_Q = 81;
 var KEY_R = 82;
 var KEY_S = 83;

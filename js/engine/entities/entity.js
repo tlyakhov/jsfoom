@@ -120,7 +120,8 @@ Entity.prototype.updateSector = function () {
 
         if (sector.isPointInside(this.pos[0], this.pos[1])) {
             this.sector = sector;
-            this.sector.entities.push(this);
+            if ($.inArray(this, this.sector.entities) == -1)
+                this.sector.entities.push(this);
             this.sector.onEnter(this);
             return true;
         }

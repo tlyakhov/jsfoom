@@ -77,44 +77,15 @@ AddSectorEditorAction.prototype.onMouseUp = function (e) {
             if (Math.abs(firstSegment.ax - lastSegment.ax) < EDITOR_CONSTANTS.segmentSelectionEpsilon &&
                 Math.abs(firstSegment.ay - lastSegment.ay) < EDITOR_CONSTANTS.segmentSelectionEpsilon) {
                 this.sector.segments.splice(this.sector.segments.length - 1, 1); // Remove last segment
-                this.autoPortal();
+                this.editor.map.autoPortal([ this.sector]);
                 this.editor.actionFinished();
             }
         }
 
     }
     else if (e.button == 2) {
-        this.autoPortal();
+        this.editor.map.autoPortal([ this.sector ]);
         this.editor.actionFinished();
-    }
-};
-
-AddSectorEditorAction.prototype.autoPortal = function () {
-    var editor = this.editor;
-
-    for (var i = 0; i < editor.map.sectors.length; i++) {
-        var mapSector = editor.map.sectors[i];
-
-        if (mapSector == this.sector)
-            continue;
-
-        for (var j = 0; j < mapSector.segments.length; j++) {
-            var mapSegment = mapSector.segments[j];
-
-            for (var k = 0; k < this.sector.segments.length; k++) {
-                var segment = this.sector.segments[k];
-
-                if ((mapSegment.ax == segment.ax && mapSegment.ay == segment.ay &&
-                    mapSegment.bx == segment.bx && mapSegment.by == segment.by) ||
-                    (mapSegment.ax == segment.bx && mapSegment.ay == segment.by &&
-                        mapSegment.bx == segment.ax && mapSegment.by == segment.ay)) {
-                    mapSegment.adjacentSectorId = this.sector.id;
-                    segment.adjacentSectorId = mapSector.id;
-                    mapSegment.midMaterialId = null;
-                    segment.midMaterialId = null;
-                }
-            }
-        }
     }
 };
 

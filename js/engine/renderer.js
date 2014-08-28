@@ -179,7 +179,8 @@ Renderer.prototype.renderSlice = function (slice) {
         portalSlice.sector = adj;
         portalSlice.yStart = adjClippedTop;
         portalSlice.yEnd = adjClippedBottom;
-        portalSlice.seenPortals[slice.segment.id] = true;
+        portalSlice.seenPortals[segment.id] = true;
+        portalSlice.seenPortals[adjSegment.id] = true;
 
         this.renderSector(portalSlice);
     }

@@ -263,3 +263,9 @@ MapSegment.deserialize = function (data, sector, segment) {
 
     return segment;
 };
+
+MapSegment.prototype.clone = function () {
+    var ns = MapSegment.deserialize(this.serialize(), this.sector);
+    ns.id = "Segment_" + (new ObjectId().toString());
+    return ns;
+};

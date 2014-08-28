@@ -17,8 +17,8 @@ function Editor(options) {
     this.pos = vec3blank();
     this.scale = 1.0;
 
-    this.mouseDown = vec3blank();
-    this.mouseDownWorld = vec3blank();
+    this.mouseDown = null;
+    this.mouseDownWorld = null;
     this.mouse = vec3blank();
     this.mouseWorld = vec3blank();
 
@@ -100,12 +100,16 @@ Editor.prototype.go = function () {
     jqToolbar.kendoToolBar({
         items: [
             { id: 'editGroup', type: 'buttonGroup', buttons: [
-            { id: 'undo', type: 'button', spriteCssClass: 'toolbar-fa fa fa-undo fa-fw', text: '', encoded: false, click: $.proxy(this.undo, this) },
-            { id: 'redo', type: 'button', spriteCssClass: 'toolbar-fa fa fa-repeat fa-fw', text: '', click: $.proxy(this.redo, this) },
+                { id: 'undo', type: 'button', spriteCssClass: 'toolbar-fa fa fa-undo fa-fw', text: '', encoded: false, click: $.proxy(this.undo, this) },
+                { id: 'redo', type: 'button', spriteCssClass: 'toolbar-fa fa fa-repeat fa-fw', text: '', click: $.proxy(this.redo, this) },
                 { id: 'delete', type: 'button', spriteCssClass: 'toolbar-fa fa fa-times fa-fw', text: '', click: $.proxy(this.delete, this) }
             ] },
             { type: 'separator' },
-            { id: 'toolDefault', type: 'button', spriteCssClass: 'toolbar-fa fa fa-arrows fa-fw', togglable: true, text: '', selected: true, group: 'tools', toggle: $.proxy(this.toggleTool, this) },
+            { id: 'toolGroup', type: 'buttonGroup', buttons: [
+                { id: 'toolDefault', type: 'button', spriteCssClass: 'toolbar-fa fa fa-arrows fa-fw', togglable: true, text: '', selected: true, group: 'tools', toggle: $.proxy(this.toggleTool, this) },
+                { id: 'toolSplit', type: 'button', spriteCssClass: 'toolbar-fa fa fa-strikethrough fa-fw', togglable: true, text: '', group: 'tools', toggle: $.proxy(this.toggleTool, this) },
+                { id: 'toolScissor', type: 'button', spriteCssClass: 'toolbar-fa fa fa-scissors fa-fw', togglable: true, text: '', group: 'tools', toggle: $.proxy(this.toggleTool, this) }
+            ] },
             { type: 'separator' },
             { id: 'toolEntity', type: 'button', spriteCssClass: 'toolbar-fa fa fa-plus fa-fw', togglable: true, text: 'Entity', group: 'tools', toggle: $.proxy(this.toggleTool, this) },
             { id: 'dropdownEntity', template: "<input id='toolbar-dropdown-entity' class='toolbar-dropdown' />", overflow: 'never' },
@@ -149,6 +153,12 @@ Editor.prototype.toggleTool = function (e) {
     }
     else if (e.id == 'toolDefault') {
         this.currentTool = 'default';
+    }
+    else if (e.id == 'toolScissor') {
+        this.currentTool = 'scissor';
+    }
+    else if (e.id == 'toolSplit') {
+        this.currentTool = 'split';
     }
 
     if (this.currentAction)
@@ -325,6 +335,12 @@ Editor.prototype.actTool = function () {
         var ddl = $('#toolbar-dropdown-sector').data('kendoDropDownList');
         this.newAction(AddSectorEditorAction).act(new classes[ddl.dataItem().id]());
     }
+    else if (this.currentTool == 'scissor') {
+        this.newAction(ScissorEditorAction);
+    }
+    else if (this.currentTool == 'split') {
+        this.newAction(SplitEditorAction);
+    }
 };
 
 Editor.prototype.undo = function () {
@@ -354,15 +370,23 @@ Editor.prototype.delete = function () {
 };
 
 Editor.prototype.onKeyPress = function (e) {
-    if (e.keyCode == KEY_Z && e.ctrlKey) {
-        this.undo();
+    if (e.keyCode == KEY_O && e.ctrlKey) {
+        $('#menu-file-open').trigger('click');
+    }
+    else if (e.keyCode == KEY_S && e.ctrlKey) {
+        $('#menu-file-save').trigger('click');
+    }
+    else if (e.keyCode == KEY_Z && e.ctrlKey) {
+        $('#menu-edit-undo').trigger('click');
     }
     else if (e.keyCode == KEY_Y && e.ctrlKey) {
-        this.redo();
+        $('#menu-edit-redo').trigger('click');
     }
     else if (e.keyCode == KEY_DEL || e.keyCode == KEY_BACKSPACE) {
-        this.delete();
+        $('#menu-edit-delete').trigger('click');
     }
+
+    e.preventDefault();
 };
 
 Editor.prototype.onMouseDown = function (e) {
@@ -419,6 +443,8 @@ Editor.prototype.onMouseUp = function (e) {
     if (this.currentAction)
         this.currentAction.onMouseUp(e);
 
+    this.mouseDown = null;
+    this.mouseDownWorld = null;
     return false;
 };
 
@@ -545,6 +571,10 @@ Editor.prototype.drawSector = function (sector) {
         if (mapPointHovering || mapPointSelected) {
             this.drawHandle(segment.ax, segment.ay, mapPointHovering ? EDITOR_CONSTANTS.colorSelectionSecondary : EDITOR_CONSTANTS.colorSelectionPrimary);
         }
+        else {
+            this.context.strokeRect(segment.ax - 1.0, segment.ay - 1.0, 2.0, 2.0);
+        }
+
     }
 
     if (this.sectorTypesVisible) {
@@ -592,18 +622,20 @@ Editor.prototype.timer = function () {
     this.hoveringObjects = [];
 
     var v1 = vec3clone(this.mouseWorld);
-    var v2 = vec3clone(this.mouseDownWorld);
+    var v2 = this.mouseDownWorld ? vec3clone(this.mouseDownWorld) : null;
 
-    if (v2[0] < v1[0]) {
-        var tmp = v1[0];
-        v1[0] = v2[0];
-        v2[0] = tmp;
-    }
+    if (v2) {
+        if (v2[0] < v1[0]) {
+            var tmp = v1[0];
+            v1[0] = v2[0];
+            v2[0] = tmp;
+        }
 
-    if (v2[1] < v1[1]) {
-        var tmp = v1[1];
-        v1[1] = v2[1];
-        v2[1] = tmp;
+        if (v2[1] < v1[1]) {
+            var tmp = v1[1];
+            v1[1] = v2[1];
+            v2[1] = tmp;
+        }
     }
 
     // Hovering
@@ -626,7 +658,7 @@ Editor.prototype.timer = function () {
                     }
                 }
             }
-            if (isA(this.currentAction, SelectEditorAction)) {
+            if (isA(this.currentAction, SelectEditorAction) && v1 && v2) {
                 if (segment.ax >= v1[0] && segment.ay >= v1[1] &&
                     segment.ax <= v2[0] && segment.ay <= v2[1]) {
 
@@ -643,7 +675,7 @@ Editor.prototype.timer = function () {
             }
         }
 
-        if (isA(this.currentAction, SelectEditorAction)) {
+        if (isA(this.currentAction, SelectEditorAction) && v1 && v2) {
             for (var j = 0; j < sector.entities.length; j++) {
                 var entity = sector.entities[j];
 
@@ -664,12 +696,40 @@ Editor.prototype.timer = function () {
 
     if (isA(this.currentAction, AddSectorEditorAction)) {
         var gridMouse = vec3clone(this.mouseWorld);
-        gridMouse[0] = Math.round(gridMouse[0] / this.gridSize) * this.gridSize;
-        gridMouse[1] = Math.round(gridMouse[1] / this.gridSize) * this.gridSize;
+
+        if (this.gridVisible) {
+            gridMouse[0] = Math.round(gridMouse[0] / this.gridSize) * this.gridSize;
+            gridMouse[1] = Math.round(gridMouse[1] / this.gridSize) * this.gridSize;
+        }
+
         this.drawHandle(gridMouse[0], gridMouse[1], EDITOR_CONSTANTS.colorSelectionPrimary);
     }
+    else if (isA(this.currentAction, ScissorEditorAction) || isA(this.currentAction, SplitEditorAction)) {
+        var gridMouseDown = this.mouseDownWorld ? vec3clone(this.mouseDownWorld) : null;
+        var gridMouse = vec3clone(this.mouseWorld);
 
-    if (isA(this.currentAction, SelectEditorAction)) {
+        if (this.gridVisible) {
+            if (gridMouseDown) {
+                gridMouseDown[0] = Math.round(gridMouseDown[0] / this.gridSize) * this.gridSize;
+                gridMouseDown[1] = Math.round(gridMouseDown[1] / this.gridSize) * this.gridSize;
+            }
+            gridMouse[0] = Math.round(gridMouse[0] / this.gridSize) * this.gridSize;
+            gridMouse[1] = Math.round(gridMouse[1] / this.gridSize) * this.gridSize;
+        }
+
+        if (gridMouseDown) {
+            this.context.strokeStyle = EDITOR_CONSTANTS.colorSelectionPrimary;
+            this.context.beginPath();
+            this.context.moveTo(gridMouseDown[0], gridMouseDown[1]);
+            this.context.lineTo(gridMouse[0], gridMouse[1]);
+            this.context.stroke();
+
+            this.drawHandle(gridMouseDown[0], gridMouseDown[1], EDITOR_CONSTANTS.colorSelectionPrimary);
+        }
+
+        this.drawHandle(gridMouse[0], gridMouse[1], EDITOR_CONSTANTS.colorSelectionPrimary);
+    }
+    else if (isA(this.currentAction, SelectEditorAction)) {
         var v1 = this.mouseDownWorld;
         var v2 = this.mouseWorld;
 

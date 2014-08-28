@@ -38,10 +38,10 @@ MoveEditorAction.prototype.move = function (toOriginal) {
     var dx = toOriginal ? 0 : this.dx;
     var dy = toOriginal ? 0 : this.dy;
 
-    if (editor.gridVisible) {
-        dx = Math.round(dx / editor.gridSize) * editor.gridSize;
-        dy = Math.round(dy / editor.gridSize) * editor.gridSize;
-    }
+    /*    if (editor.gridVisible) {
+     dx = Math.round(dx / editor.gridSize) * editor.gridSize;
+     dy = Math.round(dy / editor.gridSize) * editor.gridSize;
+     }*/
 
     for (var i = 0; i < this.selectedObjects.length; i++) {
         var object = this.selectedObjects[i];
@@ -49,6 +49,10 @@ MoveEditorAction.prototype.move = function (toOriginal) {
         if (isA(object, MapPoint)) {
             object.segment.ax = op[0] + dx;
             object.segment.ay = op[1] + dy;
+            if (editor.gridVisible) {
+                object.segment.ax = Math.round(object.segment.ax / editor.gridSize) * editor.gridSize;
+                object.segment.ay = Math.round(object.segment.ay / editor.gridSize) * editor.gridSize;
+            }
             object.segment.sector.update();
         }
         else if (isA(object, Entity)) {
@@ -57,6 +61,10 @@ MoveEditorAction.prototype.move = function (toOriginal) {
 
             object.pos[0] = op[0] + dx;
             object.pos[1] = op[1] + dy;
+            if (editor.gridVisible) {
+                object.pos[0] = Math.round(object.pos[0] / editor.gridSize) * editor.gridSize;
+                object.pos[1] = Math.round(object.pos[1] / editor.gridSize) * editor.gridSize;
+            }
             object.updateSector();
         }
     }

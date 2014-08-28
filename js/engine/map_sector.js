@@ -179,6 +179,147 @@ MapSector.prototype.onEnter = function (entity) {
 MapSector.prototype.onExit = function (entity) {
 };
 
+MapSector.prototype.removeUncontainedEntities = function () {
+    for (var i = 0; i < this.entities.length; i++) {
+        if (!this.isPointInside(this.entities[i].pos[0], this.entities[i].pos[1])) {
+            this.entities.splice(i, 1);
+            i--;
+        }
+        else {
+            this.entities[i].sector = this;
+        }
+    }
+};
+
+MapSector.prototype._firstWithFlag = function (segments, index) {
+    var n = segments.length;
+    while (true) {
+        index = (index + 1) % n;
+        if (segments[index].flag)
+            return index;
+    }
+};
+
+MapSector.prototype._subSector = function (segments, index0, index1) {
+    var n = segments.length;
+    var subsector = [];
+    if (index1 < index0)
+        index1 += n;
+    for (var i = index0; i <= index1; i++)
+        subsector.push(segments[i % n]);
+    return subsector;
+};
+
+MapSector.prototype.slice = function (ax, ay, bx, by) {
+    // If a segment point is the same as a sector point, return the sector
+    if (this.isPointInside(ax, ay) || this.isPointInside(bx, by))
+        return [ this ];
+
+    var a = vec3create(ax, ay, 0);
+    var b = vec3create(bx, by, 0);
+    var intersections = [];	// intersections
+    var iSegments = [];
+    var segments = [];	// points
+    for (var i = 0; i < this.segments.length; i++) {
+        segments.push(this.segments[i]);
+    }
+
+    for (var i = 0; i < segments.length; i++) {
+        var intersection = segments[i].intersect(ax, ay, bx, by);
+        var fi = intersections.length > 0 ? intersections[0] : null;
+        var li = intersections.length > 0 ? intersections[intersections.length - 1] : null;
+        if (intersection && (!fi || vec3dist2(intersection, fi) > 1e-10) && (!li || vec3dist2(intersection, li) > 1e-10 )) {
+            intersections.push(intersection);
+            var newSegment = segments[i].clone();
+            newSegment.ax = intersection[0];
+            newSegment.ay = intersection[1];
+            newSegment.bx = segments[i].bx;
+            newSegment.bx = segments[i].by;
+            newSegment.flag = true;
+            iSegments.push(newSegment);
+            segments[i].bx = intersection[0];
+            segments[i].by = intersection[1];
+            segments.splice(i + 1, 0, newSegment);
+            i++;
+        }
+    }
+
+    if (intersections.length < 2)
+        return [ this ];
+
+    var comp = function (u, v) {
+        return vec3dist(a, vec3create(u.ax, u.ay, 0, true)) - vec3dist(a, vec3create(v.ax, v.ay, 0, true));
+    };
+
+    iSegments.sort(comp);
+
+    //console.log("Intersections: "+intersections.length, JSON.stringify(intersections));
+
+    var slicedSectors = [];
+    var dir = 0;
+    while (iSegments.length > 0) {
+        var n = segments.length;
+        var i0 = iSegments[0];
+        var i1 = iSegments[1];
+
+        var index0 = segments.indexOf(i0);
+        var index1 = segments.indexOf(i1);
+        var solved = false;
+
+        if (this._firstWithFlag(segments, index0) == index1) {
+            solved = true;
+        }
+        else {
+            i0 = iSegments[1];
+            i1 = iSegments[0];
+            index0 = segments.indexOf(i0);
+            index1 = segments.indexOf(i1);
+            if (this._firstWithFlag(segments, index0) == index1)
+                solved = true;
+        }
+
+        if (solved) {
+            dir--;
+            var newSegments = this._subSector(segments, index0, index1);
+
+            var newSector = this.clone();
+            newSector.segments = [];
+            for (var i = 0; i < newSegments.length; i++) {
+                newSector.segments.push(newSegments[i].clone());
+            }
+            newSector.removeUncontainedEntities();
+            newSector.update();
+            slicedSectors.push(newSector);
+
+            segments = this._subSector(segments, index1, index0);
+            i0.flag = i1.flag = false;
+            iSegments.splice(0, 2);
+            if (iSegments.length == 0) {
+                newSector = this.clone();
+                newSector.segments = segments;
+                newSector.removeUncontainedEntities();
+                newSector.update();
+                slicedSectors.push(newSector);
+            }
+        }
+        else {
+            dir++;
+            iSegments.reverse();
+        }
+
+        if (dir > 1)
+            break;
+    }
+
+    return slicedSectors;
+};
+
+MapSector.prototype.clone = function () {
+    var ns = classes[this.constructor.name].deserialize(this.serialize(), this.map);
+    ns.id = "Sector_" + (new ObjectId().toString());
+    return ns;
+};
+
 MapSector.prototype.serialize = function () {
     var r = {
         _type: this.constructor.name,

@@ -83,6 +83,8 @@
     <script src="js/engine/editor/add_entity_editor_action.js"></script>
     <script src="js/engine/editor/add_sector_editor_action.js"></script>
     <script src="js/engine/editor/pan_editor_action.js"></script>
+    <script src="js/engine/editor/scissor_editor_action.js"></script>
+    <script src="js/engine/editor/split_editor_action.js"></script>
     <script src="js/engine/editor/set_property_editor_action.js"></script>
 
     <script>
@@ -90,7 +92,7 @@
             screenWidth: 640,
             screenHeight: 360,
             canvasId: 'render-canvas',
-            map: Map.deserialize(testMap)
+            map: Map.deserialize(globalDefaultMap)
         });
 
         var globalEditor = new Editor({
@@ -149,6 +151,12 @@
                     <li id="menu-edit-undo">Undo (CTRL+Z)</li>
                     <li id="menu-edit-redo">Redo (CTRL+Y)</li>
                     <li id="menu-edit-delete">Delete (DEL/BACKSPACE)</li>
+                    <li class="k-ext-menu-separator">
+                        <hr/>
+                    </li>
+                    <li id="menu-edit-tool-default">Default Tool (X)</li>
+                    <li id="menu-edit-tool-add-sector">Add Sector Tool (S)</li>
+                    <li id="menu-edit-tool-add-entity">Add Entity Tool (E)</li>
                 </ul>
             </li>
             <li>
