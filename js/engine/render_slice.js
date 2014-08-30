@@ -15,11 +15,14 @@ function RenderSlice() {
     this.world = null;
     this.normal = null;
     this.lights = [];
+    this.depth = 0;
+    this.renderer = null;
 }
 
 RenderSlice.prototype.clone = function () {
     var s = _renderSliceCache.get();
 
+    s.depth = this.depth;
     s.renderTarget = this.renderTarget;
     s.x = this.x;
     s.y = this.y;
@@ -36,6 +39,7 @@ RenderSlice.prototype.clone = function () {
     s.world = this.world;
     s.normal = this.normal;
     s.lights = this.lights;
+    s.renderer = this.renderer;
 
     return s;
 };

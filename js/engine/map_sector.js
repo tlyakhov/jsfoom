@@ -8,15 +8,21 @@ function MapSector(options) {
     this.topZ = 64;
     this.floorMaterialId = "Default";
     this.floorMaterial = null;
+    this.floorLightmap = null;
     this.ceilMaterialId = "Default";
     this.ceilMaterial = null;
-    this.centerX = 0.0;
-    this.centerY = 0.0;
+    this.ceilLightmap = null;
+    this.min = vec3blank();
+    this.max = vec3blank();
+    this.lightmapWidth = 0;
+    this.lightmapHeight = 0;
+    this.center = vec3blank();
     this.floorScale = 64.0;
     this.ceilScale = 64.0;
     this.hurt = 0;
     this.floorTargetSectorId = null;
     this.ceilTargetSectorId = null;
+    this.version = 0;
 
     $.extend(true, this, options);
 
@@ -38,25 +44,68 @@ MapSector.editableProperties = [
 classes['MapSector'] = MapSector;
 
 MapSector.prototype.update = function () {
-    this.centerX = 0.0;
-    this.centerY = 0.0;
+    this.center[0] = 0.0;
+    this.center[1] = 0.0;
+    this.min[0] = 1e10;
+    this.min[1] = 1e10;
+    this.min[2] = this.bottomZ;
+    this.max[1] = -1e10;
+    this.max[1] = -1e10;
+    this.max[2] = this.topZ;
+
+    var w = this.winding();
+
     for (var i = 0; i < this.segments.length; i++) {
         var next = i + 1 >= this.segments.length ? 0 : i + 1;
-        this.centerX += this.segments[i].ax;
-        this.centerY += this.segments[i].ay;
+        this.center[0] += this.segments[i].ax;
+        this.center[1] += this.segments[i].ay;
+        if (this.segments[i].ax < this.min[0])
+            this.min[0] = this.segments[i].ax;
+        if (this.segments[i].ay < this.min[1])
+            this.min[1] = this.segments[i].ay;
+        if (this.segments[i].ax > this.max[0])
+            this.max[0] = this.segments[i].ax;
+        if (this.segments[i].ay > this.max[1])
+            this.max[1] = this.segments[i].ay;
+
         this.segments[i].sector = this;
         this.segments[i].bx = this.segments[next].ax;
         this.segments[i].by = this.segments[next].ay;
         this.segments[i].update();
+        if (!w) {
+            this.segments[i].normalX = -this.segments[i].normalX;
+            this.segments[i].normalY = -this.segments[i].normalY;
+        }
     }
 
-    this.centerX /= this.segments.length;
-    this.centerY /= this.segments.length;
+    this.lightmapWidth = fast_floor((this.max[0] - this.min[0]) / GAME_CONSTANTS.lightGrid + 2);
+    this.lightmapHeight = fast_floor((this.max[1] - this.min[1]) / GAME_CONSTANTS.lightGrid + 2);
+
+    this.floorLightmap = new Float64Array(this.lightmapWidth * this.lightmapHeight * 6);
+    this.ceilLightmap = new Float64Array(this.lightmapWidth * this.lightmapHeight * 6);
+    this.clearLightmaps();
+
+    this.center[0] /= this.segments.length;
+    this.center[1] /= this.segments.length;
 
     for (var i = 0; i < this.entities.length; i++) {
         this.entities[i].map = this.map;
         this.entities[i].sector = this;
     }
+};
+
+MapSector.prototype.clearLightmaps = function () {
+    var index = this.floorLightmap.length;
+    while (index--) {
+        this.floorLightmap[index] = -1;
+        this.ceilLightmap[index] = -1;
+    }
+
+    index = this.segments.length;
+    while (index--)
+        this.segments[index].clearLightmap();
+
+    this.version++;
 };
 
 MapSector.prototype.getCeilMaterial = function () {
@@ -99,6 +148,30 @@ MapSector.prototype.isPointInside = function (x, y) {
     }
 
     return inside;
+};
+
+MapSector.prototype.winding = function () {
+    var sum = 0;
+
+    for (var i = 0; i < this.segments.length; i++) {
+        var next = (i + 1 >= this.segments.length) ? 0 : i + 1;
+        var segment = this.segments[i];
+        var segment2 = this.segments[next];
+        sum += (segment2.ax - segment.ax) * (segment.ay + segment2.ay);
+    }
+
+    return sum < 0;
+};
+
+MapSector.prototype.lightmapAddress = function (point) {
+    return (Math.max(fast_floor((point[0] - this.min[0]) / GAME_CONSTANTS.lightGrid) + 1, 0) +
+        Math.max(fast_floor((point[1] - this.min[1]) / GAME_CONSTANTS.lightGrid) + 1, 0) * this.lightmapWidth) * 6;
+};
+
+MapSector.prototype.lightmapWorld = function (point, pool) {
+    return vec3create(this.min[0] + fast_floor((point[0] - this.min[0]) / GAME_CONSTANTS.lightGrid) * GAME_CONSTANTS.lightGrid,
+            this.min[1] + fast_floor((point[1] - this.min[1]) / GAME_CONSTANTS.lightGrid) * GAME_CONSTANTS.lightGrid,
+        point[2], pool);
 };
 
 MapSector.prototype.frame = function (lastFrameTime) {
@@ -240,20 +313,33 @@ MapSector.prototype.slice = function (ax, ay, bx, by) {
             segments[i].bx = intersection[0];
             segments[i].by = intersection[1];
             segments.splice(i + 1, 0, newSegment);
+
+            var adjSegment = segments[i].getAdjacentSegment();
+
             i++;
+
+            if (!adjSegment)
+                continue;
+
+            var index = $.inArray(adjSegment, adjSegment.sector.segments);
+            newSegment = adjSegment.clone();
+            newSegment.ax = intersection[0];
+            newSegment.ay = intersection[1];
+            newSegment.bx = adjSegment.bx;
+            newSegment.bx = adjSegment.by;
+            adjSegment.bx = intersection[0];
+            adjSegment.by = intersection[1];
+            adjSegment.sector.segments.splice(index + 1, 0, newSegment);
+            adjSegment.sector.update();
         }
     }
 
     if (intersections.length < 2)
         return [ this ];
 
-    var comp = function (u, v) {
+    iSegments.sort(function (u, v) {
         return vec3dist(a, vec3create(u.ax, u.ay, 0, true)) - vec3dist(a, vec3create(v.ax, v.ay, 0, true));
-    };
-
-    iSegments.sort(comp);
-
-    //console.log("Intersections: "+intersections.length, JSON.stringify(intersections));
+    });
 
     var slicedSectors = [];
     var dir = 0;
@@ -324,12 +410,16 @@ MapSector.prototype.serialize = function () {
     var r = {
         _type: this.constructor.name,
         id: this.id,
+        version: this.version,
         bottomZ: this.bottomZ,
         topZ: this.topZ,
         floorMaterialId: this.floorMaterialId,
         ceilMaterialId: this.ceilMaterialId,
-        centerX: this.centerX,
-        centerY: this.centerY,
+        center: this.center,
+        min: this.min,
+        max: this.max,
+        lightmapWidth: this.lightmapWidth,
+        lightmapHeight: this.lightmapHeight,
         floorScale: this.floorScale,
         ceilScale: this.ceilScale,
         hurt: this.hurt,
@@ -365,8 +455,11 @@ MapSector.deserialize = function (data, map, sector) {
     sector.topZ = data.topZ;
     sector.floorMaterialId = data.floorMaterialId;
     sector.ceilMaterialId = data.ceilMaterialId;
-    sector.centerX = data.centerX;
-    sector.centerY = data.centerY;
+    sector.center = data.center || vec3blank();
+    sector.min = data.min || vec3blank();
+    sector.max = data.max || vec3blank();
+    sector.lightmapWidth = data.lightmapWidth;
+    sector.lightmapHeight = data.lightmapHeight;
     sector.floorScale = data.floorScale;
     sector.ceilScale = data.ceilScale;
     sector.hurt = data.hurt;
@@ -391,6 +484,15 @@ MapSector.deserialize = function (data, map, sector) {
     }
     if (sector.entities.length > data.entities.length)
         sector.entities.splice(data.entities.length, sector.entities.length - data.entities.length);
+
+    if (!sector.floorLightmap || sector.floorLightmap.length < sector.lightmapWidth * sector.lightmapHeight * 6) {
+        sector.update();
+    }
+
+    if (sector.version != data.version) {
+        sector.update();
+        sector.version = data.version;
+    }
 
     return sector;
 };

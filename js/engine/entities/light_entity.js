@@ -7,6 +7,7 @@ function LightEntity(options) {
     this.specular = vec3create(1.0, 1.0, 1.0);
     this.boundingRadius = 10.0;
     this.strength = 50.0;
+    this.marked = true;
 
     $.extend(true, this, options);
 }

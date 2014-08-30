@@ -51,7 +51,7 @@ GameMain.prototype.go = function () {
     }
 
     if (this.workers.length == 0) {
-        this.renderer = new Renderer({ canvas: canvasId });
+        this.renderer = new Renderer({ canvas: this.canvasId, map: this.map, screenWidth: this.screenWidth, screenHeight: this.screenHeight });
     }
 
     this.checkRenderWorkers();
@@ -160,6 +160,7 @@ GameMain.prototype.timer = function () {
 
     if (this.workers.length == 0) {
         this.renderer.render(this.renderTarget);
+        this.flipBuffers();
     }
 
     this.checkInput();

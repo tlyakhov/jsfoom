@@ -29,7 +29,7 @@ MapSectorVerticalDoor.prototype.frame = function (lastFrameTime) {
 MapSectorVerticalDoor.prototype.actOnEntity = function (entity) {
     MapSector.prototype.actOnEntity.call(this, entity);
 
-    if (distance2D(this.centerX, this.centerY, entity.pos[0], entity.pos[1]) < 100.0)
+    if (distance2D(this.center[0], this.center[1], entity.pos[0], entity.pos[1]) < 100.0)
         this.velZ = GAME_CONSTANTS.doorSpeed;
 };
 

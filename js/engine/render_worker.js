@@ -1,5 +1,6 @@
 importScripts("../lib/jquery.nodom.js");
 importScripts("../lib/object_id.js");
+importScripts("../lib/hashcode.js");
 importScripts("../game/constants.js");
 importScripts("utils.js");
 importScripts("object_cache.js");
@@ -26,6 +27,7 @@ var globalRenderTarget = null;
 var globalWorkerId = 0;
 var globalWorkersTotal = 0;
 var globalGame = null; // We're a worker!
+var map = null;
 
 onmessage = function (e) {
     var data = e.data;
@@ -44,7 +46,7 @@ onmessage = function (e) {
         texture.loaded(null, null);
     }
     else if (data.type == 'render') {
-        map = Map.deserialize(data.map);
+        renderer.map = map = Map.deserialize(data.map, renderer.map);
 
         var stime = performance.now();
         renderer.render(globalRenderTarget);

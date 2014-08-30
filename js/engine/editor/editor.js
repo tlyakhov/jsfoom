@@ -239,6 +239,8 @@ Editor.prototype.menuSelect = function (e) {
 
                 this.map = EditorStorage.loadLevel(v);
                 globalGame.map = this.map;
+                if (globalGame.renderer)
+                    globalGame.renderer.map = this.map;
                 this.pos = vec3blank();
                 this.scale = 1.0;
 
@@ -564,6 +566,10 @@ Editor.prototype.drawSector = function (sector) {
         this.context.moveTo(segment.ax, segment.ay);
         this.context.lineTo(nextSegment.ax, nextSegment.ay);
         this.context.stroke();
+        this.context.beginPath();
+        this.context.moveTo((segment.ax + nextSegment.ax) / 2, (segment.ay + nextSegment.ay) / 2);
+        this.context.lineTo((segment.ax + nextSegment.ax) / 2 + segment.normalX * 4, (segment.ay + nextSegment.ay) / 2 + segment.normalY * 4);
+        this.context.stroke();
 
         var mapPointHovering = ($.inArray(this.mapPoint(segment), this.hoveringObjects) != -1);
         var mapPointSelected = ($.inArray(this.mapPoint(segment), this.selectedObjects) != -1);
@@ -581,7 +587,7 @@ Editor.prototype.drawSector = function (sector) {
         this.context.fillStyle = '#333';
         this.context.textAlign = 'center';
         this.context.textBaseline = 'middle';
-        this.context.fillText(sector.constructor.name, sector.centerX, sector.centerY);
+        this.context.fillText(sector.constructor.name, sector.center[0], sector.center[1]);
     }
 };
 

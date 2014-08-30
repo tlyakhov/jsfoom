@@ -5,6 +5,7 @@ function ScissorEditorAction(editor) {
 
     this.oldSectors = [];
     this.newSectors = [];
+    this.oldPortals = {};
 }
 
 classes['ScissorEditorAction'] = ScissorEditorAction;
@@ -44,13 +45,22 @@ ScissorEditorAction.prototype.undo = function () {
 
 ScissorEditorAction.prototype.redo = function () {
     this.oldSectors = [];
+    this.oldPortals = {};
     this.newSectors = [];
     var editor = this.editor;
+    var md = vec3clone(editor.mouseDownWorld);
+    var m = vec3clone(editor.mouseWorld);
+    if (editor.gridVisible) {
+        md[0] = Math.round(md[0] / editor.gridSize) * editor.gridSize;
+        md[1] = Math.round(md[1] / editor.gridSize) * editor.gridSize;
+        m[0] = Math.round(m[0] / editor.gridSize) * editor.gridSize;
+        m[1] = Math.round(m[1] / editor.gridSize) * editor.gridSize;
+    }
+
     for (var i = 0; i < editor.map.sectors.length; i++) {
         var sector = editor.map.sectors[i];
 
-        var slicedSectors = sector.slice(editor.mouseDownWorld[0], editor.mouseDownWorld[1],
-            editor.mouseWorld[0], editor.mouseWorld[1]);
+        var slicedSectors = sector.slice(md[0], md[1], m[0], m[1]);
 
         if (slicedSectors.length == 0 || (slicedSectors.length == 1 && slicedSectors[0] == sector))
             continue;
@@ -58,9 +68,9 @@ ScissorEditorAction.prototype.redo = function () {
         this.oldSectors.push(sector);
 
         editor.map.sectors.splice(i, 1);
+
         for (var j = 0; j < slicedSectors.length; j++) {
             editor.map.sectors.splice(i, 0, slicedSectors[j]);
-            editor.map.autoPortal([slicedSectors[j]]);
         }
 
         i += slicedSectors.length - 1;
@@ -68,6 +78,7 @@ ScissorEditorAction.prototype.redo = function () {
         for (var j = 0; j < slicedSectors.length; j++)
             this.newSectors.push(slicedSectors[j]);
     }
+    editor.map.autoPortal();
     editor.map.player.sector = null;
     editor.map.player.updateSector();
 };

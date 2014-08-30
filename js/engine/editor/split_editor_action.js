@@ -38,14 +38,22 @@ SplitEditorAction.prototype.undo = function () {
 SplitEditorAction.prototype.redo = function () {
     this.newSegments = [];
     var editor = this.editor;
+    var md = vec3clone(editor.mouseDownWorld);
+    var m = vec3clone(editor.mouseWorld);
+    if (editor.gridVisible) {
+        md[0] = Math.round(md[0] / editor.gridSize) * editor.gridSize;
+        md[1] = Math.round(md[1] / editor.gridSize) * editor.gridSize;
+        m[0] = Math.round(m[0] / editor.gridSize) * editor.gridSize;
+        m[1] = Math.round(m[1] / editor.gridSize) * editor.gridSize;
+    }
+
     for (var i = 0; i < editor.map.sectors.length; i++) {
         var sector = editor.map.sectors[i];
 
         for (var j = 0; j < sector.segments.length; j++) {
             var segment = sector.segments[j];
 
-            var intersection = segment.intersect(editor.mouseDownWorld[0], editor.mouseDownWorld[1],
-                editor.mouseWorld[0], editor.mouseWorld[1]);
+            var intersection = segment.intersect(md[0], md[1], m[0], m[1]);
 
             if (!intersection)
                 continue;

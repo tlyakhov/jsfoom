@@ -100,6 +100,7 @@ Map.deserialize = function (data, map) {
             map.materials.push(Material.deserialize(data.materials[i]));
         else
             Material.deserialize(data.materials[i], map.materials[i]);
+        map.materials[i].map = map;
     }
 
     if (map.materials.length > data.materials.length)
@@ -144,10 +145,7 @@ Map.prototype.autoPortal = function (sectors) {
                 for (var k = 0; k < mapSector2.segments.length; k++) {
                     var mapSegment2 = mapSector2.segments[k];
 
-                    if ((mapSegment.ax == mapSegment2.ax && mapSegment.ay == mapSegment2.ay &&
-                        mapSegment.bx == mapSegment2.bx && mapSegment.by == mapSegment2.by) ||
-                        (mapSegment.ax == mapSegment2.bx && mapSegment.ay == mapSegment2.by &&
-                            mapSegment.bx == mapSegment2.ax && mapSegment.by == mapSegment2.ay)) {
+                    if (mapSegment.matches(mapSegment2)) {
                         mapSegment.adjacentSectorId = mapSector2.id;
                         mapSegment2.adjacentSectorId = mapSector.id;
                         mapSegment.midMaterialId = null;
@@ -157,4 +155,11 @@ Map.prototype.autoPortal = function (sectors) {
             }
         }
     }
+};
+
+Map.prototype.clearLightmaps = function () {
+    var index = this.sectors.length;
+
+    while (index--)
+        this.sectors[index].clearLightmaps();
 };

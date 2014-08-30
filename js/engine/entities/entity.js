@@ -58,9 +58,9 @@ Entity.prototype.collide = function (frameScale) {
 
             if (d < sqr(this.boundingRadius)) {
                 d = Math.sqrt(d);
-                var side = segment.whichSide(this.pos[0], this.pos[1]);
-                this.pos[0] -= segment.normalX * side * (this.boundingRadius - d);
-                this.pos[1] -= segment.normalY * side * (this.boundingRadius - d);
+                //var side = segment.whichSide(this.pos[0], this.pos[1]);
+                this.pos[0] += segment.normalX * (this.boundingRadius - d);
+                this.pos[1] += segment.normalY * (this.boundingRadius - d);
 
                 if (this.collisionResponse == 'stop') {
                     stopStepping = true;
@@ -140,7 +140,7 @@ Entity.prototype.serialize = function () {
         boundingRadius: this.boundingRadius,
         collisionResponse: this.collisionResponse,
         health: this.health,
-        mountHeight: this.mountHeight,
+        mountHeight: this.mountHeight
     };
 
     return r;

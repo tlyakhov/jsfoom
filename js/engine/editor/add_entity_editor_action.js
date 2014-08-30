@@ -33,6 +33,7 @@ AddEntityEditorAction.prototype.addToMap = function (sector) {
     this.entity.sector = sector;
     this.entity.map = this.editor.map;
     sector.entities.push(this.entity);
+    this.editor.map.clearLightmaps();
 };
 
 AddEntityEditorAction.prototype.onMouseDown = function (e) {

@@ -1,7 +1,7 @@
 var VEC3_TYPE = Float64Array;
 
 // Not very OOP, but EXTREMELY fast for JS
-var _vec3pool = new ObjectCache(15000, function () {
+var _vec3pool = new ObjectCache(1 << 12, function () {
     return new VEC3_TYPE(3);
 });
 

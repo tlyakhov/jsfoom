@@ -19,6 +19,10 @@ function MapSegment(options) {
     this.adjacentSectorId = null;
     this.adjacentSector = null;
     this.adjacentSegment = null;
+    this.lightmap = null;
+    this.lightmapWidth = 0;
+    this.lightmapHeight = 0;
+
     this.flags = 0;
     this.sector = null;
 
@@ -34,6 +38,7 @@ MapSegment.editableProperties = [
     { name: 'midMaterialId', friendly: 'Middle Material', type: 'material_id' },
     { name: 'loMaterialId', friendly: 'Low Material', type: 'material_id' },
     { name: 'hiMaterialId', friendly: 'High Material', type: 'material_id' },
+    { name: 'adjacentSectorId', friendly: 'Adjacent Sector ID', type: 'string' },
     { name: 'midBehavior', friendly: 'Middle Mapping', type: [ 'scaleNone', 'scaleWidth', 'scaleHeight', 'scaleAll']},
     { name: 'loBehavior', friendly: 'High Mapping', type: [ 'scaleNone', 'scaleWidth', 'scaleHeight', 'scaleAll']},
     { name: 'hiBehavior', friendly: 'Low Mapping', type: [ 'scaleNone', 'scaleWidth', 'scaleHeight', 'scaleAll']}
@@ -45,6 +50,19 @@ MapSegment.prototype.update = function () {
     this.length = Math.sqrt(sqr((this.ax - this.bx)) + sqr((this.ay - this.by)));
     this.normalX = -(this.by - this.ay) / this.length;
     this.normalY = (this.bx - this.ax) / this.length;
+    if (this.sector) {
+        this.lightmapWidth = fast_floor(this.length / GAME_CONSTANTS.lightGrid) + 2;
+        this.lightmapHeight = fast_floor((this.sector.topZ - this.sector.bottomZ) / GAME_CONSTANTS.lightGrid) + 2;
+        this.lightmap = new Float64Array(this.lightmapWidth * this.lightmapHeight * 6);
+        this.clearLightmap();
+    }
+};
+
+
+MapSegment.prototype.clearLightmap = function () {
+    var index = this.lightmap.length;
+    while (index--)
+        this.lightmap[index] = -1;
 };
 
 MapSegment.prototype.getMidMaterial = function () {
@@ -77,6 +95,14 @@ MapSegment.prototype.getLoMaterial = function () {
     return this.loMaterial;
 };
 
+var MapSegmentMatchEpsilon = 1e-4;
+MapSegment.prototype.matches = function (s2) {
+    return (Math.abs(this.ax - s2.ax) < MapSegmentMatchEpsilon && Math.abs(this.ay - s2.ay) < MapSegmentMatchEpsilon &&
+        Math.abs(this.bx - s2.bx) < MapSegmentMatchEpsilon && Math.abs(this.by - s2.by) < MapSegmentMatchEpsilon) ||
+        (Math.abs(this.ax - s2.bx) < MapSegmentMatchEpsilon && Math.abs(this.ay - s2.by) < MapSegmentMatchEpsilon &&
+            Math.abs(this.bx - s2.ax) < MapSegmentMatchEpsilon && Math.abs(this.by - s2.ay) < MapSegmentMatchEpsilon);
+};
+
 MapSegment.prototype.getAdjacentSector = function () {
     if (!this.adjacentSectorId)
         return null;
@@ -101,8 +127,11 @@ MapSegment.prototype.getAdjacentSegment = function () {
     if (!this.adjacentSegment || this.adjacentSector.id != this.adjacentSectorId) {
         var adj = this.getAdjacentSector();
 
+        if (!adj)
+            return null;
+
         for (var i = 0; i < adj.segments.length; i++) {
-            if (this.sector.id == adj.segments[i].adjacentSectorId) {
+            if (this.sector.id == adj.segments[i].adjacentSectorId && this.matches(adj.segments[i])) {
                 this.adjacentSegment = adj.segments[i];
                 break;
             }
@@ -222,6 +251,18 @@ MapSegment.prototype.whichSide = function (x, y) {
     return sign(dy * x - dx * y - this.ax * this.by + this.bx * this.ay);
 };
 
+MapSegment.prototype.uvToWorld = function (u, v, pool) {
+    return vec3create(this.ax + u * (this.bx - this.ax),
+            this.ay + u * (this.by - this.ay),
+            this.sector.topZ - v * (this.sector.topZ - this.sector.bottomZ), pool);
+};
+MapSegment.prototype.lightmapAddressToWorld = function (mapIndex, pool) {
+    var u = ((fast_floor(mapIndex / 6) % this.lightmapWidth) - 1) / (this.lightmapWidth - 2);
+    var v = fast_floor(fast_floor(mapIndex / 6) / (this.lightmapWidth - 1)) / (this.lightmapHeight - 2);
+
+    return this.uvToWorld(u, v, pool);
+};
+
 MapSegment.prototype.serialize = function () {
     var r = {
         id: this.id,
@@ -235,6 +276,8 @@ MapSegment.prototype.serialize = function () {
         length: this.length,
         normalX: this.normalX,
         normalY: this.normalY,
+        lightmapWidth: this.lightmapWidth,
+        lightmapHeight: this.lightmapHeight,
         adjacentSectorId: this.adjacentSectorId,
         flags: this.flags
     };
@@ -257,6 +300,8 @@ MapSegment.deserialize = function (data, sector, segment) {
     segment.length = data.length;
     segment.normalX = data.normalX;
     segment.normalY = data.normalY;
+    segment.lightmapWidth = data.lightmapWidth;
+    segment.lightmapHeight = data.lightmapHeight;
     segment.adjacentSectorId = data.adjacentSectorId;
     segment.flags = data.flags;
     segment.sector = sector;

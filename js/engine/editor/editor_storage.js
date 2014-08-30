@@ -26,5 +26,10 @@ EditorStorage.saveLevel = function (name, map) {
 };
 
 EditorStorage.loadLevel = function (name, map) {
-    return Map.deserialize(JSON.parse(localStorage.getItem(EditorStorage.prefixLevel + name)));
+    var map = Map.deserialize(JSON.parse(localStorage.getItem(EditorStorage.prefixLevel + name)));
+
+    for (var i = 0; i < map.sectors.length; i++)
+        map.sectors[i].update();
+
+    return map;
 };
