@@ -16,6 +16,8 @@ function MapSector(options) {
     this.max = vec3blank();
     this.lightmapWidth = 0;
     this.lightmapHeight = 0;
+    this.pvs = {};
+    this.pvsLights = [];
     this.center = vec3blank();
     this.floorScale = 64.0;
     this.ceilScale = 64.0;
@@ -42,6 +44,35 @@ MapSector.editableProperties = [
 ];
 
 classes['MapSector'] = MapSector;
+
+MapSector.prototype.updatePVS = function (normalX, normalY, sector) {
+    if (sector == undefined) {
+        this.pvs = {};
+        this.pvs[this.id] = this;
+        this.pvsLights = this.entities.filter(function (element) {
+            return isA(element, LightEntity);
+        });
+        sector = this;
+    }
+
+    for (var i = 0; i < sector.segments.length; i++) {
+        var segment = sector.segments[i];
+        var adj = segment.getAdjacentSegment();
+        if (!adj || Math.abs(adj.sector.topZ - adj.sector.bottomZ) < GAME_CONSTANTS.velocityEpsilon || adj.midMaterialId != null)
+            continue;
+
+        if ((normalX == undefined || normalX * segment.normalX + normalY * segment.normalY >= 0) && !this.pvs[adj.sector.id]) {
+            this.pvs[adj.sector.id] = adj.sector;
+            this.pvsLights = this.pvsLights.concat(adj.sector.entities.filter(function (element) {
+                return isA(element, LightEntity);
+            }));
+            if (normalX == undefined)
+                this.updatePVS(segment.normalX, segment.normalY, adj.sector);
+            else
+                this.updatePVS(normalX, normalY, adj.sector);
+        }
+    }
+};
 
 MapSector.prototype.update = function () {
     this.center[0] = 0.0;
@@ -72,18 +103,12 @@ MapSector.prototype.update = function () {
         this.segments[i].bx = this.segments[next].ax;
         this.segments[i].by = this.segments[next].ay;
         this.segments[i].update();
+
         if (!w) {
             this.segments[i].normalX = -this.segments[i].normalX;
             this.segments[i].normalY = -this.segments[i].normalY;
         }
     }
-
-    this.lightmapWidth = fast_floor((this.max[0] - this.min[0]) / GAME_CONSTANTS.lightGrid + 2);
-    this.lightmapHeight = fast_floor((this.max[1] - this.min[1]) / GAME_CONSTANTS.lightGrid + 2);
-
-    this.floorLightmap = new Float64Array(this.lightmapWidth * this.lightmapHeight * 6);
-    this.ceilLightmap = new Float64Array(this.lightmapWidth * this.lightmapHeight * 6);
-    this.clearLightmaps();
 
     this.center[0] /= this.segments.length;
     this.center[1] /= this.segments.length;
@@ -92,6 +117,14 @@ MapSector.prototype.update = function () {
         this.entities[i].map = this.map;
         this.entities[i].sector = this;
     }
+
+    this.lightmapWidth = fast_floor((this.max[0] - this.min[0]) / GAME_CONSTANTS.lightGrid) + 3;
+    this.lightmapHeight = fast_floor((this.max[1] - this.min[1]) / GAME_CONSTANTS.lightGrid) + 3;
+
+    this.floorLightmap = new Float64Array(this.lightmapWidth * this.lightmapHeight * 6);
+    this.ceilLightmap = new Float64Array(this.lightmapWidth * this.lightmapHeight * 6);
+    this.clearLightmaps();
+
 };
 
 MapSector.prototype.clearLightmaps = function () {
@@ -104,6 +137,8 @@ MapSector.prototype.clearLightmaps = function () {
     index = this.segments.length;
     while (index--)
         this.segments[index].clearLightmap();
+
+    this.updatePVS();
 
     this.version++;
 };
@@ -172,6 +207,13 @@ MapSector.prototype.lightmapWorld = function (point, pool) {
     return vec3create(this.min[0] + fast_floor((point[0] - this.min[0]) / GAME_CONSTANTS.lightGrid) * GAME_CONSTANTS.lightGrid,
             this.min[1] + fast_floor((point[1] - this.min[1]) / GAME_CONSTANTS.lightGrid) * GAME_CONSTANTS.lightGrid,
         point[2], pool);
+};
+
+MapSector.prototype.lightmapAddressToWorld = function (mapIndex, floor, pool) {
+    var u = fast_floor(mapIndex / 6) % this.lightmapWidth - 1;
+    var v = fast_floor(fast_floor(mapIndex / 6) / this.lightmapWidth) - 1;
+    return vec3create(this.min[0] + u * GAME_CONSTANTS.lightGrid,
+            this.min[1] + v * GAME_CONSTANTS.lightGrid, floor ? this.bottomZ : this.topZ, pool);
 };
 
 MapSector.prototype.frame = function (lastFrameTime) {

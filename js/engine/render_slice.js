@@ -5,6 +5,7 @@ function RenderSlice() {
     this.yStart = 0;
     this.yEnd = 0;
     this.targetX = 0;
+    this.sector = null;
     this.segment = null;
     this.ray = null;
     this.rayTable = 0;
@@ -14,7 +15,6 @@ function RenderSlice() {
     this.seenPortals = {};
     this.world = null;
     this.normal = null;
-    this.lights = [];
     this.depth = 0;
     this.renderer = null;
 }
@@ -22,13 +22,13 @@ function RenderSlice() {
 RenderSlice.prototype.clone = function () {
     var s = _renderSliceCache.get();
 
-    s.depth = this.depth;
     s.renderTarget = this.renderTarget;
     s.x = this.x;
     s.y = this.y;
     s.yStart = this.yStart;
     s.yEnd = this.yEnd;
     s.targetX = this.targetX;
+    s.sector = this.sector;
     s.segment = this.segment;
     s.ray = this.ray;
     s.rayTable = this.rayTable;
@@ -38,7 +38,7 @@ RenderSlice.prototype.clone = function () {
     s.seenPortals = this.seenPortals;
     s.world = this.world;
     s.normal = this.normal;
-    s.lights = this.lights;
+    s.depth = this.depth;
     s.renderer = this.renderer;
 
     return s;

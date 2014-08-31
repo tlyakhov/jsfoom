@@ -106,6 +106,8 @@ MapSegment.prototype.matches = function (s2) {
 MapSegment.prototype.getAdjacentSector = function () {
     if (!this.adjacentSectorId)
         return null;
+    if (!this.sector.map || !this.sector.map.sectors)
+        return null;
 
     if (!this.adjacentSector || this.adjacentSector.id != this.adjacentSectorId) {
         for (var i = 0; i < this.sector.map.sectors.length; i++) {
@@ -258,7 +260,7 @@ MapSegment.prototype.uvToWorld = function (u, v, pool) {
 };
 MapSegment.prototype.lightmapAddressToWorld = function (mapIndex, pool) {
     var u = ((fast_floor(mapIndex / 6) % this.lightmapWidth) - 1) / (this.lightmapWidth - 2);
-    var v = fast_floor(fast_floor(mapIndex / 6) / (this.lightmapWidth - 1)) / (this.lightmapHeight - 2);
+    var v = fast_floor(fast_floor(mapIndex / 6) / this.lightmapWidth - 1) / (this.lightmapHeight - 2);
 
     return this.uvToWorld(u, v, pool);
 };

@@ -2,7 +2,8 @@ var EDITOR_CONSTANTS = {
     segmentSelectionEpsilon: 5.0,
     gridSize: 10.0,
     colorSelectionPrimary: '#0F0',
-    colorSelectionSecondary: '#0FF'
+    colorSelectionSecondary: '#0FF',
+    colorPVS: '#9F9'
 };
 
 function Editor(options) {
@@ -560,6 +561,15 @@ Editor.prototype.drawSector = function (sector) {
         }
         else if (segmentHovering || segmentSelected) {
             this.context.strokeStyle = segmentHovering ? EDITOR_CONSTANTS.colorSelectionSecondary : EDITOR_CONSTANTS.colorSelectionPrimary;
+        }
+
+        for (var k = 0; k < this.selectedObjects.length; k++) {
+            var object = this.selectedObjects[k];
+            if (object == sector || !isA(object, MapSector))
+                continue;
+            if (object.pvs[sector.id]) {
+                this.context.strokeStyle = EDITOR_CONSTANTS.colorPVS;
+            }
         }
 
         this.context.beginPath();

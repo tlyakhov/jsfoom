@@ -30,11 +30,11 @@ Material.prototype.getTexture = function () {
 
 Material.prototype.shadows = function (slice, point) {
     var tempvec = vec3blank(true);
-
     // Shadows!
-    for (var i = 0; i < slice.lights.length; i++) {
-        var light = slice.lights[i];
+    for (var i = 0; i < slice.sector.pvsLights.length; i++) {
+        var light = slice.sector.pvsLights[i];
 
+        light.marked = true;
         var rayLength = vec3dist(point, light.pos);
 
         if (rayLength == 0) {
@@ -42,6 +42,20 @@ Material.prototype.shadows = function (slice, point) {
         }
 
         var sector = slice.sector;
+        if (!sector.isPointInside(point[0], point[1])) {
+            sector = null;
+            for (var j = 0; j < this.map.sectors.length; j++) {
+                if (this.map.sectors[j].isPointInside(point[0], point[1])) {
+                    sector = this.map.sectors[j];
+                    break;
+                }
+            }
+            if (!sector) {
+                light.marked = false;
+                continue;
+            }
+        }
+
         while (sector) {
             var next = null;
             for (var j = 0; j < sector.segments.length; j++) {
@@ -84,6 +98,13 @@ Material.prototype.shadows = function (slice, point) {
 };
 
 Material.prototype.calculateLighting = function (slice, lightmap, mapIndex, point) {
+    if (slice.normal[2] != 0 && !slice.sector.isPointInside(point[0], point[1])) {
+        var d = slice.segment.distanceToPoint(point[0], point[1]) + 0.1;
+
+        point[0] += slice.segment.normalX * d;
+        point[1] += slice.segment.normalY * d;
+    }
+
     var tempvec = vec3blank(true);
     this.shadows(slice, vec3add(point, vec3mul(slice.normal, 2, tempvec), tempvec));
 
@@ -94,10 +115,10 @@ Material.prototype.calculateLighting = function (slice, lightmap, mapIndex, poin
 
     vec3normalize(vec3sub(point, this.map.player.pos, v), v);
 
-    var i = slice.lights.length;
+    var i = slice.sector.pvsLights.length;
 
     while (i--) {
-        var light = slice.lights[i];
+        var light = slice.sector.pvsLights[i];
 
         if (!light.marked) {
             light.marked = true;
@@ -181,61 +202,53 @@ Material.prototype.sample = function (slice, x, y, scaledHeight) {
     var mapIndex10 = 0;
     var mapIndex11 = 0;
     var mapIndex01 = 0;
-    var q00 = null;
-    var q10 = null;
-    var q11 = null;
-    var q01 = null;
     var wu = 0.0;
     var wv = 0.0;
 
     // Optimize for our simple world geometry
     if (slice.normal[2] != 0) {
         lightmap = slice.normal[2] < 0 ? slice.sector.ceilLightmap : slice.sector.floorLightmap;
-        var v00 = slice.world;
-        var v10 = vec3clone(v00, true);
-        var v01 = vec3clone(v00, true);
-        var v11 = vec3clone(v00, true);
-        v10[0] += GAME_CONSTANTS.lightGrid;
-        v11[0] += GAME_CONSTANTS.lightGrid;
-        v11[1] += GAME_CONSTANTS.lightGrid;
-        v01[1] += GAME_CONSTANTS.lightGrid;
-        mapIndex00 = slice.sector.lightmapAddress(v00);
-        mapIndex10 = slice.sector.lightmapAddress(v10);
-        mapIndex11 = slice.sector.lightmapAddress(v11);
-        mapIndex01 = slice.sector.lightmapAddress(v01);
-        q00 = slice.sector.lightmapWorld(v00, true);
-        q10 = slice.sector.lightmapWorld(v10, true);
-        q11 = slice.sector.lightmapWorld(v11, true);
-        q01 = slice.sector.lightmapWorld(v01, true);
+        mapIndex00 = slice.sector.lightmapAddress(slice.world);
+        mapIndex10 = Math.min(mapIndex00 + 6, lightmap.length);
+        mapIndex11 = Math.min(mapIndex10 + 6 * slice.sector.lightmapWidth, lightmap.length);
+        mapIndex01 = Math.min(mapIndex11 - 6, lightmap.length);
+        var q00 = slice.sector.lightmapWorld(slice.world, true);
         wu = 1.0 - (slice.world[0] - q00[0]) / GAME_CONSTANTS.lightGrid;
         wv = 1.0 - (slice.world[1] - q00[1]) / GAME_CONSTANTS.lightGrid;
     }
     else {
         lightmap = slice.segment.lightmap;
         wu = fast_floor(x * (slice.segment.lightmapWidth - 2)) + 1;
-        wv = fast_floor(y * (slice.segment.lightmapHeight - 2)) + 1;
-        mapIndex00 = (wu + wv * slice.segment.lightmapWidth) * 6;
-        mapIndex10 = (Math.min(wu + 1, slice.segment.lightmapWidth) + wv * slice.segment.lightmapWidth) * 6;
-        mapIndex11 = (Math.min(wu + 1, slice.segment.lightmapWidth) + Math.min(wv + 1, slice.segment.lightmapHeight) * slice.segment.lightmapWidth) * 6;
-        mapIndex01 = (wu + Math.min(wv + 1, slice.segment.lightmapHeight) * slice.segment.lightmapWidth) * 6;
-        q00 = slice.segment.lightmapAddressToWorld(mapIndex00, true);
-        q10 = slice.segment.lightmapAddressToWorld(mapIndex10, true);
-        q11 = slice.segment.lightmapAddressToWorld(mapIndex11, true);
-        q01 = slice.segment.lightmapAddressToWorld(mapIndex01, true);
+        wv = fast_floor((1.0 - y) * (slice.segment.lightmapHeight - 2)) + 1;
+        var wu2 = Math.min(wu + 1, slice.segment.lightmapWidth);
+        var wv2 = Math.min(wv + 1, slice.segment.lightmapHeight) * slice.segment.lightmapWidth;
+        wv *= slice.segment.lightmapWidth;
+        mapIndex00 = (wu + wv) * 6;
+        mapIndex10 = (wu2 + wv) * 6;
+        mapIndex11 = (wu2 + wv2) * 6;
+        mapIndex01 = (wu + wv2) * 6;
         wu = x * (slice.segment.lightmapWidth - 2);
         wv = y * (slice.segment.lightmapHeight - 2);
         wu = 1.0 - (wu - fast_floor(wu));
-        wv = 1.0 - (wv - fast_floor(wv));
+        wv = (wv - fast_floor(wv));
     }
 
-    if (lightmap[mapIndex00] < 0)
+    if (lightmap[mapIndex00] < 0) {
+        var q00 = (slice.normal[2] != 0) ? slice.sector.lightmapAddressToWorld(mapIndex00, slice.normal[2] > 0, true) : slice.segment.lightmapAddressToWorld(mapIndex00, true);
         this.calculateLighting(slice, lightmap, mapIndex00, q00);
-    if (lightmap[mapIndex10] < 0)
+    }
+    if (lightmap[mapIndex10] < 0) {
+        var q10 = (slice.normal[2] != 0) ? slice.sector.lightmapAddressToWorld(mapIndex10, slice.normal[2] > 0, true) : slice.segment.lightmapAddressToWorld(mapIndex10, true);
         this.calculateLighting(slice, lightmap, mapIndex10, q10);
-    if (lightmap[mapIndex11] < 0)
+    }
+    if (lightmap[mapIndex11] < 0) {
+        var q11 = (slice.normal[2] != 0) ? slice.sector.lightmapAddressToWorld(mapIndex11, slice.normal[2] > 0, true) : slice.segment.lightmapAddressToWorld(mapIndex11, true);
         this.calculateLighting(slice, lightmap, mapIndex11, q11);
-    if (lightmap[mapIndex01] < 0)
+    }
+    if (lightmap[mapIndex01] < 0) {
+        var q01 = (slice.normal[2] != 0) ? slice.sector.lightmapAddressToWorld(mapIndex01, slice.normal[2] > 0, true) : slice.segment.lightmapAddressToWorld(mapIndex01, true);
         this.calculateLighting(slice, lightmap, mapIndex01, q01);
+    }
 
     var mapDiffuse = vec3create(lightmap[mapIndex00 + 0] * wu * wv +
             lightmap[mapIndex10 + 0] * (1.0 - wu) * wv +

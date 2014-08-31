@@ -179,7 +179,6 @@ Renderer.prototype.renderSlice = function (slice) {
         }
 
         var portalSlice = slice.clone();
-        portalSlice.lights = slice.lights;
         portalSlice.sector = adj;
         portalSlice.yStart = adjClippedTop;
         portalSlice.yEnd = adjClippedBottom;
@@ -236,15 +235,12 @@ Renderer.prototype.renderSector = function (slice) {
         else
             dist = Math.abs(dx / this.trigTable[slice.rayTable].cos);
 
-        //dist = vec3dist(isect, map.player.pos);
-
         if (dist > slice.distance)
             continue;
 
         slice.segment = segment;
         slice.distance = dist;
         slice.intersection = isect;
-        slice.segment = slice.sector.segments[j];
         slice.textureX = Math.sqrt(sqr((slice.intersection[0] - slice.segment.ax)) +
             sqr((slice.intersection[1] - slice.segment.ay))) / slice.segment.length; // 0.0 - 1.0
     }
@@ -306,18 +302,6 @@ Renderer.prototype.renderEntity = function (renderTarget, entity) {
 };
 
 Renderer.prototype.render = function (renderTarget) {
-    var lights = [];
-
-    for (var i = 0; i < this.map.sectors.length; i++) {
-        var sector = this.map.sectors[i];
-        for (var j = 0; j < sector.entities.length; j++) {
-            var light = sector.entities[j];
-            if (light && isA(light, LightEntity))
-                light.marked = true;
-            lights.push(light);
-        }
-    }
-
     this.frameSectors = {};
 
     var xStart = (globalWorkerId != undefined) ? globalWorkerId * this.workerWidth : 0;
@@ -332,7 +316,6 @@ Renderer.prototype.render = function (renderTarget) {
 
         slice.renderer = this;
         slice.depth = 0;
-        slice.lights = lights;
         slice.seenPortals = {};
         slice.renderTarget = renderTarget;
         slice.x = x;
@@ -368,6 +351,5 @@ Renderer.prototype.render = function (renderTarget) {
         }
     }
 
-    //console.log(lightmapDiffuse);
     this.frame++;
 };
