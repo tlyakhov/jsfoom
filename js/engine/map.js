@@ -56,6 +56,81 @@ Map.prototype.frame = function (lastFrameTime) {
     }
 };
 
+Map.prototype.light = function (world, normal, sector, segment, u, v, pool) {
+    // Lightmap access
+    var lightmap = null;
+    var mapIndex00 = 0;
+    var mapIndex10 = 0;
+    var mapIndex11 = 0;
+    var mapIndex01 = 0;
+    var wu = 0.0;
+    var wv = 0.0;
+    var isWall = segment && normal[2] == 0;
+    var q00 = null;
+
+    // Optimize for our simple world geometry
+    if (!isWall) {
+        lightmap = normal[2] < 0 ? sector.ceilLightmap : sector.floorLightmap;
+        mapIndex00 = sector.lightmapAddress(world);
+        mapIndex10 = Math.min(mapIndex00 + 3, lightmap.length - 1);
+        mapIndex11 = Math.min(mapIndex10 + 3 * sector.lightmapWidth, lightmap.length - 1);
+        mapIndex01 = Math.min(mapIndex11 - 3, lightmap.length - 1);
+        q00 = sector.lightmapWorld(world, true);
+        wu = 1.0 - (world[0] - q00[0]) / GAME_CONSTANTS.lightGrid;
+        wv = 1.0 - (world[1] - q00[1]) / GAME_CONSTANTS.lightGrid;
+    }
+    else {
+        lightmap = segment.lightmap;
+        wu = Math.min(fast_floor(u * (segment.lightmapWidth - 2)) + 1, segment.lightmapWidth - 1);
+        wv = Math.min(fast_floor((1.0 - v) * (segment.lightmapHeight - 2)) + 1, segment.lightmapHeight - 1);
+        var wu2 = Math.min(wu + 1, segment.lightmapWidth - 1);
+        var wv2 = Math.min(wv + 1, segment.lightmapHeight - 1) * segment.lightmapWidth;
+        wv *= segment.lightmapWidth;
+        mapIndex00 = (wu + wv) * 3;
+        mapIndex10 = (wu2 + wv) * 3;
+        mapIndex11 = (wu2 + wv2) * 3;
+        mapIndex01 = (wu + wv2) * 3;
+        wu = u * (segment.lightmapWidth - 2);
+        wv = v * (segment.lightmapHeight - 2);
+        wu = 1.0 - (wu - fast_floor(wu));
+        wv = (wv - fast_floor(wv));
+    }
+
+    if (lightmap[mapIndex00] < 0) {
+        q00 = !isWall ? sector.lightmapAddressToWorld(mapIndex00, normal[2] > 0, true) : segment.lightmapAddressToWorld(mapIndex00, true);
+        sector.calculateLighting(segment, normal, lightmap, mapIndex00, q00);
+    }
+    if (lightmap[mapIndex10] < 0) {
+        var q10 = !isWall ? sector.lightmapAddressToWorld(mapIndex10, normal[2] > 0, true) : segment.lightmapAddressToWorld(mapIndex10, true);
+        sector.calculateLighting(segment, normal, lightmap, mapIndex10, q10);
+    }
+    if (lightmap[mapIndex11] < 0) {
+        var q11 = !isWall ? sector.lightmapAddressToWorld(mapIndex11, normal[2] > 0, true) : segment.lightmapAddressToWorld(mapIndex11, true);
+        sector.calculateLighting(segment, normal, lightmap, mapIndex11, q11);
+    }
+    if (lightmap[mapIndex01] < 0) {
+        var q01 = !isWall ? sector.lightmapAddressToWorld(mapIndex01, normal[2] > 0, true) : segment.lightmapAddressToWorld(mapIndex01, true);
+        sector.calculateLighting(segment, normal, lightmap, mapIndex01, q01);
+    }
+
+    /*if(lightmap[mapIndex00] == undefined || lightmap[mapIndex01] == undefined || lightmap[mapIndex10] == undefined || lightmap[mapIndex11] == undefined) {
+     console.log(mapIndex00 + ',' + lightmap.length);
+     }*/
+
+    return vec3create(lightmap[mapIndex00 + 0] * wu * wv +
+            lightmap[mapIndex10 + 0] * (1.0 - wu) * wv +
+            lightmap[mapIndex11 + 0] * (1.0 - wu) * (1.0 - wv) +
+            lightmap[mapIndex01 + 0] * wu * (1.0 - wv),
+            lightmap[mapIndex00 + 1] * wu * wv +
+            lightmap[mapIndex10 + 1] * (1.0 - wu) * wv +
+            lightmap[mapIndex11 + 1] * (1.0 - wu) * (1.0 - wv) +
+            lightmap[mapIndex01 + 1] * wu * (1.0 - wv),
+            lightmap[mapIndex00 + 2] * wu * wv +
+            lightmap[mapIndex10 + 2] * (1.0 - wu) * wv +
+            lightmap[mapIndex11 + 2] * (1.0 - wu) * (1.0 - wv) +
+            lightmap[mapIndex01 + 2] * wu * (1.0 - wv), pool);
+};
+
 Map.prototype.serialize = function () {
     var r = {
         id: this.id,

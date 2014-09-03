@@ -270,6 +270,7 @@ Renderer.prototype.renderEntity = function (renderTarget, entity) {
     if (!texture)
         return;
 
+    var diffuse = this.map.light(entity.pos, vec3create(0, 0, 1, true), entity.sector, null, 0, 0, true);
     var d = this.map.player.distanceTo(entity.pos[0], entity.pos[1]);
     var x = (ang + this.fov / 2.0) * this.screenWidth / this.fov;
     var vfixindex = Math.min(Math.max(fast_floor(x), 0), this.screenWidth - 1);
@@ -291,8 +292,14 @@ Renderer.prototype.renderEntity = function (renderTarget, entity) {
         for (var y = clippedY1; y < clippedY2; y++) {
             var screenIndex = y * this.workerWidth + x - xStart;
             if (d < this.zbuffer[screenIndex]) {
-                var pixel = texture.sample((x - x1) / scale, (y - y1) / (y2 - y1), y2 - y1);
-                if (((pixel >> 24) & 0xFF) > 0) {
+                var surface = texture.sample((x - x1) / scale, (y - y1) / (y2 - y1), y2 - y1);
+
+                if (((surface >> 24) & 0xFF) > 0) {
+                    var sum = vec3create(int2r(surface) / 255.0, int2g(surface) / 255.0, int2b(surface) / 255.0, true);
+                    vec3mul3(sum, diffuse, sum);
+                    vec3clamp(sum, 0.0, 1.0, sum);
+
+                    var pixel = rgba2int((sum[0] * 255) & 0xFF, (sum[1] * 255) & 0xFF, (sum[2] * 255) & 0xFF, surface >> 24);
                     renderTarget[screenIndex] = colorTint(renderTarget[screenIndex], pixel);
                     this.zbuffer[screenIndex] = d;
                 }
@@ -330,9 +337,12 @@ Renderer.prototype.render = function (renderTarget) {
         while (slice.rayTable >= this.trigCount)
             slice.rayTable -= this.trigCount;
 
-        slice.ray = [ this.map.player.pos[0], this.map.player.pos[1],
-                this.map.player.pos[0] + this.maxViewDist * this.trigTable[slice.rayTable].cos,
-                this.map.player.pos[1] + this.maxViewDist * this.trigTable[slice.rayTable].sin];
+        if (!slice.ray)
+            slice.ray = new Float64Array(4);
+        slice.ray[0] = this.map.player.pos[0];
+        slice.ray[1] = this.map.player.pos[1];
+        slice.ray[2] = this.map.player.pos[0] + this.maxViewDist * this.trigTable[slice.rayTable].cos;
+        slice.ray[3] = this.map.player.pos[1] + this.maxViewDist * this.trigTable[slice.rayTable].sin;
 
         slice.sector = this.map.player.sector;
 

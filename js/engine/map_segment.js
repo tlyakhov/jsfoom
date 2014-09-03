@@ -53,7 +53,7 @@ MapSegment.prototype.update = function () {
     if (this.sector) {
         this.lightmapWidth = fast_floor(this.length / GAME_CONSTANTS.lightGrid) + 2;
         this.lightmapHeight = fast_floor((this.sector.topZ - this.sector.bottomZ) / GAME_CONSTANTS.lightGrid) + 2;
-        this.lightmap = new Float64Array(this.lightmapWidth * this.lightmapHeight * 6);
+        this.lightmap = new Float64Array(this.lightmapWidth * this.lightmapHeight * 3);
         this.clearLightmap();
     }
 };
@@ -259,8 +259,8 @@ MapSegment.prototype.uvToWorld = function (u, v, pool) {
             this.sector.topZ - v * (this.sector.topZ - this.sector.bottomZ), pool);
 };
 MapSegment.prototype.lightmapAddressToWorld = function (mapIndex, pool) {
-    var u = ((fast_floor(mapIndex / 6) % this.lightmapWidth) - 1) / (this.lightmapWidth - 2);
-    var v = fast_floor(fast_floor(mapIndex / 6) / this.lightmapWidth - 1) / (this.lightmapHeight - 2);
+    var u = ((fast_floor(mapIndex / 3) % this.lightmapWidth) - 1) / (this.lightmapWidth - 2);
+    var v = fast_floor(fast_floor(mapIndex / 3) / this.lightmapWidth - 1) / (this.lightmapHeight - 2);
 
     return this.uvToWorld(u, v, pool);
 };

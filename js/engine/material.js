@@ -4,8 +4,6 @@ function Material(options) {
     this.texture = null;
     this.ambient = vec3create(0.05, 0.05, 0.05);
     this.diffuse = vec3create(1.0, 1.0, 1.0);
-    this.specular = vec3create(1.0, 1.0, 1.0);
-    this.shininess = 0.0;
 
     this.renderAsSky = false;
     this.staticBackground = false;
@@ -26,141 +24,6 @@ Material.prototype.getTexture = function () {
         this.texture = textureCache.get(this.textureSrc, true, true);
 
     return this.texture;
-};
-
-Material.prototype.shadows = function (slice, point) {
-    var tempvec = vec3blank(true);
-    // Shadows!
-    for (var i = 0; i < slice.sector.pvsLights.length; i++) {
-        var light = slice.sector.pvsLights[i];
-
-        light.marked = true;
-        var rayLength = vec3dist(point, light.pos);
-
-        if (rayLength == 0) {
-            continue;
-        }
-
-        var sector = slice.sector;
-        if (!sector.isPointInside(point[0], point[1])) {
-            sector = null;
-            for (var j = 0; j < this.map.sectors.length; j++) {
-                if (this.map.sectors[j].isPointInside(point[0], point[1])) {
-                    sector = this.map.sectors[j];
-                    break;
-                }
-            }
-            if (!sector) {
-                light.marked = false;
-                continue;
-            }
-        }
-
-        while (sector) {
-            var next = null;
-            for (var j = 0; j < sector.segments.length; j++) {
-                var segment = sector.segments[j];
-
-                vec3sub(light.pos, point, tempvec);
-
-                if (vec3dot(tempvec, vec3create(segment.normalX, segment.normalY, 0, true)) >= 0)
-                    continue;
-
-                var lightIntersection = segment.intersect(point[0], point[1], light.pos[0], light.pos[1]);
-
-                if (lightIntersection && segment.adjacentSectorId) {
-                    var adj = segment.getAdjacentSector();
-
-                    if (!adj)
-                        continue;
-
-                    // Get the z
-                    var r = Math.sqrt(sqr(lightIntersection[0] - point[0]) + sqr(lightIntersection[1] - point[1])) / rayLength;
-                    var z = point[2] + r * (light.pos[2] - point[2]);
-
-                    if (z >= adj.bottomZ && z <= adj.topZ) {
-                        next = adj;
-                    }
-                    else {
-                        light.marked = false;
-                    }
-                }
-                else if (lightIntersection) { // This light is in shadow
-                    light.marked = false;
-                }
-            }
-            if (next)
-                sector = next;
-            else
-                break;
-        }
-    }
-};
-
-Material.prototype.calculateLighting = function (slice, lightmap, mapIndex, point) {
-    if (slice.normal[2] != 0 && !slice.sector.isPointInside(point[0], point[1])) {
-        var d = slice.segment.distanceToPoint(point[0], point[1]) + 0.1;
-
-        point[0] += slice.segment.normalX * d;
-        point[1] += slice.segment.normalY * d;
-    }
-
-    var tempvec = vec3blank(true);
-    this.shadows(slice, vec3add(point, vec3mul(slice.normal, 2, tempvec), tempvec));
-
-    var diffuse = vec3clone(this.ambient, true);
-    var specular = this.shininess > 0 ? vec3blank(true) : null;
-
-    var v = vec3blank(true);
-
-    vec3normalize(vec3sub(point, this.map.player.pos, v), v);
-
-    var i = slice.sector.pvsLights.length;
-
-    while (i--) {
-        var light = slice.sector.pvsLights[i];
-
-        if (!light.marked) {
-            light.marked = true;
-            continue;
-        }
-
-        var l = vec3sub(light.pos, point, vec3blank(true));
-
-        var distance = vec3length(l);
-        vec3mul(l, 1.0 / distance, l);
-
-        var attenuation = light.strength / sqr((distance / light.boundingRadius) + 1.0);
-
-        if (attenuation < GAME_CONSTANTS.lightAttenuationEpsilon)
-            continue;
-
-        var diffuseLight = vec3dot(slice.normal, l) * attenuation;
-
-        if (diffuseLight > 0) {
-            vec3add(diffuse, vec3mul(light.diffuse, diffuseLight, tempvec), diffuse);
-
-            if (this.shininess > 0) {
-                var r = vec3reflect(l, slice.normal, vec3blank(true));
-                var specularLight = vec3dot(v, r);
-
-                if (specularLight > 0) {
-                    vec3mul3(this.specular, light.specular, tempvec);
-                    vec3mul(tempvec, Math.pow(specularLight, this.shininess) * attenuation, tempvec);
-                    vec3add(specular, tempvec, specular);
-                }
-            }
-        }
-    }
-
-    lightmap[mapIndex + 0] = diffuse[0];
-    lightmap[mapIndex + 1] = diffuse[1];
-    lightmap[mapIndex + 2] = diffuse[2];
-    if (specular) {
-        lightmap[mapIndex + 3] = specular[0];
-        lightmap[mapIndex + 4] = specular[1];
-        lightmap[mapIndex + 5] = specular[2];
-    }
 };
 
 Material.prototype.sample = function (slice, x, y, scaledHeight) {
@@ -196,84 +59,15 @@ Material.prototype.sample = function (slice, x, y, scaledHeight) {
     if (this.renderAsSky)
         return surface;
 
-    // Lightmap access
-    var lightmap = null;
-    var mapIndex00 = 0;
-    var mapIndex10 = 0;
-    var mapIndex11 = 0;
-    var mapIndex01 = 0;
-    var wu = 0.0;
-    var wv = 0.0;
-
-    // Optimize for our simple world geometry
-    if (slice.normal[2] != 0) {
-        lightmap = slice.normal[2] < 0 ? slice.sector.ceilLightmap : slice.sector.floorLightmap;
-        mapIndex00 = slice.sector.lightmapAddress(slice.world);
-        mapIndex10 = Math.min(mapIndex00 + 6, lightmap.length);
-        mapIndex11 = Math.min(mapIndex10 + 6 * slice.sector.lightmapWidth, lightmap.length);
-        mapIndex01 = Math.min(mapIndex11 - 6, lightmap.length);
-        var q00 = slice.sector.lightmapWorld(slice.world, true);
-        wu = 1.0 - (slice.world[0] - q00[0]) / GAME_CONSTANTS.lightGrid;
-        wv = 1.0 - (slice.world[1] - q00[1]) / GAME_CONSTANTS.lightGrid;
-    }
-    else {
-        lightmap = slice.segment.lightmap;
-        wu = fast_floor(x * (slice.segment.lightmapWidth - 2)) + 1;
-        wv = fast_floor((1.0 - y) * (slice.segment.lightmapHeight - 2)) + 1;
-        var wu2 = Math.min(wu + 1, slice.segment.lightmapWidth);
-        var wv2 = Math.min(wv + 1, slice.segment.lightmapHeight) * slice.segment.lightmapWidth;
-        wv *= slice.segment.lightmapWidth;
-        mapIndex00 = (wu + wv) * 6;
-        mapIndex10 = (wu2 + wv) * 6;
-        mapIndex11 = (wu2 + wv2) * 6;
-        mapIndex01 = (wu + wv2) * 6;
-        wu = x * (slice.segment.lightmapWidth - 2);
-        wv = y * (slice.segment.lightmapHeight - 2);
-        wu = 1.0 - (wu - fast_floor(wu));
-        wv = (wv - fast_floor(wv));
-    }
-
-    if (lightmap[mapIndex00] < 0) {
-        var q00 = (slice.normal[2] != 0) ? slice.sector.lightmapAddressToWorld(mapIndex00, slice.normal[2] > 0, true) : slice.segment.lightmapAddressToWorld(mapIndex00, true);
-        this.calculateLighting(slice, lightmap, mapIndex00, q00);
-    }
-    if (lightmap[mapIndex10] < 0) {
-        var q10 = (slice.normal[2] != 0) ? slice.sector.lightmapAddressToWorld(mapIndex10, slice.normal[2] > 0, true) : slice.segment.lightmapAddressToWorld(mapIndex10, true);
-        this.calculateLighting(slice, lightmap, mapIndex10, q10);
-    }
-    if (lightmap[mapIndex11] < 0) {
-        var q11 = (slice.normal[2] != 0) ? slice.sector.lightmapAddressToWorld(mapIndex11, slice.normal[2] > 0, true) : slice.segment.lightmapAddressToWorld(mapIndex11, true);
-        this.calculateLighting(slice, lightmap, mapIndex11, q11);
-    }
-    if (lightmap[mapIndex01] < 0) {
-        var q01 = (slice.normal[2] != 0) ? slice.sector.lightmapAddressToWorld(mapIndex01, slice.normal[2] > 0, true) : slice.segment.lightmapAddressToWorld(mapIndex01, true);
-        this.calculateLighting(slice, lightmap, mapIndex01, q01);
-    }
-
-    var mapDiffuse = vec3create(lightmap[mapIndex00 + 0] * wu * wv +
-            lightmap[mapIndex10 + 0] * (1.0 - wu) * wv +
-            lightmap[mapIndex11 + 0] * (1.0 - wu) * (1.0 - wv) +
-            lightmap[mapIndex01 + 0] * wu * (1.0 - wv),
-            lightmap[mapIndex00 + 1] * wu * wv +
-            lightmap[mapIndex10 + 1] * (1.0 - wu) * wv +
-            lightmap[mapIndex11 + 1] * (1.0 - wu) * (1.0 - wv) +
-            lightmap[mapIndex01 + 1] * wu * (1.0 - wv), lightmap[mapIndex00 + 2] * wu * wv +
-            lightmap[mapIndex10 + 2] * (1.0 - wu) * wv +
-            lightmap[mapIndex11 + 2] * (1.0 - wu) * (1.0 - wv) +
-            lightmap[mapIndex01 + 2] * wu * (1.0 - wv), true);
-
     var sum = vec3create(int2r(surface) * this.diffuse[0] / 255.0,
             int2g(surface) * this.diffuse[1] / 255.0,
             int2b(surface) * this.diffuse[2] / 255.0, true);
 
-    vec3mul3(sum, mapDiffuse, sum);
-    if (this.shininess > 0) {
-        var mapSpecular = vec3create(lightmap[mapIndex00 + 3], lightmap[mapIndex00 + 4], lightmap[mapIndex00 + 5], true);
-        vec3add(sum, mapSpecular, sum);
-    }
+    vec3mul3(sum, this.map.light(slice.world, slice.normal, slice.sector, slice.segment, x, y, true), sum);
+    vec3add(this.ambient, sum, sum);
     vec3clamp(sum, 0.0, 1.0, sum);
 
-    return rgba2int((sum[0] * 255) & 0xFF, (sum[1] * 255) & 0xFF, (sum[2] * 255) & 0xFF, surface >> 24);
+    return rgba2int((sum[0] * 255), (sum[1] * 255), (sum[2] * 255), surface >> 24);
 };
 
 Material.prototype.serialize = function () {
@@ -282,8 +76,6 @@ Material.prototype.serialize = function () {
         textureSrc: this.textureSrc,
         ambient: this.ambient,
         diffuse: this.diffuse,
-        specular: this.specular,
-        shininess: this.shininess,
         renderAsSky: this.renderAsSky,
         staticBackground: this.staticBackground,
         hurt: this.hurt,
@@ -301,8 +93,6 @@ Material.deserialize = function (data, material) {
     material.textureSrc = data.textureSrc;
     material.ambient = data.ambient;
     material.diffuse = data.diffuse;
-    material.specular = data.specular;
-    material.shininess = data.shininess;
     material.renderAsSky = data.renderAsSky;
     material.staticBackground = data.staticBackground;
     material.hurt = data.hurt;

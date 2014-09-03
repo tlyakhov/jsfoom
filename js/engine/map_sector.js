@@ -74,6 +74,122 @@ MapSector.prototype.updatePVS = function (normalX, normalY, sector) {
     }
 };
 
+MapSector.prototype.markVisibleLights = function (point) {
+    var tempvec = vec3blank(true);
+    // Shadows!
+    for (var i = 0; i < this.pvsLights.length; i++) {
+        var light = this.pvsLights[i];
+
+        light.marked = true;
+        var rayLength = vec3dist(point, light.pos);
+
+        if (rayLength == 0) {
+            continue;
+        }
+
+        var sector = this;
+        /* if (!sector.isPointInside(point[0], point[1])) {
+         sector = null;
+         for (var j = 0; j < this.map.sectors.length; j++) {
+         if (this.map.sectors[j].isPointInside(point[0], point[1])) {
+         sector = this.map.sectors[j];
+         break;
+         }
+         }
+         if (!sector) {
+         light.marked = false;
+         continue;
+         }
+         }*/
+
+        while (sector) {
+            var next = null;
+            for (var j = 0; j < sector.segments.length; j++) {
+                var segment = sector.segments[j];
+
+                vec3sub(light.pos, point, tempvec);
+
+                if (vec3dot(tempvec, vec3create(segment.normalX, segment.normalY, 0, true)) >= 0)
+                    continue;
+
+                var lightIntersection = segment.intersect(point[0], point[1], light.pos[0], light.pos[1]);
+
+                if (lightIntersection && segment.adjacentSectorId) {
+                    var adj = segment.getAdjacentSector();
+
+                    if (!adj)
+                        continue;
+
+                    // Get the z
+                    var r = Math.sqrt(sqr(lightIntersection[0] - point[0]) + sqr(lightIntersection[1] - point[1])) / rayLength;
+                    var z = point[2] + r * (light.pos[2] - point[2]);
+
+                    if (z >= adj.bottomZ && z <= adj.topZ) {
+                        next = adj;
+                    }
+                    else {
+                        light.marked = false;
+                    }
+                }
+                else if (lightIntersection) { // This light is in shadow
+                    light.marked = false;
+                }
+            }
+            if (next)
+                sector = next;
+            else
+                break;
+        }
+    }
+};
+
+MapSector.prototype.calculateLighting = function (segment, normal, lightmap, mapIndex, point) {
+    if (segment) {
+        if (!this.isPointInside(point[0], point[1])) {
+            var d = segment.distanceToPoint(point[0], point[1]) + 0.5;
+
+            point[0] += segment.normalX * d;
+            point[1] += segment.normalY * d;
+        }
+    }
+
+    var tempvec = vec3blank(true);
+    this.markVisibleLights(vec3add(point, vec3mul(normal, 0.1, tempvec), tempvec));
+
+    var diffuseSum = vec3blank();
+
+    var i = this.pvsLights.length;
+
+    while (i--) {
+        var light = this.pvsLights[i];
+
+        if (!light.marked) {
+            light.marked = true;
+            continue;
+        }
+
+        var l = vec3sub(light.pos, point, vec3blank(true));
+
+        var distance = vec3length(l);
+        vec3mul(l, 1.0 / distance, l);
+
+        var attenuation = light.strength / sqr((distance / light.boundingRadius) + 1.0);
+
+        if (attenuation < GAME_CONSTANTS.lightAttenuationEpsilon)
+            continue;
+
+        var diffuseLight = vec3dot(normal, l) * attenuation;
+
+        if (diffuseLight > 0) {
+            vec3add(diffuseSum, vec3mul(light.diffuse, diffuseLight, tempvec), diffuseSum);
+        }
+    }
+
+    lightmap[mapIndex + 0] = diffuseSum[0];
+    lightmap[mapIndex + 1] = diffuseSum[1];
+    lightmap[mapIndex + 2] = diffuseSum[2];
+};
+
 MapSector.prototype.update = function () {
     this.center[0] = 0.0;
     this.center[1] = 0.0;
@@ -121,9 +237,11 @@ MapSector.prototype.update = function () {
     this.lightmapWidth = fast_floor((this.max[0] - this.min[0]) / GAME_CONSTANTS.lightGrid) + 3;
     this.lightmapHeight = fast_floor((this.max[1] - this.min[1]) / GAME_CONSTANTS.lightGrid) + 3;
 
-    this.floorLightmap = new Float64Array(this.lightmapWidth * this.lightmapHeight * 6);
-    this.ceilLightmap = new Float64Array(this.lightmapWidth * this.lightmapHeight * 6);
+    this.floorLightmap = new Float64Array(this.lightmapWidth * this.lightmapHeight * 3);
+    this.ceilLightmap = new Float64Array(this.lightmapWidth * this.lightmapHeight * 3);
     this.clearLightmaps();
+    if (globalWorkerId == undefined)
+        this.version++;
 
 };
 
@@ -140,7 +258,8 @@ MapSector.prototype.clearLightmaps = function () {
 
     this.updatePVS();
 
-    this.version++;
+    if (globalWorkerId == undefined)
+        this.version++;
 };
 
 MapSector.prototype.getCeilMaterial = function () {
@@ -200,7 +319,7 @@ MapSector.prototype.winding = function () {
 
 MapSector.prototype.lightmapAddress = function (point) {
     return (Math.max(fast_floor((point[0] - this.min[0]) / GAME_CONSTANTS.lightGrid) + 1, 0) +
-        Math.max(fast_floor((point[1] - this.min[1]) / GAME_CONSTANTS.lightGrid) + 1, 0) * this.lightmapWidth) * 6;
+        Math.max(fast_floor((point[1] - this.min[1]) / GAME_CONSTANTS.lightGrid) + 1, 0) * this.lightmapWidth) * 3;
 };
 
 MapSector.prototype.lightmapWorld = function (point, pool) {
@@ -210,8 +329,8 @@ MapSector.prototype.lightmapWorld = function (point, pool) {
 };
 
 MapSector.prototype.lightmapAddressToWorld = function (mapIndex, floor, pool) {
-    var u = fast_floor(mapIndex / 6) % this.lightmapWidth - 1;
-    var v = fast_floor(fast_floor(mapIndex / 6) / this.lightmapWidth) - 1;
+    var u = fast_floor(mapIndex / 3) % this.lightmapWidth - 1;
+    var v = fast_floor(fast_floor(mapIndex / 3) / this.lightmapWidth) - 1;
     return vec3create(this.min[0] + u * GAME_CONSTANTS.lightGrid,
             this.min[1] + v * GAME_CONSTANTS.lightGrid, floor ? this.bottomZ : this.topZ, pool);
 };
@@ -527,7 +646,7 @@ MapSector.deserialize = function (data, map, sector) {
     if (sector.entities.length > data.entities.length)
         sector.entities.splice(data.entities.length, sector.entities.length - data.entities.length);
 
-    if (!sector.floorLightmap || sector.floorLightmap.length < sector.lightmapWidth * sector.lightmapHeight * 6) {
+    if (!sector.floorLightmap || sector.floorLightmap.length < sector.lightmapWidth * sector.lightmapHeight * 3) {
         sector.update();
     }
 

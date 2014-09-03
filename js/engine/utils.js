@@ -15,7 +15,7 @@ function inherit(clazz, subclass) {
     subclass.superclasses = [ clazz ];
 
     if (clazz.superclasses) {
-        for (var i = 0; i < clazz.superclasses; i++) {
+        for (var i = 0; i < clazz.superclasses.length; i++) {
             subclass.superclasses.push(clazz.superclasses[i]);
         }
     }
