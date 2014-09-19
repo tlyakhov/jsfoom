@@ -2,7 +2,7 @@ function Material(options) {
     this.id = "Material_" + (new ObjectId().toString());
     this.textureSrc = 'data/bricks.png';
     this.texture = null;
-    this.ambient = vec3create(0.05, 0.05, 0.05);
+    this.ambient = vec3create(10, 10, 10);
     this.diffuse = vec3create(1.0, 1.0, 1.0);
 
     this.renderAsSky = false;
@@ -59,15 +59,20 @@ Material.prototype.sample = function (slice, x, y, scaledHeight) {
     if (this.renderAsSky)
         return surface;
 
-    var sum = vec3create(int2r(surface) * this.diffuse[0] / 255.0,
-            int2g(surface) * this.diffuse[1] / 255.0,
-            int2b(surface) * this.diffuse[2] / 255.0, true);
+    var v = this.map.light(slice.world, slice.normal, slice.sector, slice.segment, x, y, true);
+    var sum = vec3create(int2r(surface) * this.diffuse[0],
+            int2g(surface) * this.diffuse[1],
+            int2b(surface) * this.diffuse[2], true);
 
-    vec3mul3(sum, this.map.light(slice.world, slice.normal, slice.sector, slice.segment, x, y, true), sum);
+    vec3mul3(sum, v, sum);
     vec3add(this.ambient, sum, sum);
-    vec3clamp(sum, 0.0, 1.0, sum);
+    vec3clamp(sum, 0.0, 255.0, sum);
 
-    return rgba2int((sum[0] * 255), (sum[1] * 255), (sum[2] * 255), surface >> 24);
+    return (sum[0] & 0xFF) |
+        ((sum[1] & 0xFF) << 8) |
+        ((sum[2] & 0xFF) << 16) |
+        (surface & (0xFF << 24));
+    //return rgba2int(sum[0], sum[1], sum[2], surface >> 24);
 };
 
 Material.prototype.serialize = function () {

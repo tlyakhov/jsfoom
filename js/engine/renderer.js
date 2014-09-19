@@ -8,6 +8,7 @@ function Renderer(options) {
     this.frameTint = 0;
     this.frameSectors = {};
     this.workerWidth = 0;
+    this.counter = 0;
 
     $.extend(true, this, options);
 
@@ -310,6 +311,7 @@ Renderer.prototype.renderEntity = function (renderTarget, entity) {
 
 Renderer.prototype.render = function (renderTarget) {
     this.frameSectors = {};
+    this.counter = 0;
 
     var xStart = (globalWorkerId != undefined) ? globalWorkerId * this.workerWidth : 0;
     var xEnd = (globalWorkerId != undefined) ? xStart + this.workerWidth : this.screenWidth;

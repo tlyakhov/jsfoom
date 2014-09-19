@@ -88,19 +88,6 @@ MapSector.prototype.markVisibleLights = function (point) {
         }
 
         var sector = this;
-        /* if (!sector.isPointInside(point[0], point[1])) {
-         sector = null;
-         for (var j = 0; j < this.map.sectors.length; j++) {
-         if (this.map.sectors[j].isPointInside(point[0], point[1])) {
-         sector = this.map.sectors[j];
-         break;
-         }
-         }
-         if (!sector) {
-         light.marked = false;
-         continue;
-         }
-         }*/
 
         while (sector) {
             var next = null;
@@ -232,6 +219,8 @@ MapSector.prototype.update = function () {
     for (var i = 0; i < this.entities.length; i++) {
         this.entities[i].map = this.map;
         this.entities[i].sector = this;
+        if (!this.entities[i].updateSector()) {
+        }
     }
 
     this.lightmapWidth = fast_floor((this.max[0] - this.min[0]) / GAME_CONSTANTS.lightGrid) + 3;
@@ -354,7 +343,7 @@ MapSector.prototype.collide = function (entity) {
         entity.pos[2] = entity.sector.topZ - entity.height - 1.0;
     }
     else if (!this.floorTargetSectorId && entity.pos[2] <= this.bottomZ) {
-        entity.vel[2] = 0;
+        //entity.vel[2] = 0;
         entity.pos[2] = this.bottomZ;
     }
 
@@ -365,7 +354,7 @@ MapSector.prototype.collide = function (entity) {
         entity.pos[2] = entity.sector.bottomZ - entity.height + 1.0;
     }
     else if (!this.ceilTargetSectorId && entityTop >= this.topZ) {
-        entity.vel[2] = 0;
+        // entity.vel[2] = 0;
         entity.pos[2] = this.topZ - entity.height - 1.0;
     }
 
@@ -405,7 +394,7 @@ MapSector.prototype.actOnEntity = function (entity) {
 
 MapSector.prototype.onEnter = function (entity) {
     if (!this.floorTargetSectorId && entity.pos[2] <= entity.sector.bottomZ) {
-        entity.vel[2] = 0;
+        //entity.vel[2] = 0;
         entity.pos[2] = entity.sector.bottomZ;
     }
 };

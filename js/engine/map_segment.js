@@ -154,18 +154,18 @@ MapSegment.prototype.intersect = function (s2ax, s2ay, s2bx, s2by) {
     if (denom == 0)
         return undefined;
     var r = (s1.ay - s2ay) * s2dx - (s1.ax - s2ax) * s2dy;
-    if (denom <= 0 && r >= 0)
+    if (denom <= GAME_CONSTANTS.intersectEpsilon && r >= GAME_CONSTANTS.intersectEpsilon)
         return undefined;
-    if (denom > 0 && r < 0)
+    if (denom > GAME_CONSTANTS.intersectEpsilon && r < GAME_CONSTANTS.intersectEpsilon)
         return undefined;
     var s = (s1.ay - s2ay) * s1dx - (s1.ax - s2ax) * s1dy;
-    if (denom <= 0 && s >= 0)
+    if (denom <= GAME_CONSTANTS.intersectEpsilon && s >= GAME_CONSTANTS.intersectEpsilon)
         return undefined;
-    if (denom > 0 && s < 0)
+    if (denom > GAME_CONSTANTS.intersectEpsilon && s < GAME_CONSTANTS.intersectEpsilon)
         return undefined;
     r /= denom;
     s /= denom;
-    if (r > 1.0 || s > 1.0)
+    if (r > 1.0 + GAME_CONSTANTS.intersectEpsilon || s > 1.0 + GAME_CONSTANTS.intersectEpsilon)
         return undefined;
 
     return vec3create(s1.ax + r * s1dx, s1.ay + r * s1dy, 0.0, true);
@@ -222,14 +222,6 @@ MapSegment.prototype.aabbIntersect = function (xMin, yMin, xMax, yMax) {
     return minY <= maxY; // If Y-projections do not intersect return false
 };
 
-/*MapSegment.prototype.distanceToPoint = function (x, y) {
- var dx = (this.bx - this.ax);
- var dy = (this.by - this.ay);
-
- return (dy * x - dx * y - this.ax * this.by + this.bx * this.ay) /
- Math.sqrt(sqr(dx) + sqr(dy));
- };*/
-
 MapSegment.prototype.distanceToPoint2 = function (x, y) {
     var l2 = dist2(this.ax, this.ay, this.bx, this.by);
     if (l2 == 0)
@@ -244,6 +236,26 @@ MapSegment.prototype.distanceToPoint2 = function (x, y) {
 
 MapSegment.prototype.distanceToPoint = function (x, y) {
     return Math.sqrt(this.distanceToPoint2(x, y));
+};
+
+MapSegment.prototype.closestToPoint = function (x, y, pool) {
+    var dx = (this.bx - this.ax);
+    var dy = (this.by - this.ay);
+    var dist2 = sqr(dx) + sqr(dy);
+
+    if (dist2 == 0)
+        return vec3create(this.ax, this.ay, 0, pool);
+
+    var apx = x - this.ax;
+    var apy = y - this.ay;
+    var t = (apx * dx + apy * dy) / dist2;
+
+    if (t < 0.0)
+        return vec3create(this.ax, this.ay, 0, pool);
+    if (t > 1.0)
+        return vec3create(this.bx, this.by, 0, pool);
+
+    return vec3create(this.ax + t * dx, this.ay + t * dy, 0, pool);
 };
 
 MapSegment.prototype.whichSide = function (x, y) {

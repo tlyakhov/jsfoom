@@ -40,6 +40,29 @@ Entity.prototype.distanceTo = function (x, y) {
     return Math.sqrt(sqr(x - this.pos[0]) + sqr(y - this.pos[1]));
 };
 
+Entity.prototype.moveToSector = function (sector) {
+    this.sector = sector;
+
+    var nearestDist = null;
+    var nearestSegment = null;
+
+    for (var i = 0; i < this.sector.segments.length; i++) {
+        var segment = this.sector.segments[i];
+
+        if (segment.getAdjacentSector())
+            continue;
+
+        var d = segment.distanceToPoint2(this.pos[0], this.pos[1]);
+
+        if (nearestDist == null || d < nearestDist) {
+            nearestSegment = segment;
+            nearestDist = d;
+        }
+    }
+
+
+};
+
 Entity.prototype.collide = function (frameScale) {
     var stopStepping = false;
 
@@ -57,10 +80,13 @@ Entity.prototype.collide = function (frameScale) {
             var d = segment.distanceToPoint2(this.pos[0], this.pos[1]);
 
             if (d < sqr(this.boundingRadius)) {
-                d = Math.sqrt(d);
-                //var side = segment.whichSide(this.pos[0], this.pos[1]);
-                this.pos[0] += segment.normalX * (this.boundingRadius - d);
-                this.pos[1] += segment.normalY * (this.boundingRadius - d);
+                var closest = segment.closestToPoint(this.pos[0], this.pos[1], true);
+                var v = vec3blank(true);
+                vec3sub(this.pos, closest, v);
+                v[2] = 0;
+                vec3normalize(v, v);
+                vec3mul(v, this.boundingRadius - Math.sqrt(d), v);
+                vec3add(this.pos, v, this.pos);
 
                 if (this.collisionResponse == 'stop') {
                     stopStepping = true;
@@ -115,8 +141,8 @@ Entity.prototype.updateSector = function () {
     for (var i = 0; i < this.map.sectors.length; i++) {
         var sector = this.map.sectors[i];
 
-        if (sector.topZ - sector.bottomZ < this.boundingRadius * 2 || sector.bottomZ - this.pos[2] > this.mountHeight)
-            continue;
+        //if (sector.topZ - sector.bottomZ < this.boundingRadius * 2 || sector.bottomZ - this.pos[2] > this.mountHeight)
+        //    continue;
 
         if (sector.isPointInside(this.pos[0], this.pos[1])) {
             this.sector = sector;

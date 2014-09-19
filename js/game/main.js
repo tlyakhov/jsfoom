@@ -81,7 +81,7 @@ GameMain.prototype.flipBuffers = function () {
 
     this.renderContext.fillStyle = '#FFF';
     this.renderContext.fillText('Game FPS: ' + Math.round(1000.0 / this.lastGameTime), 5, 15);
-    this.renderContext.fillText('Render FPS: ' + Math.round(1000.0 / this.lastFrameTime), 5, 25);
+    this.renderContext.fillText('Render FPS: ' + Math.round(1000.0 / this.lastFrameTime) + (this.renderer ? ', counter: ' + this.renderer.counter : ''), 5, 25);
     if (this.map.player.sector) {
         this.renderContext.fillText('Current sector: ' + this.map.player.sector.id +
             ', x: ' + Math.round(this.map.player.pos[0]) +
@@ -115,8 +115,10 @@ GameMain.prototype.checkRenderWorkers = function () {
     var serializedMap = this.map.serialize();
 
     for (var i = 0; i < this.workerFrameReady.length; i++) {
-        this.workerFrameReady[i] = false;
-        this.workers[i].postMessage({ type: 'render', map: serializedMap });
+        if (this.workerFrameReady[i]) {
+            this.workerFrameReady[i] = false;
+            this.workers[i].postMessage({ type: 'render', map: serializedMap });
+        }
     }
 };
 

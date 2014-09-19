@@ -1,6 +1,7 @@
 var GAME_CONSTANTS = {
-    renderWorkers: 4,
-    lightGrid: 8,
+    renderWorkers: 8,
+    intersectEpsilon: 1e-20,
+    lightGrid: 4,
     velocityEpsilon: 0.00001,
     lightAttenuationEpsilon: 0.001,
     maxViewDistance: 1000000.0,
