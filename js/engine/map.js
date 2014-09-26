@@ -99,18 +99,22 @@ Map.prototype.light = function (world, normal, sector, segment, u, v, pool) {
     if (lightmap[mapIndex00] < 0) {
         q00 = !isWall ? sector.lightmapAddressToWorld(mapIndex00, normal[2] > 0, true) : segment.lightmapAddressToWorld(mapIndex00, true);
         sector.calculateLighting(segment, normal, lightmap, mapIndex00, q00);
+        //globalGame.renderer.counter++;
     }
     if (lightmap[mapIndex10] < 0) {
         var q10 = !isWall ? sector.lightmapAddressToWorld(mapIndex10, normal[2] > 0, true) : segment.lightmapAddressToWorld(mapIndex10, true);
         sector.calculateLighting(segment, normal, lightmap, mapIndex10, q10);
+        // globalGame.renderer.counter++;
     }
     if (lightmap[mapIndex11] < 0) {
         var q11 = !isWall ? sector.lightmapAddressToWorld(mapIndex11, normal[2] > 0, true) : segment.lightmapAddressToWorld(mapIndex11, true);
         sector.calculateLighting(segment, normal, lightmap, mapIndex11, q11);
+        //globalGame.renderer.counter++;
     }
     if (lightmap[mapIndex01] < 0) {
         var q01 = !isWall ? sector.lightmapAddressToWorld(mapIndex01, normal[2] > 0, true) : segment.lightmapAddressToWorld(mapIndex01, true);
         sector.calculateLighting(segment, normal, lightmap, mapIndex01, q01);
+        //globalGame.renderer.counter++;
     }
 
     /*if(lightmap[mapIndex00] == undefined || lightmap[mapIndex01] == undefined || lightmap[mapIndex10] == undefined || lightmap[mapIndex11] == undefined) {
@@ -183,7 +187,7 @@ Map.deserialize = function (data, map) {
 
     Player.deserialize(data.player, map, map.player);
 
-    map.player.updateSector();
+    map.player.collide();
 
     return map;
 };

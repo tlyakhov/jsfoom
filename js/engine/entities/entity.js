@@ -13,9 +13,6 @@ function Entity(options) {
 
     if (options) {
         $.extend(true, this, options);
-
-        if (this.map)
-            this.updateSector();
     }
 }
 
@@ -63,97 +60,170 @@ Entity.prototype.moveToSector = function (sector) {
 
 };
 
-Entity.prototype.collide = function (frameScale) {
-    var stopStepping = false;
+Entity.prototype.pushBack = function (segment) {
+    var d = segment.distanceToPoint2(this.pos[0], this.pos[1]);
+    var side = segment.whichSide(this.pos[0], this.pos[1]);
+    if (d > sqr(this.boundingRadius))
+        return false;
 
-    var vv = Math.sqrt(sqr(this.vel[0]) + sqr(this.vel[1])) * frameScale;
-    var steps = Math.max(fast_floor(vv / GAME_CONSTANTS.collisionCheck), 1);
-    for (var step = 0; step < steps; step++) {
-        vec3add(this.pos, vec3mul(this.vel, frameScale / steps, vec3blank(true)), this.pos);
+    var closest = segment.closestToPoint(this.pos[0], this.pos[1], true);
+    var v = vec3blank(true);
+    vec3sub(this.pos, closest, v);
+    v[2] = 0;
+    d = vec3length(v);
+    vec3normalize(v, v);
+    if (side > 0)
+        vec3mul(v, this.boundingRadius - d, v);
+    else
+        vec3mul(v, -this.boundingRadius - d, v);
+    vec3add(this.pos, v, this.pos);
 
-        for (var i = 0; i < this.sector.segments.length; i++) {
-            var segment = this.sector.segments[i];
+    return true;
+};
 
-            if (segment.getAdjacentSector())
-                continue;
+Entity.prototype.collide = function () {
+    // We've got several possibilities we need to handle:
+    // 1.   The entity is outside of all sectors. Put it into the nearest sector.
+    // 2.   The entity has an un-initialized sector, but it's within a sector and doesn't need to be moved.
+    // 3.   The entity is still in its current sector, but it's gotten too close to a wall and needs to be pushed back.
+    // 4.   The entity is outside of the current sector because it's gone past a wall and needs to be pushed back.
+    // 5.   The entity is outside of the current sector because it's gone through a portal and needs to change sectors.
+    // 6.   The entity is outside of the current sector because it's gone through a portal, but it winds up outside of
+    //      any sectors and needs to be pushed back into a valid sector using any walls within bounds.
+    // 7.   No collision occured.
 
-            var d = segment.distanceToPoint2(this.pos[0], this.pos[1]);
+    // The central method here is to push back, but the wall that's doing the pushing requires some logic to get.
 
-            if (d < sqr(this.boundingRadius)) {
-                var closest = segment.closestToPoint(this.pos[0], this.pos[1], true);
-                var v = vec3blank(true);
-                vec3sub(this.pos, closest, v);
-                v[2] = 0;
-                vec3normalize(v, v);
-                vec3mul(v, this.boundingRadius - Math.sqrt(d), v);
-                vec3add(this.pos, v, this.pos);
+    // Assume we haven't collided.
+    var collided = [];
 
-                if (this.collisionResponse == 'stop') {
-                    stopStepping = true;
-                    this.vel[0] = 0;
-                    this.vel[1] = 0;
-                }
-                else if (this.collisionResponse == 'bounce') {
-                    stopStepping = true;
-                    var dot = this.vel[0] * segment.normalX + this.vel[1] * segment.normalY;
-                    this.vel[0] = this.vel[0] - 2 * dot * segment.normalX;
-                    this.vel[1] = this.vel[1] - 2 * dot * segment.normalY;
-                    break;
-                }
-                else {
-                }
+    // Cases 1 & 2.
+    if (!this.sector) {
+        var closestSector = null;
+        var closestDistance2 = null;
+        for (var i = 0; i < this.map.sectors.length; i++) {
+            var sector = this.map.sectors[i];
+            var d2 = vec3dist2(this.pos, sector.center);
+
+            if (closestDistance2 == null || d2 < closestDistance2) {
+                closestDistance2 = d2;
+                closestSector = sector;
             }
         }
 
-        if (stopStepping)
-            break;
-    }
-};
-
-Entity.prototype.frame = function (lastFrameTime) {
-    if (this.sector) {
-        var frameScale = lastFrameTime / 10.0;
-
-        if (Math.abs(this.vel[0]) > GAME_CONSTANTS.velocityEpsilon || Math.abs(this.vel[1]) > GAME_CONSTANTS.velocityEpsilon || Math.abs(this.vel[2]) > GAME_CONSTANTS.velocityEpsilon) {
-            this.collide(frameScale);
+        if (!closestSector.isPointInside(this.pos[0], this.pos[1])) {
+            this.pos[0] = closestSector.center[0];
+            this.pos[1] = closestSector.center[1];
+            this.pos[2] = closestSector.center[2];
         }
+        else if (this.pos[2] < closestSector.bottomZ || this.pos[2] + this.height > closestSector.topZ)
+            this.pos[2] = closestSector.center[2];
+
+        this.sector = closestSector;
+        if ($.inArray(this, this.sector.entities) == -1)
+            this.sector.entities.push(this);
+        this.sector.onEnter(this);
+        // Don't mark as collided because this is probably an initialization.
     }
 
-    this.updateSector();
-};
+    // Case 3 & 4
+    // See if we need to push back into the current sector.
+    for (var i = 0; i < this.sector.segments.length; i++) {
+        var segment = this.sector.segments[i];
+        var adj = segment.getAdjacentSector();
+        if (adj) {
+            // We can still collide with a portal if the heights don't match.
+            // If we're within limits, ignore the portal.
+            if (this.pos[2] + this.mountHeight >= adj.bottomZ &&
+                this.pos[2] + this.height < adj.topZ)
+                continue;
+        }
+        if (this.pushBack(segment))
+            collided.push(segment);
+    }
 
-Entity.prototype.hurt = function (amount) {
-    this.health -= amount;
-};
+    var inSector = this.sector.isPointInside(this.pos[0], this.pos[1]);
 
-Entity.prototype.updateSector = function () {
-    if (this.sector && this.sector.isPointInside(this.pos[0], this.pos[1]))
-        return true;
+    if (!inSector) {
+        // Cases 5 & 6
 
-    if (this.sector) {
+        // Exit the current sector.
         this.sector.onExit(this);
         var index = $.inArray(this, this.sector.entities);
         if (index != -1)
             this.sector.entities.splice(index, 1);
-    }
-    this.sector = null;
 
-    for (var i = 0; i < this.map.sectors.length; i++) {
-        var sector = this.map.sectors[i];
+        this.sector = null;
 
-        //if (sector.topZ - sector.bottomZ < this.boundingRadius * 2 || sector.bottomZ - this.pos[2] > this.mountHeight)
-        //    continue;
+        for (var i = 0; i < this.map.sectors.length; i++) {
+            var sector = this.map.sectors[i];
 
-        if (sector.isPointInside(this.pos[0], this.pos[1])) {
-            this.sector = sector;
-            if ($.inArray(this, this.sector.entities) == -1)
-                this.sector.entities.push(this);
-            this.sector.onEnter(this);
-            return true;
+            if (this.pos[2] + this.mountHeight >= sector.bottomZ &&
+                this.pos[2] + this.height < sector.topZ &&
+                sector.isPointInside(this.pos[0], this.pos[1])) {
+                // Hooray, we've handled case 5! Make sure Z is good.
+                this.sector = sector;
+                if (this.pos[2] < this.sector.bottomZ)
+                    this.pos[2] = this.sector.bottomZ;
+                if ($.inArray(this, this.sector.entities) == -1)
+                    this.sector.entities.push(this);
+                this.sector.onEnter(this);
+                break;
+            }
+        }
+
+        if (!this.sector) {
+            // Case 6! This is the worst.
+            for (var i = 0; i < this.map.sectors.length; i++) {
+                var sector = this.map.sectors[i];
+
+                if (this.pos[2] + this.mountHeight >= sector.bottomZ &&
+                    this.pos[2] + this.height < sector.topZ) {
+
+                    for (var j = 0; j < sector.segments.length; j++) {
+                        if (this.pushBack(sector.segments[j])) {
+                            collided.push(sector.segments[j]);
+                        }
+                    }
+                }
+            }
+            collided = collided.concat(this.collide()); // RECURSIVE! Can be infinite, I suppose?
         }
     }
 
-    return false;
+    if (collided.length > 0) {
+        if (this.collisionResponse == 'stop') {
+            this.vel[0] = 0;
+            this.vel[1] = 0;
+        }
+        else if (this.collisionResponse == 'bounce') {
+            var dot = this.vel[0] * segment.normalX + this.vel[1] * segment.normalY;
+            this.vel[0] = this.vel[0] - 2 * dot * segment.normalX;
+            this.vel[1] = this.vel[1] - 2 * dot * segment.normalY;
+        }
+    }
+
+    return collided;
+};
+
+Entity.prototype.frame = function (lastFrameTime) {
+    var frameScale = lastFrameTime / 10.0;
+
+    if (Math.abs(this.vel[0]) > GAME_CONSTANTS.velocityEpsilon || Math.abs(this.vel[1]) > GAME_CONSTANTS.velocityEpsilon || Math.abs(this.vel[2]) > GAME_CONSTANTS.velocityEpsilon) {
+        var vv = Math.sqrt(sqr(this.vel[0]) + sqr(this.vel[1])) * frameScale;
+        var steps = Math.max(fast_floor(vv / GAME_CONSTANTS.collisionCheck), 1);
+        for (var step = 0; step < steps; step++) {
+            vec3add(this.pos, vec3mul(this.vel, frameScale / steps, vec3blank(true)), this.pos);
+
+            var collidedSegments = this.collide();
+            if (collidedSegments.length > 0)
+                break;
+        }
+    }
+};
+
+Entity.prototype.hurt = function (amount) {
+    this.health -= amount;
 };
 
 Entity.prototype.serialize = function () {

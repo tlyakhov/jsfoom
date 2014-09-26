@@ -80,7 +80,6 @@ ScissorEditorAction.prototype.redo = function () {
     }
     editor.map.autoPortal();
     editor.map.player.sector = null;
-    editor.map.player.updateSector();
 };
 
 

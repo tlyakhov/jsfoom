@@ -51,7 +51,6 @@ DeleteEditorAction.prototype.undo = function () {
         else if (isA(object, Entity)) {
             object.sector = null;
             object.map = this.editor.map;
-            object.updateSector();
         }
         else if (isA(object, MapSector)) {
             object.map = this.editor.map;

@@ -65,7 +65,7 @@ MoveEditorAction.prototype.move = function (toOriginal) {
                 object.pos[0] = Math.round(object.pos[0] / editor.gridSize) * editor.gridSize;
                 object.pos[1] = Math.round(object.pos[1] / editor.gridSize) * editor.gridSize;
             }
-            object.updateSector();
+            object.collide();
             if (isA(object, LightEntity))
                 this.editor.map.clearLightmaps();
         }

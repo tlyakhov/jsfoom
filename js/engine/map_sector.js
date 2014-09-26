@@ -180,6 +180,7 @@ MapSector.prototype.calculateLighting = function (segment, normal, lightmap, map
 MapSector.prototype.update = function () {
     this.center[0] = 0.0;
     this.center[1] = 0.0;
+    this.center[2] = (this.topZ + this.bottomZ) / 2.0;
     this.min[0] = 1e10;
     this.min[1] = 1e10;
     this.min[2] = this.bottomZ;
@@ -219,8 +220,7 @@ MapSector.prototype.update = function () {
     for (var i = 0; i < this.entities.length; i++) {
         this.entities[i].map = this.map;
         this.entities[i].sector = this;
-        if (!this.entities[i].updateSector()) {
-        }
+        this.entities[i].collide();
     }
 
     this.lightmapWidth = fast_floor((this.max[0] - this.min[0]) / GAME_CONSTANTS.lightGrid) + 3;
@@ -343,7 +343,7 @@ MapSector.prototype.collide = function (entity) {
         entity.pos[2] = entity.sector.topZ - entity.height - 1.0;
     }
     else if (!this.floorTargetSectorId && entity.pos[2] <= this.bottomZ) {
-        //entity.vel[2] = 0;
+        entity.vel[2] = 0;
         entity.pos[2] = this.bottomZ;
     }
 
@@ -354,7 +354,7 @@ MapSector.prototype.collide = function (entity) {
         entity.pos[2] = entity.sector.bottomZ - entity.height + 1.0;
     }
     else if (!this.ceilTargetSectorId && entityTop >= this.topZ) {
-        // entity.vel[2] = 0;
+        entity.vel[2] = 0;
         entity.pos[2] = this.topZ - entity.height - 1.0;
     }
 

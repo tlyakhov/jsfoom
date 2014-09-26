@@ -259,10 +259,16 @@ MapSegment.prototype.closestToPoint = function (x, y, pool) {
 };
 
 MapSegment.prototype.whichSide = function (x, y) {
-    var dx = (this.bx - this.ax);
-    var dy = (this.by - this.ay);
+    /*var dx = (this.bx - this.ax);
+     var dy = (this.by - this.ay);
 
-    return sign(dy * x - dx * y - this.ax * this.by + this.bx * this.ay);
+     return sign(dx * (y - this.ay) - dy * (x - this.ax));*/
+
+    var dx = (x - this.ax);
+    var dy = (y - this.ay);
+
+    return this.normalX * dx + this.normalY * dy;
+
 };
 
 MapSegment.prototype.uvToWorld = function (u, v, pool) {
