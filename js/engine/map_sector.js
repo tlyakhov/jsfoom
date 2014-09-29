@@ -96,7 +96,7 @@ MapSector.prototype.markVisibleLights = function (point) {
 
                 vec3sub(light.pos, point, tempvec);
 
-                if (vec3dot(tempvec, vec3create(segment.normalX, segment.normalY, 0, true)) >= 0)
+                if (vec3dot(tempvec, vec3create(segment.normalX, segment.normalY, 0, true)) > 0)
                     continue;
 
                 var lightIntersection = segment.intersect(point[0], point[1], light.pos[0], light.pos[1]);
@@ -109,7 +109,7 @@ MapSector.prototype.markVisibleLights = function (point) {
 
                     // Get the z
                     var r = Math.sqrt(sqr(lightIntersection[0] - point[0]) + sqr(lightIntersection[1] - point[1])) / rayLength;
-                    var z = point[2] + r * (light.pos[2] - point[2]);
+                    var z = r * light.pos[2] + (1.0 - r) * point[2];
 
                     if (z >= adj.bottomZ && z <= adj.topZ) {
                         next = adj;
@@ -133,15 +133,15 @@ MapSector.prototype.markVisibleLights = function (point) {
 MapSector.prototype.calculateLighting = function (segment, normal, lightmap, mapIndex, point) {
     if (segment) {
         if (!this.isPointInside(point[0], point[1])) {
-            var d = segment.distanceToPoint(point[0], point[1]) + 0.5;
+            var closest = segment.closestToPoint(point[0], point[1], true);
 
-            point[0] += segment.normalX * d;
-            point[1] += segment.normalY * d;
+            point[0] = closest[0] + segment.normalX * 0.5;
+            point[1] = closest[1] + segment.normalY * 0.5;
         }
     }
 
-    var tempvec = vec3blank(true);
-    this.markVisibleLights(vec3add(point, vec3mul(normal, 0.1, tempvec), tempvec));
+    var tempvec = vec3blank();
+    this.markVisibleLights(point);//vec3add(point, vec3mul(normal, 0.1, tempvec), tempvec));
 
     var diffuseSum = vec3blank();
 
@@ -175,6 +175,13 @@ MapSector.prototype.calculateLighting = function (segment, normal, lightmap, map
     lightmap[mapIndex + 0] = diffuseSum[0];
     lightmap[mapIndex + 1] = diffuseSum[1];
     lightmap[mapIndex + 2] = diffuseSum[2];
+
+    /*var checker = fast_floor((mapIndex / 3) / 8) % 2;
+
+     checker = Math.min(1.0, Math.max(0.0, checker));
+     lightmap[mapIndex + 0] = checker;
+     lightmap[mapIndex + 1] = checker;
+     lightmap[mapIndex + 2] = checker;*/
 };
 
 MapSector.prototype.update = function () {
@@ -223,8 +230,8 @@ MapSector.prototype.update = function () {
         this.entities[i].collide();
     }
 
-    this.lightmapWidth = fast_floor((this.max[0] - this.min[0]) / GAME_CONSTANTS.lightGrid) + 3;
-    this.lightmapHeight = fast_floor((this.max[1] - this.min[1]) / GAME_CONSTANTS.lightGrid) + 3;
+    this.lightmapWidth = fast_floor((this.max[0] - this.min[0]) / GAME_CONSTANTS.lightGrid) + 6;
+    this.lightmapHeight = fast_floor((this.max[1] - this.min[1]) / GAME_CONSTANTS.lightGrid) + 6;
 
     this.floorLightmap = new Float64Array(this.lightmapWidth * this.lightmapHeight * 3);
     this.ceilLightmap = new Float64Array(this.lightmapWidth * this.lightmapHeight * 3);
@@ -307,8 +314,8 @@ MapSector.prototype.winding = function () {
 };
 
 MapSector.prototype.lightmapAddress = function (point) {
-    return (Math.max(fast_floor((point[0] - this.min[0]) / GAME_CONSTANTS.lightGrid) + 1, 0) +
-        Math.max(fast_floor((point[1] - this.min[1]) / GAME_CONSTANTS.lightGrid) + 1, 0) * this.lightmapWidth) * 3;
+    return (Math.max(fast_floor((point[0] - this.min[0]) / GAME_CONSTANTS.lightGrid) + 3, 0) +
+        Math.max(fast_floor((point[1] - this.min[1]) / GAME_CONSTANTS.lightGrid) + 3, 0) * this.lightmapWidth) * 3;
 };
 
 MapSector.prototype.lightmapWorld = function (point, pool) {
@@ -318,8 +325,8 @@ MapSector.prototype.lightmapWorld = function (point, pool) {
 };
 
 MapSector.prototype.lightmapAddressToWorld = function (mapIndex, floor, pool) {
-    var u = fast_floor(mapIndex / 3) % this.lightmapWidth - 1;
-    var v = fast_floor(fast_floor(mapIndex / 3) / this.lightmapWidth) - 1;
+    var u = fast_floor(mapIndex / 3) % this.lightmapWidth - 3;
+    var v = fast_floor(fast_floor(mapIndex / 3) / this.lightmapWidth) - 3;
     return vec3create(this.min[0] + u * GAME_CONSTANTS.lightGrid,
             this.min[1] + v * GAME_CONSTANTS.lightGrid, floor ? this.bottomZ : this.topZ, pool);
 };
@@ -605,9 +612,9 @@ MapSector.deserialize = function (data, map, sector) {
     sector.topZ = data.topZ;
     sector.floorMaterialId = data.floorMaterialId;
     sector.ceilMaterialId = data.ceilMaterialId;
-    sector.center = data.center || vec3blank();
-    sector.min = data.min || vec3blank();
-    sector.max = data.max || vec3blank();
+    sector.center = vec3clone(data.center) || vec3blank();
+    sector.min = vec3clone(data.min) || vec3blank();
+    sector.max = vec3clone(data.max) || vec3blank();
     sector.lightmapWidth = data.lightmapWidth;
     sector.lightmapHeight = data.lightmapHeight;
     sector.floorScale = data.floorScale;
@@ -635,11 +642,10 @@ MapSector.deserialize = function (data, map, sector) {
     if (sector.entities.length > data.entities.length)
         sector.entities.splice(data.entities.length, sector.entities.length - data.entities.length);
 
-    if (!sector.floorLightmap || sector.floorLightmap.length < sector.lightmapWidth * sector.lightmapHeight * 3) {
+    if (!sector.floorLightmap || sector.floorLightmap.length != sector.lightmapWidth * sector.lightmapHeight * 3) {
         sector.update();
     }
-
-    if (sector.version != data.version) {
+    else if (sector.version != data.version) {
         sector.update();
         sector.version = data.version;
     }

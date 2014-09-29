@@ -154,19 +154,21 @@ MapSegment.prototype.intersect = function (s2ax, s2ay, s2bx, s2by) {
     if (denom == 0)
         return undefined;
     var r = (s1.ay - s2ay) * s2dx - (s1.ax - s2ax) * s2dy;
-    if (denom <= GAME_CONSTANTS.intersectEpsilon && r >= GAME_CONSTANTS.intersectEpsilon)
+    if (denom <= 0 && r >= GAME_CONSTANTS.intersectEpsilon)
         return undefined;
-    if (denom > GAME_CONSTANTS.intersectEpsilon && r < GAME_CONSTANTS.intersectEpsilon)
+    if (denom > 0 && r < -GAME_CONSTANTS.intersectEpsilon)
         return undefined;
     var s = (s1.ay - s2ay) * s1dx - (s1.ax - s2ax) * s1dy;
-    if (denom <= GAME_CONSTANTS.intersectEpsilon && s >= GAME_CONSTANTS.intersectEpsilon)
+    if (denom <= 0 && s >= GAME_CONSTANTS.intersectEpsilon)
         return undefined;
-    if (denom > GAME_CONSTANTS.intersectEpsilon && s < GAME_CONSTANTS.intersectEpsilon)
+    if (denom > 0 && s < -GAME_CONSTANTS.intersectEpsilon)
         return undefined;
     r /= denom;
     s /= denom;
     if (r > 1.0 + GAME_CONSTANTS.intersectEpsilon || s > 1.0 + GAME_CONSTANTS.intersectEpsilon)
         return undefined;
+
+    r = Math.max(0.0, Math.min(1.0, r));
 
     return vec3create(s1.ax + r * s1dx, s1.ay + r * s1dy, 0.0, true);
 };
@@ -274,7 +276,7 @@ MapSegment.prototype.whichSide = function (x, y) {
 MapSegment.prototype.uvToWorld = function (u, v, pool) {
     return vec3create(this.ax + u * (this.bx - this.ax),
             this.ay + u * (this.by - this.ay),
-            this.sector.topZ - v * (this.sector.topZ - this.sector.bottomZ), pool);
+            (1.0 - v) * this.sector.topZ + v * this.sector.bottomZ, pool);
 };
 MapSegment.prototype.lightmapAddressToWorld = function (mapIndex, pool) {
     var u = ((fast_floor(mapIndex / 3) % this.lightmapWidth) - 1) / (this.lightmapWidth - 2);
@@ -291,8 +293,11 @@ MapSegment.prototype.serialize = function () {
         bx: this.bx,
         by: this.by,
         midMaterialId: this.midMaterialId,
+        midBehavior: this.midBehavior,
         loMaterialId: this.loMaterialId,
+        loBehavior: this.loBehavior,
         hiMaterialId: this.hiMaterialId,
+        hiBehavior: this.hiBehavior,
         length: this.length,
         normalX: this.normalX,
         normalY: this.normalY,
@@ -315,14 +320,21 @@ MapSegment.deserialize = function (data, sector, segment) {
     segment.bx = data.bx;
     segment.by = data.by;
     segment.midMaterialId = data.midMaterialId;
+    segment.midBehavior = data.midBehavior;
     segment.loMaterialId = data.loMaterialId;
+    segment.loBehavior = data.loBehavior;
     segment.hiMaterialId = data.hiMaterialId;
+    segment.hiBehavior = data.hiBehavior;
     segment.length = data.length;
     segment.normalX = data.normalX;
     segment.normalY = data.normalY;
     segment.lightmapWidth = data.lightmapWidth;
     segment.lightmapHeight = data.lightmapHeight;
-    segment.adjacentSectorId = data.adjacentSectorId;
+    if (segment.adjacentSectorId != data.adjacentSectorId) {
+        segment.adjacentSectorId = data.adjacentSectorId;
+        segment.adjacentSector = null;
+        segment.adjacentSegment = null;
+    }
     segment.flags = data.flags;
     segment.sector = sector;
 

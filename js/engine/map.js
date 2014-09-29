@@ -82,7 +82,7 @@ Map.prototype.light = function (world, normal, sector, segment, u, v, pool) {
     else {
         lightmap = segment.lightmap;
         wu = Math.min(fast_floor(u * (segment.lightmapWidth - 2)) + 1, segment.lightmapWidth - 1);
-        wv = Math.min(fast_floor((1.0 - v) * (segment.lightmapHeight - 2)) + 1, segment.lightmapHeight - 1);
+        wv = Math.min(fast_floor(v * (segment.lightmapHeight - 2)) + 1, segment.lightmapHeight - 1);
         var wu2 = Math.min(wu + 1, segment.lightmapWidth - 1);
         var wv2 = Math.min(wv + 1, segment.lightmapHeight - 1) * segment.lightmapWidth;
         wv *= segment.lightmapWidth;
@@ -93,26 +93,29 @@ Map.prototype.light = function (world, normal, sector, segment, u, v, pool) {
         wu = u * (segment.lightmapWidth - 2);
         wv = v * (segment.lightmapHeight - 2);
         wu = 1.0 - (wu - fast_floor(wu));
-        wv = (wv - fast_floor(wv));
+        wv = 1.0 - (wv - fast_floor(wv));
     }
 
+    wu = Math.min(1.0, Math.max(wu, 0.0));
+    wv = Math.min(1.0, Math.max(wv, 0.0));
+
     if (lightmap[mapIndex00] < 0) {
-        q00 = !isWall ? sector.lightmapAddressToWorld(mapIndex00, normal[2] > 0, true) : segment.lightmapAddressToWorld(mapIndex00, true);
+        q00 = !isWall ? sector.lightmapAddressToWorld(mapIndex00, normal[2] > 0, false) : segment.lightmapAddressToWorld(mapIndex00, false);
         sector.calculateLighting(segment, normal, lightmap, mapIndex00, q00);
         //globalGame.renderer.counter++;
     }
     if (lightmap[mapIndex10] < 0) {
-        var q10 = !isWall ? sector.lightmapAddressToWorld(mapIndex10, normal[2] > 0, true) : segment.lightmapAddressToWorld(mapIndex10, true);
+        var q10 = !isWall ? sector.lightmapAddressToWorld(mapIndex10, normal[2] > 0, false) : segment.lightmapAddressToWorld(mapIndex10, false);
         sector.calculateLighting(segment, normal, lightmap, mapIndex10, q10);
         // globalGame.renderer.counter++;
     }
     if (lightmap[mapIndex11] < 0) {
-        var q11 = !isWall ? sector.lightmapAddressToWorld(mapIndex11, normal[2] > 0, true) : segment.lightmapAddressToWorld(mapIndex11, true);
+        var q11 = !isWall ? sector.lightmapAddressToWorld(mapIndex11, normal[2] > 0, false) : segment.lightmapAddressToWorld(mapIndex11, false);
         sector.calculateLighting(segment, normal, lightmap, mapIndex11, q11);
         //globalGame.renderer.counter++;
     }
     if (lightmap[mapIndex01] < 0) {
-        var q01 = !isWall ? sector.lightmapAddressToWorld(mapIndex01, normal[2] > 0, true) : segment.lightmapAddressToWorld(mapIndex01, true);
+        var q01 = !isWall ? sector.lightmapAddressToWorld(mapIndex01, normal[2] > 0, false) : segment.lightmapAddressToWorld(mapIndex01, false);
         sector.calculateLighting(segment, normal, lightmap, mapIndex01, q01);
         //globalGame.renderer.counter++;
     }
@@ -120,6 +123,8 @@ Map.prototype.light = function (world, normal, sector, segment, u, v, pool) {
     /*if(lightmap[mapIndex00] == undefined || lightmap[mapIndex01] == undefined || lightmap[mapIndex10] == undefined || lightmap[mapIndex11] == undefined) {
      console.log(mapIndex00 + ',' + lightmap.length);
      }*/
+
+    //return vec3create(lightmap[mapIndex00 + 0], lightmap[mapIndex00 + 1], lightmap[mapIndex00 + 2], pool);
 
     return vec3create(lightmap[mapIndex00 + 0] * wu * wv +
             lightmap[mapIndex10 + 0] * (1.0 - wu) * wv +
@@ -231,8 +236,18 @@ Map.prototype.autoPortal = function (sectors) {
                         mapSegment2.midMaterialId = null;
                     }
                 }
+
+                if (mapSegment.adjacentSectorId && (!mapSegment.getAdjacentSegment() || !mapSegment.matches(mapSegment.getAdjacentSegment()))) {
+                    mapSegment.adjacentSectorId = null;
+                    if (!mapSegment.midMaterialId)
+                        mapSegment.midMaterialId = 'Default';
+                }
             }
         }
+    }
+
+    for (var i = 0; i < sectors.length; i++) {
+        sectors[i].update();
     }
 };
 

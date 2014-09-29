@@ -26,45 +26,45 @@ Material.prototype.getTexture = function () {
     return this.texture;
 };
 
-Material.prototype.sample = function (slice, x, y, scaledHeight) {
+Material.prototype.sample = function (slice, u, v, light, scaledHeight) {
     if (this.renderAsSky) {
-        y = slice.y / (slice.renderer.screenHeight - 1);
+        v = slice.y / (slice.renderer.screenHeight - 1);
 
         if (this.staticBackground) {
-            x = slice.x / (slice.renderer.screenWidth - 1);
+            u = slice.x / (slice.renderer.screenWidth - 1);
         }
         else {
-            x = slice.rayTable / (slice.renderer.trigCount - 1);
+            u = slice.rayTable / (slice.renderer.trigCount - 1);
         }
 
     }
 
     if (this.isLiquid) {
-        x = x + Math.cos(slice.renderer.frame * GAME_CONSTANTS.liquidChurnSpeed * deg2rad) * GAME_CONSTANTS.liquidChurnSize;
-        y = y + Math.sin(slice.renderer.frame * GAME_CONSTANTS.liquidChurnSpeed * deg2rad) * GAME_CONSTANTS.liquidChurnSize;
+        u = u + Math.cos(slice.renderer.frame * GAME_CONSTANTS.liquidChurnSpeed * deg2rad) * GAME_CONSTANTS.liquidChurnSize;
+        v = v + Math.sin(slice.renderer.frame * GAME_CONSTANTS.liquidChurnSpeed * deg2rad) * GAME_CONSTANTS.liquidChurnSize;
     }
 
-    if (x < 0)
-        x = fast_floor(x) - x;
-    else if (x >= 1.0)
-        x -= fast_floor(x);
+    if (u < 0)
+        u = fast_floor(u) - u;
+    else if (u >= 1.0)
+        u -= fast_floor(u);
 
-    if (y < 0)
-        y = fast_floor(y) - y;
-    else if (y >= 1.0)
-        y -= fast_floor(y);
+    if (v < 0)
+        v = fast_floor(v) - v;
+    else if (v >= 1.0)
+        v -= fast_floor(v);
 
-    var surface = this.getTexture().sample(x, y, scaledHeight);
+    var surface = this.getTexture().sample(u, v, scaledHeight);
 
     if (this.renderAsSky)
         return surface;
 
-    var v = this.map.light(slice.world, slice.normal, slice.sector, slice.segment, x, y, true);
     var sum = vec3create(int2r(surface) * this.diffuse[0],
             int2g(surface) * this.diffuse[1],
             int2b(surface) * this.diffuse[2], true);
 
-    vec3mul3(sum, v, sum);
+    if (light)
+        vec3mul3(sum, light, sum);
     vec3add(this.ambient, sum, sum);
     vec3clamp(sum, 0.0, 255.0, sum);
 

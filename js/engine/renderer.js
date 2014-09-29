@@ -72,7 +72,9 @@ Renderer.prototype.renderFloor = function (slice, start, end) {
             if (ty < 0)
                 ty = ty + 1.0;
 
-            slice.renderTarget[screenIndex] = floorMaterial.sample(slice, tx, ty, scaler);
+            var light = this.map.light(slice.world, slice.normal, slice.sector, slice.segment, null, null, true);
+
+            slice.renderTarget[screenIndex] = floorMaterial.sample(slice, tx, ty, light, scaler);
             this.zbuffer[screenIndex] = distToFloor;
         }
     }
@@ -103,7 +105,9 @@ Renderer.prototype.renderCeiling = function (slice, start, end) {
             if (ty < 0)
                 ty = ty + 1.0;
 
-            slice.renderTarget[screenIndex] = ceilMaterial.sample(slice, tx, ty, scaler);
+            var light = this.map.light(slice.world, slice.normal, slice.sector, slice.segment, null, null, true);
+
+            slice.renderTarget[screenIndex] = ceilMaterial.sample(slice, tx, ty, light, scaler);
             this.zbuffer[screenIndex] = distToCeiling;
         }
     }
@@ -155,10 +159,13 @@ Renderer.prototype.renderSlice = function (slice) {
                 if (slice.distance < this.zbuffer[screenIndex]) {
                     var ty = (slice.y - sliceStart) / (adjSliceTop - sliceStart);
                     slice.world[2] = sector.topZ - ty * (sector.topZ - adj.topZ);
+
+                    var light = this.map.light(slice.world, slice.normal, slice.sector, slice.segment, slice.textureX, ty * 0.5, true);
+
                     if (adjSegment.hiBehavior == 'scaleWidth' || adjSegment.hiBehavior == 'scaleNone')
                         ty = (ty * (adj.topZ - sector.topZ) - adj.topZ) / 64.0;
 
-                    slice.renderTarget[screenIndex] = hiMaterial.sample(slice, slice.textureX, ty, adjSliceTop - sliceStart);
+                    slice.renderTarget[screenIndex] = hiMaterial.sample(slice, slice.textureX, ty, light, adjSliceTop - sliceStart);
                     this.zbuffer[screenIndex] = slice.distance;
                 }
             }
@@ -170,10 +177,13 @@ Renderer.prototype.renderSlice = function (slice) {
                 if (slice.distance < this.zbuffer[screenIndex]) {
                     var ty = (slice.y - adjClippedBottom) / (sliceEnd - adjSliceBottom);
                     slice.world[2] = adj.bottomZ - ty * (adj.bottomZ - sector.bottomZ);
+
+                    var light = this.map.light(slice.world, slice.normal, slice.sector, slice.segment, slice.textureX, ty * 0.5 + 0.5, true);
+
                     if (adjSegment.loBehavior == 'scaleWidth' || adjSegment.loBehavior == 'scaleNone')
                         ty = (ty * (sector.bottomZ - adj.bottomZ) - sector.bottomZ) / 64.0;
 
-                    slice.renderTarget[screenIndex] = loMaterial.sample(slice, slice.textureX, ty, sliceEnd - adjSliceBottom);
+                    slice.renderTarget[screenIndex] = loMaterial.sample(slice, slice.textureX, ty, light, sliceEnd - adjSliceBottom);
                     this.zbuffer[screenIndex] = slice.distance;
                 }
             }
@@ -184,8 +194,8 @@ Renderer.prototype.renderSlice = function (slice) {
         portalSlice.yStart = adjClippedTop;
         portalSlice.yEnd = adjClippedBottom;
         //portalSlice.seenPortals = {};
-        portalSlice.seenPortals[segment.id] = true;
-        portalSlice.seenPortals[adjSegment.id] = true;
+        portalSlice.seenPortals[sector.id + segment.id] = true;
+        portalSlice.seenPortals[adj.id + adjSegment.id] = true;
         portalSlice.depth++;
         this.renderSector(portalSlice);
     }
@@ -200,10 +210,13 @@ Renderer.prototype.renderSlice = function (slice) {
             if (slice.distance < this.zbuffer[screenIndex]) {
                 var ty = (slice.y - sliceStart) / (sliceEnd - sliceStart);
                 slice.world[2] = sector.topZ + ty * (sector.bottomZ - sector.topZ);
+
+                var light = this.map.light(slice.world, slice.normal, slice.sector, slice.segment, slice.textureX, ty, true);
+
                 if (segment.midBehavior == 'scaleWidth' || segment.midBehavior == 'scaleNone')
                     ty = (ty * (sector.topZ - sector.bottomZ) - sector.topZ) / 64.0;
 
-                slice.renderTarget[screenIndex] = midMaterial.sample(slice, slice.textureX, ty, sliceEnd - sliceStart);
+                slice.renderTarget[screenIndex] = midMaterial.sample(slice, slice.textureX, ty, light, sliceEnd - sliceStart);
                 this.zbuffer[screenIndex] = slice.distance;
             }
         }
@@ -220,7 +233,7 @@ Renderer.prototype.renderSector = function (slice) {
     for (var j = 0; j < slice.sector.segments.length; j++) {
         var segment = slice.sector.segments[j];
 
-        if (slice.seenPortals[segment.id])
+        if (slice.seenPortals[slice.sector.id + segment.id])
             continue;
 
         var isect = segment.intersect(slice.ray[0], slice.ray[1], slice.ray[2], slice.ray[3]);
