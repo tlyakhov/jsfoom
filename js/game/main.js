@@ -4,11 +4,11 @@ function GameMain(options) {
     this.canvasId = null;
     this.map = null;
     this.renderer = null;
-    this.prevTime = performance.now();
-    this.curTime = performance.now();
+    this.prevTime = preciseTime();
+    this.curTime = preciseTime();
     this.lastGameTime = 0;
-    this.prevRenderTime = performance.now();
-    this.curRenderTime = performance.now();
+    this.prevRenderTime = preciseTime();
+    this.curRenderTime = preciseTime();
     this.lastFrameTime = 0;
     this.renderContext = null;
     this.screenWidth = null;
@@ -22,6 +22,7 @@ function GameMain(options) {
     this.workerFrameReady = [];
     this.workerDbgMeasure = [];
     this.keys = {};
+    this.gameTextQueue = [ ];
 
     $.extend(true, this, options);
 }
@@ -69,6 +70,34 @@ GameMain.prototype.onTextureLoad = function (worker, texture) {
     }
 };
 
+GameMain.prototype.gameText = function () {
+    this.renderContext.textAlign = 'center';
+    this.renderContext.font = 'normal normal 12px "Share Tech Mono"';
+    // Now for game text
+    for (var i = 0; i < this.gameTextQueue.length; i++) {
+        var gt = this.gameTextQueue[i];
+        if (!gt.opacity)
+            gt.opacity = 1.0;
+        if (!gt.time)
+            gt.time = preciseTime();
+        var delta = preciseTime() - gt.time;
+        if (delta > GAME_CONSTANTS.maxGameTextTime)
+            gt.opacity = Math.max(0.0, 1.0 - (delta - GAME_CONSTANTS.maxGameTextTime) / GAME_CONSTANTS.gameTextFadeTime);
+        if (gt.opacity == 0.0) {
+            this.gameTextQueue.splice(i, 1);
+            i--;
+            continue;
+        }
+        if (gt.fillStyle)
+            this.renderContext.fillStyle = gt.fillStyle;
+        this.renderContext.globalAlpha = gt.opacity;
+        this.renderContext.fillText(gt.text, this.screenWidth / 2, this.screenHeight / 2 - (this.gameTextQueue.length - 1 - i) * 14);
+    }
+
+    while (this.gameTextQueue.length > GAME_CONSTANTS.maxGameText)
+        this.gameTextQueue.shift();
+};
+
 GameMain.prototype.flipBuffers = function () {
     if (this.frameTint != 0) {
         for (var i = 0; i < this.screenWidth * this.screenHeight; i++) {
@@ -79,6 +108,12 @@ GameMain.prototype.flipBuffers = function () {
     this.renderImgData.data.set(this.renderBuffer8);
     this.renderContext.putImageData(this.renderImgData, 0, 0);
 
+    this.gameText();
+
+    // Debug stuff follows
+
+    this.renderContext.textAlign = 'left';
+    this.renderContext.globalAlpha = 1.0;
     this.renderContext.fillStyle = '#FFF';
     this.renderContext.fillText('Game FPS: ' + Math.round(1000.0 / this.lastGameTime), 5, 15);
     this.renderContext.fillText('Render FPS: ' + Math.round(1000.0 / this.lastFrameTime) + (this.renderer ? ', counter: ' + this.renderer.counter : ''), 5, 25);
@@ -94,7 +129,7 @@ GameMain.prototype.flipBuffers = function () {
         this.renderContext.fillText('Worker ' + i + ' render time: ' + this.workerDbgMeasure[i] + ' ms', 5, 55 + i * 10);
     }
 
-    this.curRenderTime = performance.now();
+    this.curRenderTime = preciseTime();
     this.lastFrameTime = (this.curRenderTime - this.prevRenderTime);
     this.prevRenderTime = this.curRenderTime;
 };
@@ -162,7 +197,7 @@ GameMain.prototype.onWorkerError = function (e) {
 };
 
 GameMain.prototype.timer = function () {
-    this.curTime = performance.now();
+    this.curTime = preciseTime();
     this.lastGameTime = (this.curTime - this.prevTime);
     this.prevTime = this.curTime;
 

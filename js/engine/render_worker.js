@@ -17,6 +17,10 @@ importScripts("entities/entity.js");
 importScripts("entities/renderable_entity.js");
 importScripts("entities/static_entity.js");
 importScripts("entities/light_entity.js");
+importScripts("entities/behaviors/behavior.js");
+importScripts("entities/behaviors/talk_behavior.js");
+importScripts("entities/behaviors/talk_action.js");
+importScripts("entities/behaviors/talk_action_print.js");
 importScripts("player.js");
 importScripts("map.js");
 importScripts("render_slice.js");
@@ -51,9 +55,9 @@ onmessage = function (e) {
     else if (data.type == 'render') {
         renderer.map = map = Map.deserialize(data.map, renderer.map);
 
-        var stime = performance.now();
+        var stime = preciseTime();
         renderer.render(globalRenderTarget);
-        var dstime = Math.round(performance.now() - stime);
+        var dstime = Math.round(preciseTime() - stime);
 
         postMessage({ id: globalWorkerId, type: 'rendered', data: globalRenderTarget, dstime: dstime });
     }

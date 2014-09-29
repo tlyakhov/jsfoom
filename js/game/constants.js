@@ -21,5 +21,9 @@ var GAME_CONSTANTS = {
     collisionCheck: 2.0,
     liquidChurnSpeed: 2.0,
     liquidChurnSize: 0.03,
-    doorSpeed: 3.0
+    doorSpeed: 3.0,
+    maxGameTextTime: 30 * 1000,
+    maxGameText: 25,
+    gameTextFadeTime: 1000,
+    talkDistance: 100
 };

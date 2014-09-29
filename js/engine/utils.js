@@ -135,3 +135,10 @@ function dist2(ax, ay, bx, by) {
 function typeof2(object) {
     return Object.prototype.toString.call(object);
 }
+
+function preciseTime() {
+    if (performance.now)
+        return performance.now();
+
+    return new Date().valueOf();
+}

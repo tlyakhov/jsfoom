@@ -10,6 +10,7 @@ function Entity(options) {
     this.collisionResponse = 'slide'; // can be 'slide', 'bounce', or 'stop'
     this.health = 100;
     this.mountHeight = GAME_CONSTANTS.playerMountHeight;
+    this.behaviors = [];
 
     if (options) {
         $.extend(true, this, options);
@@ -220,6 +221,10 @@ Entity.prototype.frame = function (lastFrameTime) {
                 break;
         }
     }
+
+    for (var i = 0; i < this.behaviors.length; i++) {
+        this.behaviors[i].frame(lastFrameTime);
+    }
 };
 
 Entity.prototype.hurt = function (amount) {
@@ -229,6 +234,7 @@ Entity.prototype.hurt = function (amount) {
 Entity.prototype.serialize = function () {
     var r = {
         _type: this.constructor.name,
+        id: this.id,
         pos: this.pos,
         angle: this.angle,
         vel: this.vel,
@@ -236,9 +242,12 @@ Entity.prototype.serialize = function () {
         boundingRadius: this.boundingRadius,
         collisionResponse: this.collisionResponse,
         health: this.health,
-        mountHeight: this.mountHeight
+        mountHeight: this.mountHeight,
+        behaviors: []
     };
 
+    for (var i = 0; i < this.behaviors.length; i++)
+        r.behaviors.push(this.behaviors[i].serialize());
     return r;
 };
 
@@ -250,6 +259,7 @@ Entity.deserialize = function (data, map, entity) {
         entity.__proto__ = classes[data._type];
     }
 
+    entity.id = data.id;
     entity.pos = data.pos;
     entity.angle = data.angle;
     entity.vel = data.vel;
@@ -259,6 +269,13 @@ Entity.deserialize = function (data, map, entity) {
     entity.health = data.health;
     entity.mountHeight = data.mountHeight;
     entity.map = map;
+
+    for (var i = 0; i < data.behaviors.length; i++) {
+        if (i >= entity.behaviors.length)
+            entity.behaviors.push(classes[data.behaviors[i]._type].deserialize(data.behaviors[i], entity));
+        else
+            classes[data.behaviors[i]._type].deserialize(data.behaviors[i], entity, entity.behaviors[i]);
+    }
 
     return entity;
 };
