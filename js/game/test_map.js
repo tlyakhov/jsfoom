@@ -90,8 +90,8 @@ var testMap = new Map({
             floorMaterialId: 'Default Floor',
             ceilMaterialId: 'Sky',
             entities: [
-                new StaticEntity({ sprites: testMonsterSprites, pos: vec3create(-17, 68, 0), height: 60, zOffset: -13.0 }),
-                new StaticEntity({ sprites: testMonsterSprites, pos: vec3create(32, 68, 0), height: 60, zOffset: -13.0 }),
+                new StaticEntity({ sprites: testMonsterSprites, pos: vec3create(-17, 68, 0), height: 60, zOffset: -13.0, behaviors: [ new WanderBehavior() ] }),
+                new StaticEntity({ sprites: testMonsterSprites, pos: vec3create(32, 68, 0), height: 60, zOffset: -13.0, behaviors: [ new WanderBehavior() ] }),
                 new LightEntity({ pos: vec3create(0, 68, 32) })
             ],
             segments: [
@@ -622,3 +622,8 @@ var testMap = new Map({
                     adjacentSectorId: null,
                     loMaterialId: 'Default', hiMaterialId: 'Doom Garage Door', flags: 0 })]
         }) ] }).serialize();
+
+function loadTestMap() {
+    globalGame.map = globalEditor.map = Map.deserialize(testMap);
+    globalGame.resetRenderWorkers();
+}

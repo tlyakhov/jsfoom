@@ -9,12 +9,7 @@ var globalDefaultMap = new Map({
             floorMaterialId: 'Default',
             ceilMaterialId: 'Default',
             entities: [
-                new LightEntity({ pos: vec3create(50, 50, 32), behaviors: [
-                    new TalkBehavior({ actions: [
-                        new TalkActionPrint({ gameText: { text: 'Light says: <hello!>', fillStyle: '#8F8' }}),
-                        new TalkActionPrint({ gameText: { text: 'Light says: <hello again!>', fillStyle: '#8F8' }})
-                    ]})
-                ] })
+                new LightEntity({ pos: vec3create(50, 50, 32) })
             ],
             segments: [
                 new MapSegment({ ax: -100, ay: -100,
