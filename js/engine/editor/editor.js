@@ -242,6 +242,9 @@ Editor.prototype.menuSelect = function (e) {
                 globalGame.map = this.map;
                 if (globalGame.renderer)
                     globalGame.renderer.map = this.map;
+
+                globalGame.resetRenderWorkers();
+
                 this.pos = vec3blank();
                 this.scale = 1.0;
 

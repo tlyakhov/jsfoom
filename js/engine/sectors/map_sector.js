@@ -134,7 +134,10 @@ MapSector.prototype.calculateLighting = function (segment, normal, lightmap, map
     var tempvec = vec3blank();
 
     if (segment && !this.isPointInside(point[0], point[1])) {
-        vec3add(segment.closestToPoint(point[0], point[1], true), vec3mul(segment.normal, 0.5, tempvec), point);
+        var closest = segment.closestToPoint(point[0], point[1], true);
+        point[0] = closest[0];
+        point[1] = closest[1];
+        vec3add(point, vec3mul(segment.normal, 0.5, tempvec), point);
     }
 
     this.markVisibleLights(point);//vec3add(point, vec3mul(normal, 0.1, tempvec), tempvec));

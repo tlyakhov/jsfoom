@@ -48,6 +48,8 @@ RenderableEntity.deserialize = function (data, map, entity) {
     entity.height = data.height;
     entity.zOffset = data.zOffset;
 
+    if (!entity.sprites)
+        entity.sprites = {};
     for (var s in data.sprites) {
         entity.sprites[s] = Sprite.deserialize(data.sprites[s], entity.sprites[s]);
     }

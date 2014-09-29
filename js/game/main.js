@@ -122,6 +122,12 @@ GameMain.prototype.checkRenderWorkers = function () {
     }
 };
 
+GameMain.prototype.resetRenderWorkers = function () {
+    for (var i = 0; i < this.workers.length; i++) {
+        this.workers[i].postMessage({ type: 'reset' });
+    }
+};
+
 GameMain.prototype.onWorkerMessage = function (e) {
     var data = e.data;
 

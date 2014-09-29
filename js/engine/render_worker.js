@@ -9,9 +9,9 @@ importScripts("texture.js");
 importScripts("texture_cache.js");
 importScripts("material.js");
 importScripts("map_segment.js");
-importScripts("map_sector.js");
-importScripts("map_sector_water.js");
-importScripts("map_sector_vertical_door.js");
+importScripts("sectors/map_sector.js");
+importScripts("sectors/map_sector_water.js");
+importScripts("sectors/map_sector_vertical_door.js");
 importScripts("sprite.js");
 importScripts("entities/entity.js");
 importScripts("entities/renderable_entity.js");
@@ -37,6 +37,9 @@ onmessage = function (e) {
         globalWorkersTotal = data.workers;
         renderer = new Renderer({ screenWidth: data.screenWidth, screenHeight: data.screenHeight });
         globalRenderTarget = new Uint32Array(data.screenWidth * data.screenHeight / globalWorkersTotal);
+    }
+    else if (data.type == 'reset') {
+        renderer.map = map = new Map();
     }
     else if (data.type == 'setTextureData') {
         var texture = textureCache.get(data.texture.src, data.texture.generateMipMaps, data.texture.filter);

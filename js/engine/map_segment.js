@@ -325,10 +325,9 @@ MapSegment.deserialize = function (data, sector, segment) {
     segment.hiMaterialId = data.hiMaterialId;
     segment.hiBehavior = data.hiBehavior;
     segment.length = data.length;
-    if (data.normal) {
-        segment.normal[0] = data.normal[0];
-        segment.normal[1] = data.normal[1];
-    }
+    segment.normal[0] = data.normal[0];
+    segment.normal[1] = data.normal[1];
+
     segment.lightmapWidth = data.lightmapWidth;
     segment.lightmapHeight = data.lightmapHeight;
     if (segment.adjacentSectorId != data.adjacentSectorId) {
