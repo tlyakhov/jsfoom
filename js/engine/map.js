@@ -51,7 +51,16 @@ Map.prototype.frame = function (lastFrameTime) {
     this.player.frame(lastFrameTime);
 
     for (var i = 0; i < this.sectors.length; i++) {
-        this.sectors[i].actOnEntity(this.player);
+        var sector = this.sectors[i];
+        sector.actOnEntity(this.player);
+
+        var j = sector.entities.length;
+        while (j--) {
+            for (var id in sector.pvs) {
+                sector.pvs[id].actOnEntity(sector.entities[j]);
+            }
+        }
+
         this.sectors[i].frame(lastFrameTime);
     }
 };
@@ -173,7 +182,7 @@ Map.deserialize = function (data, map) {
         if (i >= map.sectors.length)
             map.sectors.push(classes[data.sectors[i]._type].deserialize(data.sectors[i], map));
         else
-            classes[data.sectors[i]._type].deserialize(data.sectors[i], map, map.sectors[i]);
+            map.sectors[i] = classes[data.sectors[i]._type].deserialize(data.sectors[i], map, map.sectors[i]);
     }
 
     if (map.sectors.length > data.sectors.length)

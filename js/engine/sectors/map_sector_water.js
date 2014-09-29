@@ -19,8 +19,10 @@ MapSectorWater.prototype.actOnEntity = function (entity) {
         entity.vel[1] /= GAME_CONSTANTS.swimDamping;
     }
 
-    entity.vel[2] /= GAME_CONSTANTS.swimDamping;
-    entity.vel[2] -= GAME_CONSTANTS.gravitySwim;
+    if (entity.constructor.name != 'LightEntity') {
+        entity.vel[2] /= GAME_CONSTANTS.swimDamping;
+        entity.vel[2] -= GAME_CONSTANTS.gravitySwim;
+    }
 
     this.collide(entity);
 };

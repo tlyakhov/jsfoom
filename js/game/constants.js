@@ -1,5 +1,5 @@
 var GAME_CONSTANTS = {
-    renderWorkers: 8,
+    renderWorkers: 1,
     intersectEpsilon: 1e-15,
     lightGrid: 8,
     velocityEpsilon: 0.00001,

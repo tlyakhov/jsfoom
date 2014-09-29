@@ -393,7 +393,8 @@ MapSector.prototype.actOnEntity = function (entity) {
         entity.vel[1] = 0;
     }
 
-    entity.vel[2] -= GAME_CONSTANTS.gravity;
+    if (entity.constructor.name != 'LightEntity')
+        entity.vel[2] -= GAME_CONSTANTS.gravity;
 
     this.collide(entity);
 };
@@ -599,12 +600,8 @@ MapSector.prototype.serialize = function () {
 };
 
 MapSector.deserialize = function (data, map, sector) {
-    if (!sector)
+    if (!sector || sector.constructor.name != data._type)
         sector = createFromName(data._type, {});
-
-    if (sector.constructor.name != data._type) {
-        sector.__proto__ = classes[data._type];
-    }
 
     sector.id = data.id;
     sector.bottomZ = data.bottomZ;
@@ -636,7 +633,8 @@ MapSector.deserialize = function (data, map, sector) {
         if (i >= sector.entities.length)
             sector.entities.push(classes[data.entities[i]._type].deserialize(data.entities[i], map));
         else
-            classes[data.entities[i]._type].deserialize(data.entities[i], map, sector.entities[i]);
+            sector.entities[i] = classes[data.entities[i]._type].deserialize(data.entities[i], map, sector.entities[i]);
+        sector.entities[i].sector = sector;
     }
     if (sector.entities.length > data.entities.length)
         sector.entities.splice(data.entities.length, sector.entities.length - data.entities.length);
