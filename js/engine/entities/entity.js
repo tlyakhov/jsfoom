@@ -252,12 +252,8 @@ Entity.prototype.serialize = function () {
 };
 
 Entity.deserialize = function (data, map, entity) {
-    if (!entity)
+    if (!entity || entity.constructor.name != data._type)
         entity = createFromName(data._type, {});
-
-    if (entity.constructor.name != data._type) {
-        entity.__proto__ = classes[data._type];
-    }
 
     entity.id = data.id;
     entity.pos = data.pos;

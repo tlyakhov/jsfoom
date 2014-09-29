@@ -2,8 +2,9 @@ function WanderBehavior(options) {
     Behavior.call(this, options);
 
     this.target = null;
-    this.speed = 0.3;
+    this.speed = 0.5;
     this.wanderZ = false;
+    this.lastChange = preciseTime();
 
     $.extend(true, this, options);
 }
@@ -24,14 +25,41 @@ WanderBehavior.prototype.frame = function (lastFrameTime) {
     if (!this.wanderZ && this.target)
         this.target[2] = entity.pos[2];
 
-    if (!this.target || vec3dist2(entity.pos, this.target) < sqr(entity.boundingRadius)) {
+    if (!this.target || preciseTime() - this.lastChange > 15000 ||
+        vec3dist2(entity.pos, this.target) < sqr(entity.boundingRadius)) {
+        this.lastChange = preciseTime();
         this.target = vec3create(0, 0, entity.sector.bottomZ);
-        do
-        {
-            this.target[0] = entity.sector.min[0] + Math.random() * (entity.sector.max[0] - entity.sector.min[0]);
-            this.target[1] = entity.sector.min[1] + Math.random() * (entity.sector.max[1] - entity.sector.min[1]);
+        var moveSector = Math.random();
+
+        if (moveSector < 0.2) {
+            var available = [];
+            for (var i = 0; i < entity.sector.segments.length; i++) {
+                var segment = entity.sector.segments[i];
+
+                if (!segment.adjacentSectorId)
+                    continue;
+
+                var adj = segment.getAdjacentSector();
+
+                if (entity.pos[2] + entity.mountHeight >= adj.bottomZ &&
+                    entity.pos[2] + entity.height < adj.topZ) {
+                    available.push(segment.getAdjacentSegment());
+                }
+            }
+            if (available.length > 0) {
+                var ts = available[fast_floor(moveSector * available.length / 0.2)];
+                this.target[0] = (ts.bx + ts.ax) * 0.5 + ts.normal[0] * entity.boundingRadius * 2;
+                this.target[1] = (ts.by + ts.ay) * 0.5 + ts.normal[1] * entity.boundingRadius * 2;
+            }
         }
-        while (!entity.sector.isPointInside(this.target[0], this.target[1]))
+        else {
+            do
+            {
+                this.target[0] = entity.sector.min[0] + Math.random() * (entity.sector.max[0] - entity.sector.min[0]);
+                this.target[1] = entity.sector.min[1] + Math.random() * (entity.sector.max[1] - entity.sector.min[1]);
+            }
+            while (!entity.sector.isPointInside(this.target[0], this.target[1]))
+        }
     }
 
     var tempvec = vec3blank(true);
