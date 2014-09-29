@@ -14,8 +14,7 @@ function MapSegment(options) {
     this.hiMaterial = null;
     this.hiBehavior = 'scaleWidth'; // or 'scaleHeight', 'scaleAll', or 'scaleNone'
     this.length = 0;
-    this.normalX = 0;
-    this.normalY = 0;
+    this.normal = vec3create(1.0, 0.0, 0.0);
     this.adjacentSectorId = null;
     this.adjacentSector = null;
     this.adjacentSegment = null;
@@ -48,8 +47,9 @@ classes['MapSegment'] = MapSegment;
 
 MapSegment.prototype.update = function () {
     this.length = Math.sqrt(sqr((this.ax - this.bx)) + sqr((this.ay - this.by)));
-    this.normalX = -(this.by - this.ay) / this.length;
-    this.normalY = (this.bx - this.ax) / this.length;
+    this.normal[0] = -(this.by - this.ay) / this.length;
+    this.normal[1] = (this.bx - this.ax) / this.length;
+    this.normal[2] = 0;
     if (this.sector) {
         this.lightmapWidth = fast_floor(this.length / GAME_CONSTANTS.lightGrid) + 2;
         this.lightmapHeight = fast_floor((this.sector.topZ - this.sector.bottomZ) / GAME_CONSTANTS.lightGrid) + 2;
@@ -269,7 +269,7 @@ MapSegment.prototype.whichSide = function (x, y) {
     var dx = (x - this.ax);
     var dy = (y - this.ay);
 
-    return this.normalX * dx + this.normalY * dy;
+    return this.normal[0] * dx + this.normal[1] * dy;
 
 };
 
@@ -299,8 +299,7 @@ MapSegment.prototype.serialize = function () {
         hiMaterialId: this.hiMaterialId,
         hiBehavior: this.hiBehavior,
         length: this.length,
-        normalX: this.normalX,
-        normalY: this.normalY,
+        normal: this.normal,
         lightmapWidth: this.lightmapWidth,
         lightmapHeight: this.lightmapHeight,
         adjacentSectorId: this.adjacentSectorId,
@@ -326,8 +325,10 @@ MapSegment.deserialize = function (data, sector, segment) {
     segment.hiMaterialId = data.hiMaterialId;
     segment.hiBehavior = data.hiBehavior;
     segment.length = data.length;
-    segment.normalX = data.normalX;
-    segment.normalY = data.normalY;
+    if (data.normal) {
+        segment.normal[0] = data.normal[0];
+        segment.normal[1] = data.normal[1];
+    }
     segment.lightmapWidth = data.lightmapWidth;
     segment.lightmapHeight = data.lightmapHeight;
     if (segment.adjacentSectorId != data.adjacentSectorId) {

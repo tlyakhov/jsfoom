@@ -61,13 +61,13 @@ MapSector.prototype.updatePVS = function (normalX, normalY, sector) {
         if (!adj || Math.abs(adj.sector.topZ - adj.sector.bottomZ) < GAME_CONSTANTS.velocityEpsilon || adj.midMaterialId != null)
             continue;
 
-        if ((normalX == undefined || normalX * segment.normalX + normalY * segment.normalY >= 0) && !this.pvs[adj.sector.id]) {
+        if ((normalX == undefined || normalX * segment.normal[0] + normalY * segment.normal[1] >= 0) && !this.pvs[adj.sector.id]) {
             this.pvs[adj.sector.id] = adj.sector;
             this.pvsLights = this.pvsLights.concat(adj.sector.entities.filter(function (element) {
                 return isA(element, LightEntity);
             }));
             if (normalX == undefined)
-                this.updatePVS(segment.normalX, segment.normalY, adj.sector);
+                this.updatePVS(segment.normal[0], segment.normal[1], adj.sector);
             else
                 this.updatePVS(normalX, normalY, adj.sector);
         }
@@ -96,7 +96,7 @@ MapSector.prototype.markVisibleLights = function (point) {
 
                 vec3sub(light.pos, point, tempvec);
 
-                if (vec3dot(tempvec, vec3create(segment.normalX, segment.normalY, 0, true)) > 0)
+                if (vec3dot(tempvec, segment.normal) > 0)
                     continue;
 
                 var lightIntersection = segment.intersect(point[0], point[1], light.pos[0], light.pos[1]);
@@ -131,16 +131,12 @@ MapSector.prototype.markVisibleLights = function (point) {
 };
 
 MapSector.prototype.calculateLighting = function (segment, normal, lightmap, mapIndex, point) {
-    if (segment) {
-        if (!this.isPointInside(point[0], point[1])) {
-            var closest = segment.closestToPoint(point[0], point[1], true);
+    var tempvec = vec3blank();
 
-            point[0] = closest[0] + segment.normalX * 0.5;
-            point[1] = closest[1] + segment.normalY * 0.5;
-        }
+    if (segment && !this.isPointInside(point[0], point[1])) {
+        vec3add(segment.closestToPoint(point[0], point[1], true), vec3mul(segment.normal, 0.5, tempvec), point);
     }
 
-    var tempvec = vec3blank();
     this.markVisibleLights(point);//vec3add(point, vec3mul(normal, 0.1, tempvec), tempvec));
 
     var diffuseSum = vec3blank();
@@ -216,8 +212,8 @@ MapSector.prototype.update = function () {
         this.segments[i].update();
 
         if (!w) {
-            this.segments[i].normalX = -this.segments[i].normalX;
-            this.segments[i].normalY = -this.segments[i].normalY;
+            this.segments[i].normal[0] = -this.segments[i].normal[0];
+            this.segments[i].normal[1] = -this.segments[i].normal[1];
         }
     }
 

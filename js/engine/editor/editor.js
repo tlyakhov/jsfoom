@@ -578,7 +578,7 @@ Editor.prototype.drawSector = function (sector) {
         this.context.stroke();
         this.context.beginPath();
         this.context.moveTo((segment.ax + nextSegment.ax) / 2, (segment.ay + nextSegment.ay) / 2);
-        this.context.lineTo((segment.ax + nextSegment.ax) / 2 + segment.normalX * 4, (segment.ay + nextSegment.ay) / 2 + segment.normalY * 4);
+        this.context.lineTo((segment.ax + nextSegment.ax) / 2 + segment.normal[0] * 4, (segment.ay + nextSegment.ay) / 2 + segment.normal[1] * 4);
         this.context.stroke();
 
         var mapPointHovering = ($.inArray(this.mapPoint(segment), this.hoveringObjects) != -1);

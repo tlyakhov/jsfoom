@@ -1,3 +1,6 @@
+var FLOOR_NORMAL = vec3create(0.0, 0.0, 1.0);
+var CEILING_NORMAL = vec3create(0.0, 0.0, -1.0);
+
 function Renderer(options) {
     this.canvas = null;
     this.screenWidth = 640;
@@ -47,9 +50,7 @@ Renderer.prototype.renderFloor = function (slice, start, end) {
     var sector = slice.segment.sector;
     var floorMaterial = sector.getFloorMaterial();
     var th = floorMaterial.getTexture().height;
-
-    slice.normal = vec3create(0.0, 0.0, 1.0, true);
-    slice.world = vec3create(0.0, 0.0, sector.bottomZ, true);
+    var world = vec3create(0.0, 0.0, sector.bottomZ, true);
 
     for (slice.y = start; slice.y < end; slice.y++) {
         if (slice.y - this.screenHeight / 2 == 0)
@@ -60,19 +61,19 @@ Renderer.prototype.renderFloor = function (slice, start, end) {
         var screenIndex = slice.targetX + slice.y * this.workerWidth;
 
         if (distToFloor < this.zbuffer[screenIndex]) {
-            slice.world[0] = this.map.player.pos[0] + this.trigTable[slice.rayTable].cos * distToFloor;
-            slice.world[1] = this.map.player.pos[1] + this.trigTable[slice.rayTable].sin * distToFloor;
+            world[0] = this.map.player.pos[0] + this.trigTable[slice.rayTable].cos * distToFloor;
+            world[1] = this.map.player.pos[1] + this.trigTable[slice.rayTable].sin * distToFloor;
 
 
-            var tx = slice.world[0] / sector.floorScale - fast_floor(slice.world[0] / sector.floorScale);
-            var ty = slice.world[1] / sector.floorScale - fast_floor(slice.world[1] / sector.floorScale);
+            var tx = world[0] / sector.floorScale - fast_floor(world[0] / sector.floorScale);
+            var ty = world[1] / sector.floorScale - fast_floor(world[1] / sector.floorScale);
 
             if (tx < 0)
                 tx = tx + 1.0;
             if (ty < 0)
                 ty = ty + 1.0;
 
-            var light = this.map.light(slice.world, slice.normal, slice.sector, slice.segment, null, null, true);
+            var light = this.map.light(world, FLOOR_NORMAL, slice.sector, slice.segment, null, null, true);
 
             slice.renderTarget[screenIndex] = floorMaterial.sample(slice, tx, ty, light, scaler);
             this.zbuffer[screenIndex] = distToFloor;
@@ -84,9 +85,7 @@ Renderer.prototype.renderCeiling = function (slice, start, end) {
     var sector = slice.segment.sector;
     var ceilMaterial = sector.getCeilMaterial();
     var th = ceilMaterial.getTexture().height;
-
-    slice.normal = vec3create(0.0, 0.0, -1.0, true);
-    slice.world = vec3create(0.0, 0.0, sector.topZ, true);
+    var world = vec3create(0.0, 0.0, sector.topZ, true);
 
     for (slice.y = start; slice.y < end; slice.y++) {
         var distToCeiling = (sector.topZ - (this.map.player.pos[2] + this.map.player.height)) * this.viewFix[slice.x] / (this.screenHeight / 2 - 1 - slice.y);
@@ -94,18 +93,18 @@ Renderer.prototype.renderCeiling = function (slice, start, end) {
         var screenIndex = slice.targetX + slice.y * this.workerWidth;
 
         if (distToCeiling < this.zbuffer[screenIndex]) {
-            slice.world[0] = this.map.player.pos[0] + this.trigTable[slice.rayTable].cos * distToCeiling;
-            slice.world[1] = this.map.player.pos[1] + this.trigTable[slice.rayTable].sin * distToCeiling;
+            world[0] = this.map.player.pos[0] + this.trigTable[slice.rayTable].cos * distToCeiling;
+            world[1] = this.map.player.pos[1] + this.trigTable[slice.rayTable].sin * distToCeiling;
 
-            var tx = Math.abs(slice.world[0] / sector.ceilScale - fast_floor(slice.world[0] / sector.ceilScale));
-            var ty = Math.abs(slice.world[1] / sector.ceilScale - fast_floor(slice.world[1] / sector.ceilScale));
+            var tx = Math.abs(world[0] / sector.ceilScale - fast_floor(world[0] / sector.ceilScale));
+            var ty = Math.abs(world[1] / sector.ceilScale - fast_floor(world[1] / sector.ceilScale));
 
             if (tx < 0)
                 tx = tx + 1.0;
             if (ty < 0)
                 ty = ty + 1.0;
 
-            var light = this.map.light(slice.world, slice.normal, slice.sector, slice.segment, null, null, true);
+            var light = this.map.light(world, CEILING_NORMAL, slice.sector, slice.segment, null, null, true);
 
             slice.renderTarget[screenIndex] = ceilMaterial.sample(slice, tx, ty, light, scaler);
             this.zbuffer[screenIndex] = distToCeiling;
@@ -126,10 +125,6 @@ Renderer.prototype.renderSlice = function (slice) {
 
     this.renderCeiling(slice, slice.yStart, clippedStart);
     this.renderFloor(slice, clippedEnd, slice.yEnd);
-
-    slice.world[0] = slice.intersection[0];
-    slice.world[1] = slice.intersection[1];
-    slice.normal = vec3create(segment.normalX, segment.normalY, 0.0, true);
 
     if (segment.adjacentSectorId) {
         var adj = segment.getAdjacentSector();
@@ -157,15 +152,15 @@ Renderer.prototype.renderSlice = function (slice) {
             for (slice.y = clippedStart; slice.y < adjClippedTop; slice.y++) {
                 var screenIndex = slice.targetX + slice.y * this.workerWidth;
                 if (slice.distance < this.zbuffer[screenIndex]) {
-                    var ty = (slice.y - sliceStart) / (adjSliceTop - sliceStart);
-                    slice.world[2] = sector.topZ - ty * (sector.topZ - adj.topZ);
+                    var v = (slice.y - sliceStart) / (adjSliceTop - sliceStart);
+                    slice.intersection[2] = sector.topZ - v * (sector.topZ - adj.topZ);
 
-                    var light = this.map.light(slice.world, slice.normal, slice.sector, slice.segment, slice.textureX, ty * 0.5, true);
+                    var light = this.map.light(slice.intersection, segment.normal, slice.sector, slice.segment, slice.u, v * 0.5, true);
 
                     if (adjSegment.hiBehavior == 'scaleWidth' || adjSegment.hiBehavior == 'scaleNone')
-                        ty = (ty * (adj.topZ - sector.topZ) - adj.topZ) / 64.0;
+                        v = (v * (adj.topZ - sector.topZ) - adj.topZ) / 64.0;
 
-                    slice.renderTarget[screenIndex] = hiMaterial.sample(slice, slice.textureX, ty, light, adjSliceTop - sliceStart);
+                    slice.renderTarget[screenIndex] = hiMaterial.sample(slice, slice.u, v, light, adjSliceTop - sliceStart);
                     this.zbuffer[screenIndex] = slice.distance;
                 }
             }
@@ -175,15 +170,15 @@ Renderer.prototype.renderSlice = function (slice) {
             for (slice.y = adjClippedBottom; slice.y < clippedEnd; slice.y++) {
                 var screenIndex = slice.targetX + slice.y * this.workerWidth;
                 if (slice.distance < this.zbuffer[screenIndex]) {
-                    var ty = (slice.y - adjClippedBottom) / (sliceEnd - adjSliceBottom);
-                    slice.world[2] = adj.bottomZ - ty * (adj.bottomZ - sector.bottomZ);
+                    var v = (slice.y - adjClippedBottom) / (sliceEnd - adjSliceBottom);
+                    slice.intersection[2] = adj.bottomZ - v * (adj.bottomZ - sector.bottomZ);
 
-                    var light = this.map.light(slice.world, slice.normal, slice.sector, slice.segment, slice.textureX, ty * 0.5 + 0.5, true);
+                    var light = this.map.light(slice.intersection, segment.normal, slice.sector, slice.segment, slice.u, v * 0.5 + 0.5, true);
 
                     if (adjSegment.loBehavior == 'scaleWidth' || adjSegment.loBehavior == 'scaleNone')
-                        ty = (ty * (sector.bottomZ - adj.bottomZ) - sector.bottomZ) / 64.0;
+                        v = (v * (sector.bottomZ - adj.bottomZ) - sector.bottomZ) / 64.0;
 
-                    slice.renderTarget[screenIndex] = loMaterial.sample(slice, slice.textureX, ty, light, sliceEnd - adjSliceBottom);
+                    slice.renderTarget[screenIndex] = loMaterial.sample(slice, slice.u, v, light, sliceEnd - adjSliceBottom);
                     this.zbuffer[screenIndex] = slice.distance;
                 }
             }
@@ -194,8 +189,8 @@ Renderer.prototype.renderSlice = function (slice) {
         portalSlice.yStart = adjClippedTop;
         portalSlice.yEnd = adjClippedBottom;
         //portalSlice.seenPortals = {};
-        portalSlice.seenPortals[sector.id + segment.id] = true;
-        portalSlice.seenPortals[adj.id + adjSegment.id] = true;
+        //portalSlice.seenPortals[sector.id + segment.id] = true;
+        //portalSlice.seenPortals[adj.id + adjSegment.id] = true;
         portalSlice.depth++;
         this.renderSector(portalSlice);
     }
@@ -208,15 +203,15 @@ Renderer.prototype.renderSlice = function (slice) {
         for (slice.y = clippedStart; slice.y < clippedEnd; slice.y++) {
             var screenIndex = slice.targetX + slice.y * this.workerWidth;
             if (slice.distance < this.zbuffer[screenIndex]) {
-                var ty = (slice.y - sliceStart) / (sliceEnd - sliceStart);
-                slice.world[2] = sector.topZ + ty * (sector.bottomZ - sector.topZ);
+                var v = (slice.y - sliceStart) / (sliceEnd - sliceStart);
+                slice.intersection[2] = sector.topZ + v * (sector.bottomZ - sector.topZ);
 
-                var light = this.map.light(slice.world, slice.normal, slice.sector, slice.segment, slice.textureX, ty, true);
+                var light = this.map.light(slice.intersection, segment.normal, slice.sector, slice.segment, slice.u, v, true);
 
                 if (segment.midBehavior == 'scaleWidth' || segment.midBehavior == 'scaleNone')
-                    ty = (ty * (sector.topZ - sector.bottomZ) - sector.topZ) / 64.0;
+                    v = (v * (sector.topZ - sector.bottomZ) - sector.topZ) / 64.0;
 
-                slice.renderTarget[screenIndex] = midMaterial.sample(slice, slice.textureX, ty, light, sliceEnd - sliceStart);
+                slice.renderTarget[screenIndex] = midMaterial.sample(slice, slice.u, v, light, sliceEnd - sliceStart);
                 this.zbuffer[screenIndex] = slice.distance;
             }
         }
@@ -233,7 +228,7 @@ Renderer.prototype.renderSector = function (slice) {
     for (var j = 0; j < slice.sector.segments.length; j++) {
         var segment = slice.sector.segments[j];
 
-        if (slice.seenPortals[slice.sector.id + segment.id])
+        if (vec3dot(vec3create(slice.ray[2] - slice.ray[0], slice.ray[3] - slice.ray[1], 0, true), segment.normal) > 0)
             continue;
 
         var isect = segment.intersect(slice.ray[0], slice.ray[1], slice.ray[2], slice.ray[3]);
@@ -255,7 +250,7 @@ Renderer.prototype.renderSector = function (slice) {
         slice.segment = segment;
         slice.distance = dist;
         slice.intersection = isect;
-        slice.textureX = Math.sqrt(sqr((slice.intersection[0] - slice.segment.ax)) +
+        slice.u = Math.sqrt(sqr((slice.intersection[0] - slice.segment.ax)) +
             sqr((slice.intersection[1] - slice.segment.ay))) / slice.segment.length; // 0.0 - 1.0
     }
 
@@ -338,7 +333,7 @@ Renderer.prototype.render = function (renderTarget) {
 
         slice.renderer = this;
         slice.depth = 0;
-        slice.seenPortals = {};
+        //slice.seenPortals = {};
         slice.renderTarget = renderTarget;
         slice.x = x;
         slice.targetX = x - xStart;

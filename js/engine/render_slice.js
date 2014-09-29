@@ -11,10 +11,7 @@ function RenderSlice() {
     this.rayTable = 0;
     this.intersection = null;
     this.distance = 0.0;
-    this.textureX = 0.0;
-    this.seenPortals = {};
-    this.world = null;
-    this.normal = null;
+    this.u = 0.0;
     this.depth = 0;
     this.renderer = null;
 }
@@ -34,10 +31,7 @@ RenderSlice.prototype.clone = function () {
     s.rayTable = this.rayTable;
     s.intersection = this.intersection;
     s.distance = this.distance;
-    s.textureX = this.textureX;
-    s.seenPortals = this.seenPortals;
-    s.world = this.world;
-    s.normal = this.normal;
+    s.u = this.u;
     s.depth = this.depth;
     s.renderer = this.renderer;
 

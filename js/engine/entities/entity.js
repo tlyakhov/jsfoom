@@ -197,9 +197,9 @@ Entity.prototype.collide = function () {
             this.vel[1] = 0;
         }
         else if (this.collisionResponse == 'bounce') {
-            var dot = this.vel[0] * segment.normalX + this.vel[1] * segment.normalY;
-            this.vel[0] = this.vel[0] - 2 * dot * segment.normalX;
-            this.vel[1] = this.vel[1] - 2 * dot * segment.normalY;
+            var dot = this.vel[0] * segment.normal[0] + this.vel[1] * segment.normal[1];
+            this.vel[0] = this.vel[0] - 2 * dot * segment.normal[0];
+            this.vel[1] = this.vel[1] - 2 * dot * segment.normal[1];
         }
     }
 
