@@ -239,16 +239,16 @@ GameMain.prototype.checkInput = function () {
 
     if (this.keys[KEY_SPACE] == 1) {
         if (this.map.player.sector.constructor == MapSectorWater) {
-            this.map.player.velZ += GAME_CONSTANTS.playerSwimStrength * this.lastGameTime / 30.0;
+            this.map.player.vel[2] += GAME_CONSTANTS.playerSwimStrength * this.lastGameTime / 30.0;
         }
         else if (this.map.player.standing) {
-            this.map.player.velZ += GAME_CONSTANTS.playerJumpStrength * this.lastGameTime / 30.0;
+            this.map.player.vel[2] += GAME_CONSTANTS.playerJumpStrength * this.lastGameTime / 30.0;
         }
     }
 
     if (this.keys[KEY_C] == 1) {
         if (!this.map.player.standing && this.map.player.sector.constructor == MapSectorWater) {
-            this.map.player.velZ -= GAME_CONSTANTS.playerSwimStrength * this.lastGameTime / 30.0;
+            this.map.player.vel[2] -= GAME_CONSTANTS.playerSwimStrength * this.lastGameTime / 30.0;
         }
         else {
             this.map.player.crouching = true;

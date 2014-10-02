@@ -79,7 +79,7 @@ Editor.prototype.go = function () {
         data: []
     });
 
-    var entityTypes = [ LightEntity, StaticEntity ];
+    var entityTypes = [ LightEntity, SpriteEntity ];
     var entityList = [];
     var sectorTypes = [ MapSector, MapSectorWater, MapSectorVerticalDoor ];
     var sectorList = [];
@@ -495,7 +495,7 @@ Editor.prototype.drawEntity = function (entity) {
     }
     else if (isA(entity, LightEntity))
         this.context.strokeStyle = '#' + rgb2hex(entity.diffuse);
-    else if (isA(entity, StaticEntity)) {
+    else if (isA(entity, SpriteEntity)) {
         this.context.strokeStyle = '#AAA';
         this.drawEntityAngle(entity);
         this.context.strokeStyle = '#888';

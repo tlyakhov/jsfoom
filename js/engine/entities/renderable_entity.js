@@ -54,5 +54,10 @@ RenderableEntity.deserialize = function (data, map, entity) {
         entity.sprites[s] = Sprite.deserialize(data.sprites[s], entity.sprites[s]);
     }
 
+    for (var s in entity.sprites) {
+        if (!data.sprites[s])
+            delete entity.sprites[s];
+    }
+
     return entity;
 };

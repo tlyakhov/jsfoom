@@ -90,8 +90,12 @@ var testMap = new Map({
             floorMaterialId: 'Default Floor',
             ceilMaterialId: 'Sky',
             entities: [
-                new StaticEntity({ sprites: flubSprites, pos: vec3create(-17, 68, 0), width: 30, height: 30, boundingRadius: 15, zOffset: 0.0, behaviors: [ new WanderBehavior() ] }),
-                new StaticEntity({ sprites: testMonsterSprites, pos: vec3create(32, 68, 0), height: 60, zOffset: -13.0, behaviors: [ new WanderBehavior() ] }),
+                new GameEntityFlub({ pos: vec3create(-17, 68, 0), width: 30, height: 30, boundingRadius: 15, zOffset: 0.0 }),
+                new GameEntityFlub({ pos: vec3create(-17, 68, 0), width: 30, height: 30, boundingRadius: 15, zOffset: 0.0 }),
+                new GameEntityFlub({ pos: vec3create(-17, 68, 0), width: 30, height: 30, boundingRadius: 15, zOffset: 0.0 }),
+                new SpriteEntity({ sprites: testMonsterSprites, pos: vec3create(32, 68, 0), height: 60, zOffset: -13.0, behaviors: [ new WanderBehavior() ] }),
+                new SpriteEntity({ sprites: plukSprites, pos: vec3create(-17, 68, 0), width: 15, height: 15, boundingRadius: 15, zOffset: 0.0, behaviors: [ new InventoryItemBehavior({ name: 'Pluk' })]}),
+                new SpriteEntity({ sprites: plukSprites, pos: vec3create(-17, 68, 0), width: 15, height: 15, boundingRadius: 15, zOffset: 0.0, behaviors: [ new InventoryItemBehavior({ name: 'Pluk' })]}),
                 new LightEntity({ pos: vec3create(0, 68, 32) })
             ],
             segments: [
