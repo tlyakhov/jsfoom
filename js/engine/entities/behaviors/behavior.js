@@ -9,6 +9,10 @@ Behavior.editableProperties = {};
 
 classes['Behavior'] = Behavior;
 
+Behavior.prototype.reset = function () {
+
+};
+
 Behavior.prototype.frame = function () {
 
 };

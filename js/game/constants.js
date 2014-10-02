@@ -1,5 +1,5 @@
 var GAME_CONSTANTS = {
-    renderWorkers: 1,
+    renderWorkers: 8,
     intersectEpsilon: 1e-15,
     lightGrid: 8,
     velocityEpsilon: 0.00001,
@@ -25,5 +25,6 @@ var GAME_CONSTANTS = {
     maxGameTextTime: 30 * 1000,
     maxGameText: 25,
     gameTextFadeTime: 1000,
-    talkDistance: 100
+    talkDistance: 100,
+    wanderSectorProbablity: 0.25
 };

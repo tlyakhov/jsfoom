@@ -5,6 +5,7 @@ function Map(options) {
     this.spawnX = 0;
     this.spawnY = 0;
     this.player = null;
+    this.entitiesPaused = false;
 
     $.extend(true, this, options);
 
@@ -56,8 +57,8 @@ Map.prototype.frame = function (lastFrameTime) {
 
         var j = sector.entities.length;
         while (j--) {
-            for (var id in sector.pvs) {
-                sector.pvs[id].actOnEntity(sector.entities[j]);
+            for (var id in sector.pvsEntity) {
+                sector.pvsEntity[id].actOnEntity(sector.entities[j]);
             }
         }
 

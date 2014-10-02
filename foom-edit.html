@@ -111,6 +111,8 @@
             map: globalGame.map
         });
 
+        globalGame.map.entitiesPaused = true;
+
         function triggerResize() {
             $('#main-splitter').data('kendoSplitter').trigger('resize');
         }
@@ -178,6 +180,7 @@
                     <li id="menu-view-show-entities"><i class="fa fa-check fa-fw"></i> Show Entities</li>
                     <li id="menu-view-show-sector-types"><i class="fa fa-check fa-fw"></i> Show Sector Types</li>
                     <li id="menu-view-show-entity-types"><i class="fa fa-check fa-fw"></i> Show Entity Types</li>
+                    <li id="menu-view-entities-paused"><i class="fa fa-check fa-fw"></i> Entities Paused</li>
                 </ul>
             </li>
         </ul>

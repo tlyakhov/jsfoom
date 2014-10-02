@@ -214,6 +214,7 @@ Editor.prototype.menuSelect = function (e) {
             if (!result)
                 return;
             this.map = Map.deserialize(globalDefaultMap);
+            this.map.entitiesPaused = true;
             globalGame.map = this.map;
         }, this));
     }
@@ -242,6 +243,7 @@ Editor.prototype.menuSelect = function (e) {
                 globalGame.map = this.map;
                 if (globalGame.renderer)
                     globalGame.renderer.map = this.map;
+                this.map.entitiesPaused = true;
 
                 globalGame.resetRenderWorkers();
 
@@ -507,6 +509,13 @@ Editor.prototype.drawEntity = function (entity) {
     this.context.arc(entity.pos[0], entity.pos[1], entity.boundingRadius, 0, 2 * Math.PI, false);
     this.context.stroke();
 
+
+    if (entity.behaviors.length > 0 && isA(entity.behaviors[0], WanderBehavior) && entity.behaviors[0].target) {
+        this.context.strokeStyle = '#F00';
+        this.context.beginPath();
+        this.context.arc(entity.behaviors[0].target[0], entity.behaviors[0].target[1], 5, 0, 2 * Math.PI, false);
+        this.context.stroke();
+    }
 
     if (this.entityTypesVisible) {
         this.context.fillStyle = '#555';

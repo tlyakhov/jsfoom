@@ -17,6 +17,8 @@ classes['MapSectorVerticalDoor'] = MapSectorVerticalDoor;
 MapSectorVerticalDoor.editableProperties = MapSector.editableProperties;
 
 MapSectorVerticalDoor.prototype.frame = function (lastFrameTime) {
+    MapSector.prototype.frame.call(this, lastFrameTime);
+
     var last = this.topZ;
 
     this.topZ += this.velZ * lastFrameTime / 30.0;
@@ -44,7 +46,7 @@ MapSectorVerticalDoor.prototype.frame = function (lastFrameTime) {
 MapSectorVerticalDoor.prototype.actOnEntity = function (entity) {
     MapSector.prototype.actOnEntity.call(this, entity);
 
-    if (entity.constructor.name != 'LightEntity')
+    if (entity.constructor.name == 'LightEntity')
         return;
 
     if (distance2D(this.center[0], this.center[1], entity.pos[0], entity.pos[1]) < 100.0) {

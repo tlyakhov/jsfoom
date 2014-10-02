@@ -17,6 +17,7 @@ function MapSector(options) {
     this.lightmapWidth = 0;
     this.lightmapHeight = 0;
     this.pvs = {};
+    this.pvsEntity = {};
     this.pvsLights = [];
     this.center = vec3blank();
     this.floorScale = 64.0;
@@ -70,6 +71,30 @@ MapSector.prototype.updatePVS = function (normalX, normalY, sector) {
                 this.updatePVS(segment.normal[0], segment.normal[1], adj.sector);
             else
                 this.updatePVS(normalX, normalY, adj.sector);
+        }
+    }
+};
+
+MapSector.prototype.updateEntityPVS = function (normalX, normalY, sector) {
+    if (sector == undefined) {
+        this.pvsEntity = {};
+        this.pvsEntity[this.id] = this;
+        sector = this;
+    }
+
+    for (var i = 0; i < sector.segments.length; i++) {
+        var segment = sector.segments[i];
+        var adj = segment.getAdjacentSegment();
+        if (!adj || adj.midMaterialId != null)
+            continue;
+
+        if ((normalX == undefined || normalX * segment.normal[0] + normalY * segment.normal[1] >= 0) && !this.pvsEntity[adj.sector.id]) {
+            this.pvsEntity[adj.sector.id] = adj.sector;
+
+            if (normalX == undefined)
+                this.updateEntityPVS(segment.normal[0], segment.normal[1], adj.sector);
+            else
+                this.updateEntityPVS(normalX, normalY, adj.sector);
         }
     }
 };
@@ -252,6 +277,7 @@ MapSector.prototype.clearLightmaps = function () {
         this.segments[index].clearLightmap();
 
     this.updatePVS();
+    this.updateEntityPVS();
 
     if (globalWorkerId == undefined)
         this.version++;
@@ -335,7 +361,8 @@ MapSector.prototype.frame = function (lastFrameTime) {
         if (this.entities[i] == this.map.player)
             continue;
 
-        this.entities[i].frame(lastFrameTime);
+        if (!this.map.entitiesPaused)
+            this.entities[i].frame(lastFrameTime);
     }
 };
 
@@ -555,6 +582,18 @@ MapSector.prototype.slice = function (ax, ay, bx, by) {
     }
 
     return slicedSectors;
+};
+
+MapSector.prototype.area = function () {
+    var sum = 0.0;
+
+    for (var i = 0; i < this.segments.length; i++) {
+        var segment = this.segments[i];
+
+        sum += segment.ax * segment.by - segment.ay * segment.bx;
+    }
+
+    return sum * 0.5;
 };
 
 MapSector.prototype.clone = function () {
