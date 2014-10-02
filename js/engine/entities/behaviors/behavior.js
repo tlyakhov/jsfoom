@@ -5,7 +5,9 @@ function Behavior(options) {
     $.extend(true, this, options);
 }
 
-Behavior.editableProperties = {};
+Behavior.editableProperties = [
+    { name: 'id', friendly: 'ID', type: 'string' }
+];
 
 classes['Behavior'] = Behavior;
 

@@ -3,15 +3,20 @@ function WanderBehavior(options) {
 
     this.target = null;
     this.speed = 0.1;
-    this.wanderZ = false;
+    this.moveZ = false;
     this.lastChange = preciseTime();
+    this.facing = true;
 
     $.extend(true, this, options);
 
     this.resetPos = this.entity ? this.entity.pos : null;
 }
 
-WanderBehavior.editableProperties = {};
+WanderBehavior.editableProperties = Behavior.editableProperties.concat([
+    { name: 'speed', friendly: 'Speed', type: 'float' },
+    { name: 'moveZ', friendly: 'Move vertically?', type: 'bool' },
+    { name: 'facing', friendly: 'Change facing?', type: 'bool' }
+]);
 
 classes['WanderBehavior'] = WanderBehavior;
 
@@ -28,7 +33,7 @@ WanderBehavior.prototype.frame = function (lastFrameTime) {
     if (!entity.sector)
         return;
 
-    if (!this.wanderZ && this.target)
+    if (!this.moveZ && this.target)
         this.target[2] = entity.pos[2];
 
     var overTime = (preciseTime() - this.lastChange) > 15000;
@@ -78,14 +83,16 @@ WanderBehavior.prototype.frame = function (lastFrameTime) {
     vec3mul(tempvec, this.speed, tempvec);
     vec3add(entity.vel, tempvec, entity.vel);
     vec3mul(entity.vel, 0.5, entity.vel);
-    entity.angle = entity.angleTo(entity.pos[0] + entity.vel[0], entity.pos[1] + entity.vel[1]);
+    if (this.facing)
+        entity.angle = entity.angleTo(entity.pos[0] + entity.vel[0], entity.pos[1] + entity.vel[1]);
 };
 
 WanderBehavior.prototype.serialize = function () {
     var r = Behavior.prototype.serialize.call(this);
 
-    r.wanderZ = this.wanderZ;
+    r.moveZ = this.moveZ;
     r.speed = this.speed;
+    r.facing = this.facing;
 
     return r;
 };
@@ -93,8 +100,9 @@ WanderBehavior.prototype.serialize = function () {
 WanderBehavior.deserialize = function (data, entity, behavior) {
     behavior = Behavior.deserialize(data, entity, behavior);
 
-    behavior.wanderZ = data.wanderZ;
+    behavior.moveZ = data.moveZ;
     behavior.speed = data.speed;
+    behavior.facing = data.facing;
 
     return behavior;
 };

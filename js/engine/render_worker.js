@@ -20,6 +20,7 @@ importScripts("entities/light_entity.js");
 importScripts("entities/behaviors/behavior.js");
 importScripts("entities/behaviors/talk_behavior.js");
 importScripts("entities/behaviors/wander_behavior.js");
+importScripts("entities/behaviors/waypoint_behavior.js");
 importScripts("entities/behaviors/talk_action.js");
 importScripts("entities/behaviors/talk_action_print.js");
 importScripts("player.js");
