@@ -29,6 +29,7 @@ importScripts("map.js");
 importScripts("render_slice.js");
 importScripts("renderer.js");
 importScripts("../game/entities/game_entity_flub.js");
+importScripts("../game/entities/game_entity_pluk.js");
 importScripts("../game/entities/behaviors/game_behavior_flub.js");
 
 var renderer = null;

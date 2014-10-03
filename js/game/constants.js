@@ -32,5 +32,5 @@ var GAME_CONSTANTS = {
     talkDistance: 100,
     wanderSectorProbablity: 0.25,
     inventoryGatherDistance: 30,
-    inventoryGatherTextStyle: '#8F8'
+    inventoryGatherTextStyle: '#0C4'
 };

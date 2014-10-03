@@ -54,7 +54,7 @@ Material.prototype.sample = function (slice, u, v, light, scaledHeight) {
     else if (v >= 1.0)
         v -= fast_floor(v);
 
-    var surface = this.getTexture().sample(u, v, scaledHeight);
+    var surface = this.getTexture().sample(u, v, this.renderAsSky ? null : scaledHeight);
 
     if (this.renderAsSky)
         return surface;

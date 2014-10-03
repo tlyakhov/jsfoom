@@ -16,7 +16,3 @@ var testMonsterSprites = {
     14: new Sprite({ textureSrc: '/data/test_sprite/Test0010.png', angleIndex: 14 }),
     15: new Sprite({ textureSrc: '/data/test_sprite/Test0011.png', angleIndex: 15 })
 };
-
-var plukSprites = {
-    0: new Sprite({ textureSrc: '/data/game/pluk.png', angleIndex: 0})
-};

@@ -10,8 +10,11 @@ var globalGameEntityFlubSprites = {
 function GameEntityFlub(options) {
     SpriteEntity.call(this, options);
 
+    this.width = 30;
+    this.height = 30;
+    this.boundingRadius = 15;
     this.sprites = globalGameEntityFlubSprites;
-    this.behaviors.push(new GameBehaviorFlub());
+    this.behaviors.push(new GameBehaviorFlub({ entity: this }));
 
     $.extend(true, this, options);
 }

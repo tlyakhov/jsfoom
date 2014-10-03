@@ -23,7 +23,7 @@ classes['LightEntity'] = LightEntity;
 LightEntity.prototype.frame = function (lastFrameTime) {
     var lastPos = vec3clone(this.pos, true);
 
-    Entity.prototype.frame.call(this, lastFrameTime);
+    //Entity.prototype.frame.call(this, lastFrameTime);
 
     if (this.pos[0] != lastPos[0] || this.pos[1] != lastPos[1] || this.pos[2] != lastPos[2])
         this.map.clearLightmaps();

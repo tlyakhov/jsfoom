@@ -79,7 +79,7 @@ Editor.prototype.go = function () {
         data: []
     });
 
-    var entityTypes = [ LightEntity, SpriteEntity ];
+    var entityTypes = [ LightEntity, GameEntityFlub, GameEntityPluk ];
     var entityList = [];
     var sectorTypes = [ MapSector, MapSectorWater, MapSectorVerticalDoor ];
     var sectorList = [];

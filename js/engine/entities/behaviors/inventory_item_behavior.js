@@ -24,7 +24,7 @@ InventoryItemBehavior.prototype.frame = function (lastFrameTime) {
         return;
 
     player.inventory.push(this);
-    globalGame.gameTextQueue.push({ text: 'Got ' + this.name, fillStyle: GAME_CONSTANTS.inventoryGatherTextStyle });
+    globalGame.gameTextQueue.push({ text: 'Got ' + this.count + ' ' + this.name + '!', fillStyle: GAME_CONSTANTS.inventoryGatherTextStyle });
     entity.sector.onExit(this);
     var index = $.inArray(entity, entity.sector.entities);
     if (index != -1)

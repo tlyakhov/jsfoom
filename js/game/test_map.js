@@ -15,7 +15,7 @@ var testMap = new Map({
         new Material({ id: 'f5', textureSrc: 'data/FRedLight.png' }),
         new Material({ id: 'f6', textureSrc: 'data/FHexMetal.png' }),
         new Material({ id: 'Water', textureSrc: 'data/Water.png', isLiquid: true }),
-        new Material({ id: 'Sky', textureSrc: 'data/nightsky.jpg', renderAsSky: true })
+        new Material({ id: 'Sky', textureSrc: 'data/game/sky.png', renderAsSky: true })
     ],
     sectors: [
         new MapSector({ id: 'sector0', bottomZ: 0, topZ: 64,
@@ -90,12 +90,12 @@ var testMap = new Map({
             floorMaterialId: 'Default Floor',
             ceilMaterialId: 'Sky',
             entities: [
-                new GameEntityFlub({ pos: vec3create(-17, 68, 0), width: 30, height: 30, boundingRadius: 15, zOffset: 0.0 }),
-                new GameEntityFlub({ pos: vec3create(-17, 68, 0), width: 30, height: 30, boundingRadius: 15, zOffset: 0.0 }),
-                new GameEntityFlub({ pos: vec3create(-17, 68, 0), width: 30, height: 30, boundingRadius: 15, zOffset: 0.0 }),
                 new SpriteEntity({ sprites: testMonsterSprites, pos: vec3create(32, 68, 0), height: 60, zOffset: -13.0, behaviors: [ new WanderBehavior() ] }),
-                new SpriteEntity({ sprites: plukSprites, pos: vec3create(-17, 68, 0), width: 15, height: 15, boundingRadius: 15, zOffset: 0.0, behaviors: [ new InventoryItemBehavior({ name: 'Pluk' })]}),
-                new SpriteEntity({ sprites: plukSprites, pos: vec3create(-17, 68, 0), width: 15, height: 15, boundingRadius: 15, zOffset: 0.0, behaviors: [ new InventoryItemBehavior({ name: 'Pluk' })]}),
+                new GameEntityFlub({ pos: vec3create(-17, 68, 0) }),
+                new GameEntityFlub({ pos: vec3create(-17, 68, 0) }),
+                new GameEntityFlub({ pos: vec3create(-17, 68, 0) }),
+                new GameEntityPluk({ pos: vec3create(45, 68, 0) }),
+                new GameEntityPluk({ pos: vec3create(85, 68, 0) }),
                 new LightEntity({ pos: vec3create(0, 68, 32) })
             ],
             segments: [

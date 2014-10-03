@@ -83,6 +83,9 @@ Entity.prototype.pushBack = function (segment) {
 };
 
 Entity.prototype.collide = function () {
+    if (!this.map)
+        return false;
+
     // We've got several possibilities we need to handle:
     // 1.   The entity is outside of all sectors. Put it into the nearest sector.
     // 2.   The entity has an un-initialized sector, but it's within a sector and doesn't need to be moved.

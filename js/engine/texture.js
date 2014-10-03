@@ -121,7 +121,7 @@ Texture.prototype.sample = function (x, y, scaledHeight) {
     var height = this.height;
 
     //return data[fast_floor(x * width) * height + fast_floor(y * height)];
-    if (this.generateMipMaps && this.smallestMipmap) {
+    if (scaledHeight && this.generateMipMaps && this.smallestMipmap) {
         if (scaledHeight <= this.smallestMipmap.height) {
             data = this.smallestMipmap.data;
             width = this.smallestMipmap.width;
