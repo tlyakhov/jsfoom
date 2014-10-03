@@ -363,7 +363,7 @@ Renderer.prototype.render = function (renderTarget) {
         var sector = this.frameSectors[sid];
 
         for (var i = 0; i < sector.entities.length; i++) {
-            if (isA(sector.entities[i], RenderableEntity))
+            if (isA(sector.entities[i], RenderableEntity) && sector.entities[i].visible)
                 this.renderEntity(renderTarget, sector.entities[i]);
         }
     }

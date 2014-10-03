@@ -22,6 +22,7 @@ Editor.prototype.dataPropertyValue = function (row, type, set, meta) {
             var split = set.split(',')
             set = vec3create(parseFloat(split[0]), parseFloat(split[1]), parseFloat(split[2]));
         }
+
         row.value = set;
 
         var sp = this.newAction(SetPropertyEditorAction);
@@ -72,6 +73,7 @@ Editor.prototype.renderPropertyValue = function (data, type, row, meta) {
 };
 
 var EDITOR_PROPERTY_TYPE_MAP = {
+    bool: 'text',
     float: 'text',
     string: 'text',
     material_id: 'select2',

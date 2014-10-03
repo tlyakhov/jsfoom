@@ -7,8 +7,6 @@ function WaypointBehavior(options) {
     this.facing = true;
 
     $.extend(true, this, options);
-
-    this.resetPos = this.entity ? this.entity.pos : null;
 }
 
 WaypointBehavior.editableProperties = Behavior.editableProperties.concat([
@@ -19,10 +17,6 @@ WaypointBehavior.editableProperties = Behavior.editableProperties.concat([
 ]);
 
 classes['WaypointBehavior'] = WaypointBehavior;
-
-WaypointBehavior.prototype.reset = function () {
-    this.entity.pos = this.resetPos;
-};
 
 WaypointBehavior.prototype.frame = function (lastFrameTime) {
     Behavior.prototype.frame.call(this, lastFrameTime);

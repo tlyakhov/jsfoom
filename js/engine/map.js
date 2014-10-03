@@ -57,6 +57,9 @@ Map.prototype.frame = function (lastFrameTime) {
 
         var j = sector.entities.length;
         while (j--) {
+            if (!sector.entities[j].active)
+                continue;
+
             for (var id in sector.pvsEntity) {
                 sector.pvsEntity[id].actOnEntity(sector.entities[j]);
             }
@@ -148,6 +151,18 @@ Map.prototype.light = function (world, normal, sector, segment, u, v, pool) {
             lightmap[mapIndex10 + 2] * (1.0 - wu) * wv +
             lightmap[mapIndex11 + 2] * (1.0 - wu) * (1.0 - wv) +
             lightmap[mapIndex01 + 2] * wu * (1.0 - wv), pool);
+};
+
+Map.prototype.resetAllEntities = function () {
+    for (var i = 0; i < this.sectors.length; i++) {
+        for (var j = 0; j < this.sectors[i].entities.length; j++) {
+            var entity = this.sectors[i].entities[j];
+
+            for (var k = 0; k < entity.behaviors.length; k++) {
+                entity.behaviors[k].reset();
+            }
+        }
+    }
 };
 
 Map.prototype.serialize = function () {

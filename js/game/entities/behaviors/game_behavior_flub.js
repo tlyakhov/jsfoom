@@ -4,9 +4,6 @@ function GameBehaviorFlub(options) {
     this.resetEntity = null;
 
     $.extend(true, this, options);
-
-    if (this.entity)
-        this.resetEntity = this.entity.serialize();
 }
 
 GameBehaviorFlub.editableProperties = Behavior.editableProperties.concat([]);

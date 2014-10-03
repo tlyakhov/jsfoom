@@ -358,7 +358,7 @@ MapSector.prototype.lightmapAddressToWorld = function (mapIndex, floor, pool) {
 
 MapSector.prototype.frame = function (lastFrameTime) {
     for (var i = 0; i < this.entities.length; i++) {
-        if (this.entities[i] == this.map.player)
+        if (this.entities[i] == this.map.player || !this.entities[i].active)
             continue;
 
         if (!this.map.entitiesPaused)

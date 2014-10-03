@@ -13,6 +13,19 @@ classes['InventoryItemBehavior'] = InventoryItemBehavior;
 
 InventoryItemBehavior.editableProperties = Behavior.editableProperties;
 
+InventoryItemBehavior.prototype.reset = function () {
+    Behavior.prototype.reset.call(this);
+
+    var map = this.entity.map;
+    var player = map.player;
+
+    var index = $.inArray(this.entity, player.inventory);
+
+    if (index >= 0) {
+        player.inventory.splice(index, 1);
+    }
+};
+
 InventoryItemBehavior.prototype.frame = function (lastFrameTime) {
     Behavior.prototype.frame.call(this, lastFrameTime);
 
@@ -25,10 +38,8 @@ InventoryItemBehavior.prototype.frame = function (lastFrameTime) {
 
     player.inventory.push(this);
     globalGame.gameTextQueue.push({ text: 'Got ' + this.count + ' ' + this.name + '!', fillStyle: GAME_CONSTANTS.inventoryGatherTextStyle });
-    entity.sector.onExit(this);
-    var index = $.inArray(entity, entity.sector.entities);
-    if (index != -1)
-        entity.sector.entities.splice(index, 1);
+    entity.active = false;
+    entity.visible = false;
 };
 
 

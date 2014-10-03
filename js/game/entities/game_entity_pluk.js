@@ -28,4 +28,18 @@ GameEntityPluk.prototype.hurt = function (amount) {
     //SpriteEntity.prototype.hurt.call(this, amount);
 };
 
+GameEntityPluk.prototype.canUse = function () {
+    var player = this.map.player;
+
+    return player.health < GAME_CONSTANTS.playerMaxHealth;
+};
+
+GameEntityPluk.prototype.use = function () {
+    var player = this.map.player;
+
+    player.health += 10;
+    if (player.health > GAME_CONSTANTS.playerMaxHealth)
+        player.health = GAME_CONSTANTS.playerMaxHealth;
+};
+
 GameEntityPluk.deserialize = SpriteEntity.deserialize;

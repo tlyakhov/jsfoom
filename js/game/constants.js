@@ -25,6 +25,7 @@ var GAME_CONSTANTS = {
     playerSwimStrength: 0.6,
     playerHurtTime: 30,
     playerMountHeight: 30.0,
+    playerMaxHealth: 100,
     // Game constants
     maxGameTextTime: 30 * 1000,
     maxGameText: 25,

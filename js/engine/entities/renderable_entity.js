@@ -7,6 +7,7 @@ function RenderableEntity(options) {
     this.height = 64.0;
     this.sprites = {};
     this.zOffset = 0.0;
+    this.visible = true;
 
     $.extend(true, this, options);
 }
@@ -14,6 +15,7 @@ function RenderableEntity(options) {
 classes['RenderableEntity'] = RenderableEntity;
 
 RenderableEntity.editableProperties = Entity.editableProperties.concat([
+    { name: 'visible', friendly: 'Visible', type: 'bool' },
     { name: 'width', friendly: 'Width', type: 'float' },
     { name: 'height', friendly: 'Height', type: 'float' },
     { name: 'zOffset', friendly: 'Vertical Offset', type: 'float' }
@@ -32,6 +34,7 @@ RenderableEntity.prototype.serialize = function () {
     r.width = this.width;
     r.height = this.height;
     r.zOffset = this.zOffset;
+    r.visible = this.visible;
     r.sprites = {};
 
     for (var s in this.sprites) {
@@ -47,6 +50,7 @@ RenderableEntity.deserialize = function (data, map, entity) {
     entity.width = data.width;
     entity.height = data.height;
     entity.zOffset = data.zOffset;
+    entity.visible = data.visible;
 
     if (!entity.sprites)
         entity.sprites = {};

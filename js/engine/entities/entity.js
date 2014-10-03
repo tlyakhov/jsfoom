@@ -11,6 +11,7 @@ function Entity(options) {
     this.health = 100;
     this.mountHeight = GAME_CONSTANTS.playerMountHeight;
     this.behaviors = [];
+    this.active = true;
 
     if (options) {
         $.extend(true, this, options);
@@ -21,6 +22,7 @@ classes['Entity'] = Entity;
 
 Entity.editableProperties = [
     { name: 'id', friendly: 'ID', type: 'string' },
+    { name: 'active', friendly: 'Active', type: 'bool' },
     { name: 'pos', friendly: 'Position', type: 'vector' },
     { name: 'angle', friendly: 'Angle', type: 'float' },
     { name: 'boundingRadius', friendly: 'Bounding Radius', type: 'float' },
@@ -246,7 +248,8 @@ Entity.prototype.serialize = function () {
         collisionResponse: this.collisionResponse,
         health: this.health,
         mountHeight: this.mountHeight,
-        behaviors: []
+        behaviors: [],
+        active: this.active
     };
 
     for (var i = 0; i < this.behaviors.length; i++)
@@ -267,6 +270,7 @@ Entity.deserialize = function (data, map, entity) {
     entity.collisionResponse = data.collisionResponse;
     entity.health = data.health;
     entity.mountHeight = data.mountHeight;
+    entity.active = data.active;
     entity.map = map;
 
     for (var i = 0; i < data.behaviors.length; i++) {

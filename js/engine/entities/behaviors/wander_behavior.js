@@ -8,8 +8,6 @@ function WanderBehavior(options) {
     this.facing = true;
 
     $.extend(true, this, options);
-
-    this.resetPos = this.entity ? this.entity.pos : null;
 }
 
 WanderBehavior.editableProperties = Behavior.editableProperties.concat([
@@ -19,10 +17,6 @@ WanderBehavior.editableProperties = Behavior.editableProperties.concat([
 ]);
 
 classes['WanderBehavior'] = WanderBehavior;
-
-WanderBehavior.prototype.reset = function () {
-    this.entity.pos = this.resetPos;
-};
 
 WanderBehavior.prototype.frame = function (lastFrameTime) {
     Behavior.prototype.frame.call(this, lastFrameTime);
