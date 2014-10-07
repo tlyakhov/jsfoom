@@ -25,6 +25,8 @@ function GameMain(options) {
     this.keys = {};
     this.gameTextQueue = [ ];
     this.state = 'game';
+    this.talkActionQuestion = null;
+    this.talkActionAnswerCallback = null;
 
     $.extend(true, this, options);
 }
@@ -72,9 +74,28 @@ GameMain.prototype.onTextureLoad = function (worker, texture) {
     }
 };
 
+GameMain.prototype.drawText = function (text, x, y, style, opacity) {
+    this.renderContext.fillStyle = '#FFF';
+    if (opacity != undefined)
+        this.renderContext.globalAlpha = opacity * 0.5;
+    else
+        this.renderContext.globalAlpha = 0.5;
+    this.renderContext.fillText(text, x + 0.5, y + 0.5);
+    if (style)
+        this.renderContext.fillStyle = style;
+    else
+        this.renderContext.fillStyle = '#000';
+
+    if (opacity != undefined)
+        this.renderContext.globalAlpha = opacity;
+    else
+        this.renderContext.globalAlpha = 1.0;
+    this.renderContext.fillText(text, x, y);
+};
+
 GameMain.prototype.gameText = function () {
     this.renderContext.textAlign = 'center';
-    this.renderContext.font = 'normal normal 12px "Share Tech Mono"';
+    this.renderContext.font = 'bold 12px "Share Tech Mono"';
     // Now for game text
     for (var i = 0; i < this.gameTextQueue.length; i++) {
         var gt = this.gameTextQueue[i];
@@ -90,19 +111,26 @@ GameMain.prototype.gameText = function () {
             i--;
             continue;
         }
-        if (gt.fillStyle)
-            this.renderContext.fillStyle = gt.fillStyle;
-        this.renderContext.globalAlpha = gt.opacity;
-        this.renderContext.fillText(gt.text, this.screenWidth / 2, this.screenHeight / 2 - (this.gameTextQueue.length - 1 - i) * 14);
+        this.drawText(gt.text, this.screenWidth / 2, this.screenHeight / 2 - (this.gameTextQueue.length - 1 - i) * 16, gt.fillStyle, gt.opacity);
     }
 
     while (this.gameTextQueue.length > GAME_CONSTANTS.maxGameText)
         this.gameTextQueue.shift();
+
+    if (this.state == 'question' && this.talkActionQuestion) {
+        for (var j = 0; j < this.talkActionQuestion.options.length; j++) {
+            var option = this.talkActionQuestion.options[j];
+            this.drawText('[' + (j + 1) + '] ' + option.text, this.screenWidth / 2, this.screenHeight / 2 + 16 + j * 16, option.fillStyle, 1.0);
+        }
+    }
+
 };
 
 GameMain.prototype.infoBar = function () {
     var infoBarTexture = textureCache.get(GAME_CONSTANTS.infoBarSrc, false, false);
-    this.renderContext.drawImage(infoBarTexture.img, 0, this.screenHeight);
+    this.renderContext.drawImage(infoBarTexture.img, 0, this.screenHeight - 1);
+    var avatarTexture = textureCache.get(GAME_CONSTANTS.avatarSrc, false, false);
+    this.renderContext.drawImage(avatarTexture.img, 320 - 32, this.screenHeight - 1, 64, 64);
 
     for (var i = 0; i < this.map.player.inventory.length; i++) {
         var item = this.map.player.inventory[i];
@@ -118,6 +146,8 @@ GameMain.prototype.infoBar = function () {
 };
 
 GameMain.prototype.flipBuffers = function () {
+    this.renderContext.globalAlpha = 1.0;
+
     if (this.frameTint != 0) {
         for (var i = 0; i < this.screenWidth * this.screenHeight; i++) {
             this.renderTarget[i] = colorTint(this.renderTarget[i], this.frameTint);
@@ -133,7 +163,9 @@ GameMain.prototype.flipBuffers = function () {
     this.renderImgData.data.set(this.renderBuffer8);
     this.renderContext.putImageData(this.renderImgData, 0, 0);
 
-    this.gameText();
+    if (this.state == 'game' || this.state == 'question')
+        this.gameText();
+
     this.infoBar();
 
     if (this.state == 'paused') {
@@ -309,9 +341,31 @@ GameMain.prototype.checkPausedInput = function () {
     }
 };
 
+GameMain.prototype.checkQuestionInput = function () {
+    if (!this.talkActionQuestion)
+        return;
+
+    for (var i = 0; i < this.talkActionQuestion.options.length; i++) {
+        var option = this.talkActionQuestion.options[i];
+
+        if (!this.keys[KEY_1 + i] && this.prevKeys[KEY_1 + i]) {
+            this.state = 'game';
+            this.prevKeys[KEY_1 + i] = false;
+            if (this.talkActionAnswerCallback) {
+                this.talkActionAnswerCallback(option);
+                this.talkActionAnswerCallback = null;
+            }
+            this.talkActionQuestion = null;
+            break;
+        }
+    }
+};
+
 GameMain.prototype.checkInput = function () {
     if (this.state == 'game')
         this.checkGameInput();
     else if (this.state == 'paused')
         this.checkPausedInput();
+    else if (this.state == 'question')
+        this.checkQuestionInput();
 };

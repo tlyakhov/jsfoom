@@ -34,6 +34,7 @@ var GAME_CONSTANTS = {
     talkDistance: 100,
     wanderSectorProbablity: 0.25,
     inventoryGatherDistance: 30,
-    inventoryGatherTextStyle: '#0C4',
-    infoBarSrc: '/data/game/infobar.png'
+    inventoryGatherTextStyle: '#666',
+    infoBarSrc: '/data/game/infobar.png',
+    avatarSrc: '/data/game/avatar.png'
 };

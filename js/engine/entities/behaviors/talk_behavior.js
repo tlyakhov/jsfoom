@@ -28,7 +28,7 @@ TalkBehavior.prototype.frame = function (lastFrameTime) {
     var player = map.player;
 
     if (vec3dist2(entity.pos, player.pos) <= sqr(GAME_CONSTANTS.talkDistance)) {
-        if (this.currentAction == null) {
+        if (this.currentAction == null && this.state != 'done') {
             this.currentAction = 0;
             this.state = 'act';
         }
@@ -39,15 +39,14 @@ TalkBehavior.prototype.frame = function (lastFrameTime) {
             }
         }
         else if (this.state == 'act') {
-            this.actions[this.currentAction].act();
+            var ca = this.currentAction;
+            this.actions[ca].act();
             this.actionTime = preciseTime();
 
-            if (this.actions[this.currentAction].delay > 0) {
+            if (this.actions[ca].delay > 0) {
                 this.state = 'delay';
-                this.delay = this.actions[this.currentAction].delay;
+                this.delay = this.actions[ca].delay;
             }
-
-            this.currentAction++;
         }
 
         if (this.currentAction >= this.actions.length) {

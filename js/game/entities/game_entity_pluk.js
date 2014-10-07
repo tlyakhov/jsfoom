@@ -11,7 +11,23 @@ function GameEntityPluk(options) {
     this.height = 15;
     this.boundingRadius = 7.5;
     this.sprites = globalGameEntityPlukSprites;
-    this.behaviors.push(new InventoryItemBehavior({ name: 'pluk flower', count: 1, entity: this }));
+    this.behaviors.push(new TalkBehavior({
+        onlyOnce: true,
+        actions: [
+            new TalkActionQuestion({
+                id: 'question',
+                gameText: { text: 'Do you even?', fillStyle: '#00F' },
+                options: [
+                    { text: 'Yes', gotoId: 'question' },
+                    { text: 'No' }
+                ]
+            }),
+            new TalkActionPrint({
+                gameText: { text: 'Woo!', fillStyle: '#F00' }
+            })
+        ]
+    }));
+    //this.behaviors.push(new InventoryItemBehavior({ name: 'pluk flower', count: 1, entity: this }));
 
     $.extend(true, this, options);
 }

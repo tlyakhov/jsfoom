@@ -1,3 +1,5 @@
+inherit(TalkAction, TalkActionPrint);
+
 function TalkActionPrint(options) {
     TalkAction.call(this, options);
 
@@ -12,6 +14,7 @@ classes['TalkActionPrint'] = TalkActionPrint;
 
 TalkActionPrint.prototype.act = function () {
     globalGame.gameTextQueue.push($.extend(true, {}, this.gameText)); // Clone it, must be unique.
+    this.behavior.currentAction++;
 };
 
 TalkActionPrint.prototype.serialize = function () {
