@@ -28,7 +28,7 @@ var GAME_CONSTANTS = {
     playerMountHeight: 30.0,
     playerMaxHealth: 100,
     // Game constants
-    maxGameTextTime: 30 * 1000,
+    maxGameTextTime: 15 * 1000,
     maxGameText: 25,
     gameTextFadeTime: 1000,
     talkDistance: 100,

@@ -20,6 +20,24 @@ GameBehaviorFlub.prototype.frame = function (lastFrameTime) {
 
     if (behaviors.length == 1) {
         behaviors.push(new WanderBehavior({ speed: 0.1, facing: true, moveZ: false, entity: this.entity }));
+
+        behaviors.push(new TalkBehavior({
+            onlyOnce: true,
+            entity: this.entity,
+            actions: [
+                new TalkActionQuestion({
+                    id: 'question',
+                    gameText: { text: 'Do you even?', fillStyle: '#00F' },
+                    options: [
+                        { text: 'Yes', gotoId: 'question' },
+                        { text: 'No' }
+                    ]
+                }),
+                new TalkActionPrint({
+                    gameText: { text: 'Woo!', fillStyle: '#F00' }
+                })
+            ]
+        }));
     }
 };
 

@@ -1,10 +1,14 @@
 inherit(SpriteEntity, GameEntityFlub);
 
 var globalGameEntityFlubSprites = {
-    0: new Sprite({ textureSrc: '/data/game/flub2.png', angleIndex: 0 }),
-    1: new Sprite({ textureSrc: '/data/game/flub1.png', angleIndex: 1 }),
-    2: new Sprite({ textureSrc: '/data/game/flub0.png', angleIndex: 2 }),
-    3: new Sprite({ textureSrc: '/data/game/flub3.png', angleIndex: 3 })
+    0: new Sprite({ textureSrc: '/data/game/flub-back.png', angleIndex: 0 }),
+    1: new Sprite({ textureSrc: '/data/game/flub-back.png', angleIndex: 1 }),
+    2: new Sprite({ textureSrc: '/data/game/flub-right.png', angleIndex: 2 }),
+    3: new Sprite({ textureSrc: '/data/game/flub-front-right.png', angleIndex: 3 }),
+    4: new Sprite({ textureSrc: '/data/game/flub-front.png', angleIndex: 4 }),
+    5: new Sprite({ textureSrc: '/data/game/flub-front-left.png', angleIndex: 5 }),
+    6: new Sprite({ textureSrc: '/data/game/flub-left.png', angleIndex: 6 }),
+    7: new Sprite({ textureSrc: '/data/game/flub-back.png', angleIndex: 7 })
 };
 
 function GameEntityFlub(options) {

@@ -349,6 +349,9 @@ GameMain.prototype.checkQuestionInput = function () {
         var option = this.talkActionQuestion.options[i];
 
         if (!this.keys[KEY_1 + i] && this.prevKeys[KEY_1 + i]) {
+            var gt = $.extend(true, {}, option);
+            gt.text = 'You say "' + gt.text + '".';
+            this.gameTextQueue.push(gt);
             this.state = 'game';
             this.prevKeys[KEY_1 + i] = false;
             if (this.talkActionAnswerCallback) {

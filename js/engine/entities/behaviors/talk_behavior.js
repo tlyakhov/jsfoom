@@ -11,6 +11,10 @@ function TalkBehavior(options) {
     this.state = 'ready';
 
     $.extend(true, this, options);
+
+    for (var i = 0; i < this.actions.length; i++) {
+        this.actions[i].behavior = this;
+    }
 }
 
 TalkBehavior.editableProperties = {};
