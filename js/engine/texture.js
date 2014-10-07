@@ -8,6 +8,7 @@ function Texture(options) {
     this.mipmaps = [];
     this.smallestMipmap = null;
     this.onLoad = null;
+    this.img = null;
 
     $.extend(true, this, options);
 
@@ -16,19 +17,19 @@ function Texture(options) {
 
 Texture.prototype.reload = function () {
     if (globalWorkerId == undefined) {
-        var img = new Image();
-        img.crossOrigin = '';
-        img.onload = $.proxy(function (evt) {
-            this.loaded(img, evt);
+        this.img = new Image();
+        this.img.crossOrigin = '';
+        this.img.onload = $.proxy(function (evt) {
+            this.loaded(this.img, evt);
         }, this);
-        img.src = this.src;
-        img.onerror = $.proxy(function () {
-            var img = new Image();
-            img.crossOrigin = '';
-            img.onload = $.proxy(function (evt) {
-                this.loaded(img, evt);
+        this.img.src = this.src;
+        this.img.onerror = $.proxy(function () {
+            this.img = new Image();
+            this.img.crossOrigin = '';
+            this.img.onload = $.proxy(function (evt) {
+                this.loaded(this.img, evt);
             }, this);
-            img.src = 'data/bricks.png';
+            this.img.src = 'data/bricks.png';
         }, this);
     }
     else {

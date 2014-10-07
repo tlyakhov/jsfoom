@@ -155,8 +155,10 @@ Map.prototype.light = function (world, normal, sector, segment, u, v, pool) {
 
 Map.prototype.resetAllEntities = function () {
     for (var i = 0; i < this.sectors.length; i++) {
-        for (var j = 0; j < this.sectors[i].entities.length; j++) {
-            var entity = this.sectors[i].entities[j];
+        var entities = this.sectors[i].entities.slice(0);
+
+        for (var j = 0; j < entities.length; j++) {
+            var entity = entities[j];
 
             for (var k = 0; k < entity.behaviors.length; k++) {
                 entity.behaviors[k].reset();

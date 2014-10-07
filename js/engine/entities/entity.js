@@ -26,7 +26,8 @@ Entity.editableProperties = [
     { name: 'pos', friendly: 'Position', type: 'vector' },
     { name: 'angle', friendly: 'Angle', type: 'float' },
     { name: 'boundingRadius', friendly: 'Bounding Radius', type: 'float' },
-    { name: 'collisionResponse', friendly: 'Collision Response', type: [ 'slide', 'bounce', 'stop' ] }
+    { name: 'collisionResponse', friendly: 'Collision Response', type: [ 'slide', 'bounce', 'stop' ] },
+    { name: 'behaviors', friendly: 'Behaviors', type: 'array' }
 ];
 
 Entity.prototype.angleTo = function (x, y) {

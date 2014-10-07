@@ -1,3 +1,5 @@
+inherit(Behavior, TalkBehavior);
+
 function TalkBehavior(options) {
     Behavior.call(this, options);
 

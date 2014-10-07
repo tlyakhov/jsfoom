@@ -1,3 +1,5 @@
+inherit(Behavior, WanderBehavior);
+
 function WanderBehavior(options) {
     Behavior.call(this, options);
 

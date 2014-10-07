@@ -80,6 +80,17 @@ function colorTint(target, tint) {
     return (ta << 24) | ((rb & 0xFF) << 16) | ((rg & 0xFF) << 8) | (rr & 0xFF);
 }
 
+function color2bw(target) {
+    var ta = ((target >> 24) & 0xFF);
+    var tb = ((target >> 16) & 0xFF);
+    var tg = ((target >> 8) & 0xFF);
+    var tr = ((target) & 0xFF);
+
+    var bw = Math.max(0, Math.min(0xFF, tr * 0.21 + tg * 0.72 + tb * 0.07));
+
+    return (ta << 24) | ((bw & 0xFF) << 16) | ((bw & 0xFF) << 8) | (bw & 0xFF);
+}
+
 function rgba2int(r, g, b, a) {
     return (r & 0xFF) | ((g & 0xFF) << 8) | ((b & 0xFF) << 16) | ((a & 0xFF) << 24);
 }

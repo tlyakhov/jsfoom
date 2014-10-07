@@ -1,3 +1,5 @@
+inherit(Behavior, WaypointBehavior);
+
 function WaypointBehavior(options) {
     Behavior.call(this, options);
 

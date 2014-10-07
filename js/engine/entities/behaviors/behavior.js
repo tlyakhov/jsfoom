@@ -5,12 +5,6 @@ function Behavior(options) {
     this.resetSector = null;
 
     $.extend(true, this, options);
-
-    if (this.entity) {
-        this.resetEntity = this.entity.serialize();
-        this.resetSector = this.entity.sector;
-    }
-
 }
 
 Behavior.editableProperties = [
@@ -20,8 +14,8 @@ Behavior.editableProperties = [
 classes['Behavior'] = Behavior;
 
 Behavior.prototype.reset = function () {
-    if (!this.resetEntity)
-        throw new Exception("Can't reset entity behavior - behavior wasn't constructed with entity. " + this.entity.id);
+    if (this.resetEntity == null)
+        return; // Already reset
 
     var e = Entity.deserialize(this.resetEntity, this.entity.map);
 
@@ -38,8 +32,11 @@ Behavior.prototype.reset = function () {
     e.collide();
 };
 
-Behavior.prototype.frame = function () {
-
+Behavior.prototype.frame = function (lastFrameTime) {
+    if (this.entity && this.resetEntity == null) {
+        this.resetEntity = this.entity.serialize();
+        this.resetSector = this.entity.sector;
+    }
 };
 
 Behavior.prototype.serialize = function () {

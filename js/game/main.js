@@ -21,15 +21,17 @@ function GameMain(options) {
     this.workers = [];
     this.workerFrameReady = [];
     this.workerDbgMeasure = [];
+    this.prevKeys = {};
     this.keys = {};
     this.gameTextQueue = [ ];
+    this.state = 'game';
 
     $.extend(true, this, options);
 }
 
 GameMain.prototype.go = function () {
     $('#' + this.canvasId).attr('width', this.screenWidth);
-    $('#' + this.canvasId).attr('height', this.screenHeight);
+    $('#' + this.canvasId).attr('height', this.screenHeight + 64);
 
     this.renderContext = document.getElementById(this.canvasId).getContext('2d');
     this.renderImgData = this.renderContext.createImageData(this.screenWidth, this.screenHeight);
@@ -98,6 +100,23 @@ GameMain.prototype.gameText = function () {
         this.gameTextQueue.shift();
 };
 
+GameMain.prototype.infoBar = function () {
+    var infoBarTexture = textureCache.get(GAME_CONSTANTS.infoBarSrc, false, false);
+    this.renderContext.drawImage(infoBarTexture.img, 0, this.screenHeight);
+
+    for (var i = 0; i < this.map.player.inventory.length; i++) {
+        var item = this.map.player.inventory[i];
+
+        if (!item.entity.sprites || item.entity.sprites.length == 0)
+            continue;
+
+        var sprite = item.entity.sprites[0];
+        var st = sprite.getTexture();
+
+        this.renderContext.drawImage(st.img, 355 + i * 64, this.screenHeight, 64, 64);
+    }
+};
+
 GameMain.prototype.flipBuffers = function () {
     if (this.frameTint != 0) {
         for (var i = 0; i < this.screenWidth * this.screenHeight; i++) {
@@ -105,28 +124,45 @@ GameMain.prototype.flipBuffers = function () {
         }
     }
 
+    if (this.state != 'game') {
+        for (var i = 0; i < this.screenWidth * this.screenHeight; i++) {
+            this.renderTarget[i] = color2bw(this.renderTarget[i]);
+        }
+    }
+
     this.renderImgData.data.set(this.renderBuffer8);
     this.renderContext.putImageData(this.renderImgData, 0, 0);
 
     this.gameText();
+    this.infoBar();
+
+    if (this.state == 'paused') {
+        this.renderContext.textAlign = 'center';
+        this.renderContext.font = 'normal bold 20px "Share Tech Mono"';
+        this.renderContext.fillStyle = '#FFF';
+        this.renderContext.fillText('PAUSED', this.screenWidth / 2, 25);
+    }
 
     // Debug stuff follows
+    if (GAME_CONSTANTS.debugLevel > 0) {
+        this.renderContext.textAlign = 'left';
+        this.renderContext.globalAlpha = 1.0;
+        this.renderContext.fillStyle = '#FFF';
+        this.renderContext.fillText('Game FPS: ' + Math.round(1000.0 / this.lastGameTime), 5, 15);
+        this.renderContext.fillText('Render FPS: ' + Math.round(1000.0 / this.lastFrameTime) + (this.renderer ? ', counter: ' + this.renderer.counter : ''), 5, 25);
+        if (this.map.player.sector) {
+            this.renderContext.fillText('Current sector: ' + this.map.player.sector.id +
+                ', x: ' + Math.round(this.map.player.pos[0]) +
+                ', y: ' + Math.round(this.map.player.pos[1]) +
+                ', z: ' + Math.round(this.map.player.pos[2]), 5, 35);
+        }
+        this.renderContext.fillText('Health: ' + this.map.player.health, 5, 45);
 
-    this.renderContext.textAlign = 'left';
-    this.renderContext.globalAlpha = 1.0;
-    this.renderContext.fillStyle = '#FFF';
-    this.renderContext.fillText('Game FPS: ' + Math.round(1000.0 / this.lastGameTime), 5, 15);
-    this.renderContext.fillText('Render FPS: ' + Math.round(1000.0 / this.lastFrameTime) + (this.renderer ? ', counter: ' + this.renderer.counter : ''), 5, 25);
-    if (this.map.player.sector) {
-        this.renderContext.fillText('Current sector: ' + this.map.player.sector.id +
-            ', x: ' + Math.round(this.map.player.pos[0]) +
-            ', y: ' + Math.round(this.map.player.pos[1]) +
-            ', z: ' + Math.round(this.map.player.pos[2]), 5, 35);
-    }
-    this.renderContext.fillText('Health: ' + this.map.player.health, 5, 45);
-
-    for (var i = 0; i < this.workerDbgMeasure.length; i++) {
-        this.renderContext.fillText('Worker ' + i + ' render time: ' + this.workerDbgMeasure[i] + ' ms', 5, 55 + i * 10);
+        if (GAME_CONSTANTS.debugLevel > 1) {
+            for (var i = 0; i < this.workerDbgMeasure.length; i++) {
+                this.renderContext.fillText('Worker ' + i + ' render time: ' + this.workerDbgMeasure[i] + ' ms', 5, 55 + i * 10);
+            }
+        }
     }
 
     this.curRenderTime = preciseTime();
@@ -208,45 +244,52 @@ GameMain.prototype.timer = function () {
 
     this.checkInput();
 
-    this.map.frame(this.lastGameTime);
+    if (this.state == 'game')
+        this.map.frame(this.lastGameTime);
 };
 
-GameMain.prototype.checkInput = function () {
-    if (this.keys[KEY_W] == 1) {
+GameMain.prototype.checkGameInput = function () {
+    if (!this.keys[KEY_ESC] && this.prevKeys[KEY_ESC]) {
+        this.state = 'paused';
+        this.prevKeys[KEY_ESC] = false;
+    }
+
+    if (this.keys[KEY_W]) {
         this.map.player.move(this.map.player.angle, this.lastGameTime);
     }
 
-    if (this.keys[KEY_S] == 1) {
+    if (this.keys[KEY_S]) {
         this.map.player.move(this.map.player.angle + 180.0, this.lastGameTime);
     }
-    if (this.keys[KEY_Q] == 1) {
+    if (this.keys[KEY_Q]) {
         this.map.player.move(this.map.player.angle + 270.0, this.lastGameTime);
     }
 
-    if (this.keys[KEY_E] == 1) {
+    if (this.keys[KEY_E]) {
         this.map.player.move(this.map.player.angle + 90.0, this.lastGameTime);
     }
 
-    if (this.keys[KEY_A] == 1) {
+    if (this.keys[KEY_A]) {
         this.map.player.angle -= GAME_CONSTANTS.playerTurnSpeed * this.lastGameTime / 30.0;
         this.map.player.angle = fast_floor(normalizeAngle(this.map.player.angle));
     }
 
-    if (this.keys[KEY_D] == 1) {
+    if (this.keys[KEY_D]) {
         this.map.player.angle += GAME_CONSTANTS.playerTurnSpeed * this.lastGameTime / 30.0;
         this.map.player.angle = fast_floor(normalizeAngle(this.map.player.angle));
     }
 
-    if (this.keys[KEY_SPACE] == 1) {
+    if (this.keys[KEY_SPACE]) {
         if (this.map.player.sector.constructor == MapSectorWater) {
             this.map.player.vel[2] += GAME_CONSTANTS.playerSwimStrength * this.lastGameTime / 30.0;
         }
-        else if (this.map.player.standing) {
+        else if (this.map.player.standing && !this.prevKeys[KEY_SPACE]) {
             this.map.player.vel[2] += GAME_CONSTANTS.playerJumpStrength * this.lastGameTime / 30.0;
+            this.prevKeys[KEY_SPACE] = true;
         }
     }
 
-    if (this.keys[KEY_C] == 1) {
+    if (this.keys[KEY_C]) {
         if (!this.map.player.standing && this.map.player.sector.constructor == MapSectorWater) {
             this.map.player.vel[2] -= GAME_CONSTANTS.playerSwimStrength * this.lastGameTime / 30.0;
         }
@@ -257,4 +300,18 @@ GameMain.prototype.checkInput = function () {
     else {
         this.map.player.crouching = false;
     }
+};
+
+GameMain.prototype.checkPausedInput = function () {
+    if (!this.keys[KEY_ESC] && this.prevKeys[KEY_ESC]) {
+        this.state = 'game';
+        this.prevKeys[KEY_ESC] = false;
+    }
+};
+
+GameMain.prototype.checkInput = function () {
+    if (this.state == 'game')
+        this.checkGameInput();
+    else if (this.state == 'paused')
+        this.checkPausedInput();
 };

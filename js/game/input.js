@@ -14,6 +14,7 @@ var KEY_V = 86;
 var KEY_W = 87;
 var KEY_Y = 89;
 var KEY_Z = 90;
+var KEY_ESC = 27;
 var KEY_SPACE = 32;
 var KEY_DEL = 46;
 var KEY_BACKSPACE = 8;
@@ -34,7 +35,8 @@ function keyDown(e) {
     else if (e.which)
         keynum = e.which;
 
-    globalGame.keys[keynum] = 1;
+    globalGame.prevKeys[keynum] = globalGame.keys[keynum];
+    globalGame.keys[keynum] = true;
 }
 function keyUp(e) {
     var keynum;
@@ -43,6 +45,7 @@ function keyUp(e) {
     } else if (e.which) {
         keynum = e.which;
     }
-    globalGame.keys[keynum] = 0;
+    globalGame.prevKeys[keynum] = globalGame.keys[keynum];
+    globalGame.keys[keynum] = false;
 }
 

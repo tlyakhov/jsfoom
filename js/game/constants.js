@@ -7,6 +7,7 @@ var GAME_CONSTANTS = {
     lightAttenuationEpsilon: 0.001,
     maxViewDistance: 1000000.0,
     fieldOfView: 75,
+    debugLevel: 0,
     // World constants
     gravity: 0.1,
     gravitySwim: 0.001,
@@ -33,5 +34,6 @@ var GAME_CONSTANTS = {
     talkDistance: 100,
     wanderSectorProbablity: 0.25,
     inventoryGatherDistance: 30,
-    inventoryGatherTextStyle: '#0C4'
+    inventoryGatherTextStyle: '#0C4',
+    infoBarSrc: '/data/game/infobar.png'
 };

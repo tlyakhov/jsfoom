@@ -1,7 +1,7 @@
+inherit(Behavior, GameBehaviorFlub);
+
 function GameBehaviorFlub(options) {
     Behavior.call(this, options);
-
-    this.resetEntity = null;
 
     $.extend(true, this, options);
 }
@@ -9,13 +9,6 @@ function GameBehaviorFlub(options) {
 GameBehaviorFlub.editableProperties = Behavior.editableProperties.concat([]);
 
 classes['GameBehaviorFlub'] = GameBehaviorFlub;
-
-GameBehaviorFlub.prototype.reset = function () {
-    if (!this.resetEntity)
-        return; // Can't!
-
-
-};
 
 GameBehaviorFlub.prototype.frame = function (lastFrameTime) {
     Behavior.prototype.frame.call(this, lastFrameTime);

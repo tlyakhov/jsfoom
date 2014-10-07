@@ -36,6 +36,7 @@ function Editor(options) {
     this.entityTypesVisible = true;
     this.gridVisible = true;
     this.entitiesVisible = true;
+    this.entitiesPaused = true;
     this.gridSize = EDITOR_CONSTANTS.gridSize;
 
     $.extend(true, this, options);
@@ -103,7 +104,8 @@ Editor.prototype.go = function () {
             { id: 'editGroup', type: 'buttonGroup', buttons: [
                 { id: 'undo', type: 'button', spriteCssClass: 'toolbar-fa fa fa-undo fa-fw', text: '', encoded: false, click: $.proxy(this.undo, this) },
                 { id: 'redo', type: 'button', spriteCssClass: 'toolbar-fa fa fa-repeat fa-fw', text: '', click: $.proxy(this.redo, this) },
-                { id: 'delete', type: 'button', spriteCssClass: 'toolbar-fa fa fa-times fa-fw', text: '', click: $.proxy(this.delete, this) }
+                { id: 'delete', type: 'button', spriteCssClass: 'toolbar-fa fa fa-times fa-fw', text: '', click: $.proxy(this.delete, this) },
+                { id: 'resetEntities', type: 'button', spriteCssClass: 'toolbar-fa fa fa-retweet fa-fw', text: '', click: $.proxy(this.resetEntities, this) }
             ] },
             { type: 'separator' },
             { id: 'toolGroup', type: 'buttonGroup', buttons: [
@@ -137,6 +139,7 @@ Editor.prototype.go = function () {
     this.menuCheckToggle('#menu-view-show-entities', this.entitiesVisible);
     this.menuCheckToggle('#menu-view-show-grid', this.gridVisible);
     this.menuCheckToggle('#menu-view-center-on-player', this.centerOnPlayer);
+    this.menuCheckToggle('#menu-view-entities-paused', this.entitiesPaused);
 
     jqMenu.kendoMenu({
         select: $.proxy(this.menuSelect, this)
@@ -214,7 +217,7 @@ Editor.prototype.menuSelect = function (e) {
             if (!result)
                 return;
             this.map = Map.deserialize(globalDefaultMap);
-            this.map.entitiesPaused = true;
+            this.map.entitiesPaused = this.entitiesPaused;
             globalGame.map = this.map;
         }, this));
     }
@@ -243,7 +246,7 @@ Editor.prototype.menuSelect = function (e) {
                 globalGame.map = this.map;
                 if (globalGame.renderer)
                     globalGame.renderer.map = this.map;
-                this.map.entitiesPaused = true;
+                this.map.entitiesPaused = this.entitiesPaused;
 
                 globalGame.resetRenderWorkers();
 
@@ -294,6 +297,10 @@ Editor.prototype.menuSelect = function (e) {
     }
     else if (item.id == 'menu-view-center-on-player') {
         this.centerOnPlayer = !this.centerOnPlayer;
+        this.menuCheckToggle(item);
+    }
+    else if (item.id == 'menu-view-entities-paused') {
+        this.map.entitiesPaused = this.entitiesPaused = !this.entitiesPaused;
         this.menuCheckToggle(item);
     }
 };
@@ -375,6 +382,10 @@ Editor.prototype.redo = function () {
 
 Editor.prototype.delete = function () {
     this.newAction(DeleteEditorAction).act();
+};
+
+Editor.prototype.resetEntities = function () {
+    this.map.resetAllEntities();
 };
 
 Editor.prototype.onKeyPress = function (e) {
@@ -509,12 +520,18 @@ Editor.prototype.drawEntity = function (entity) {
     this.context.arc(entity.pos[0], entity.pos[1], entity.boundingRadius, 0, 2 * Math.PI, false);
     this.context.stroke();
 
+    for (var i = 0; i < entity.behaviors.length; i++) {
+        var behavior = entity.behaviors[i];
 
-    if (entity.behaviors.length > 0 && isA(entity.behaviors[0], WanderBehavior) && entity.behaviors[0].target) {
-        this.context.strokeStyle = '#F00';
-        this.context.beginPath();
-        this.context.arc(entity.behaviors[0].target[0], entity.behaviors[0].target[1], 5, 0, 2 * Math.PI, false);
-        this.context.stroke();
+        if ((isA(behavior, WanderBehavior) || isA(behavior, WaypointBehavior)) && behavior.target) {
+            this.context.strokeStyle = '#F00';
+            this.context.beginPath();
+            this.context.arc(behavior.target[0], behavior.target[1], 5, 0, 2 * Math.PI, false);
+            this.context.stroke();
+            this.context.textAlign = 'center';
+            this.context.textBaseline = 'middle';
+            this.context.fillText(behavior.constructor.name, behavior.target[0], behavior.target[1]);
+        }
     }
 
     if (this.entityTypesVisible) {
