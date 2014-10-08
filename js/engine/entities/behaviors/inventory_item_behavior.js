@@ -36,12 +36,19 @@ InventoryItemBehavior.prototype.frame = function (lastFrameTime) {
     if (vec3dist2(player.pos, entity.pos) > sqr(GAME_CONSTANTS.inventoryGatherDistance))
         return;
 
+    this.give();
+};
+
+InventoryItemBehavior.prototype.give = function() {
+    var entity = this.entity;
+    var map = this.entity.map;
+    var player = map.player;
+
     player.inventory.push(this);
     globalGame.gameTextQueue.push({ text: 'Got ' + this.count + ' ' + this.name + '!', fillStyle: GAME_CONSTANTS.inventoryGatherTextStyle });
     entity.active = false;
     entity.visible = false;
 };
-
 
 InventoryItemBehavior.prototype.serialize = function () {
     var r = Behavior.prototype.serialize.call(this);

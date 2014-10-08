@@ -90,9 +90,6 @@ var testMap = new Map({
             floorMaterialId: 'Default Floor',
             ceilMaterialId: 'Sky',
             entities: [
-                new SpriteEntity({ sprites: testMonsterSprites, pos: vec3create(32, 68, 0), height: 60, zOffset: -13.0, behaviors: [ new WanderBehavior() ] }),
-                new GameEntityFlub({ pos: vec3create(-17, 68, 0) }),
-                new GameEntityFlub({ pos: vec3create(-17, 68, 0) }),
                 new GameEntityFlub({ pos: vec3create(-17, 68, 0) }),
                 new GameEntityPluk({ pos: vec3create(45, 68, 0) }),
                 new GameEntityPluk({ pos: vec3create(85, 68, 0) }),

@@ -24,6 +24,7 @@ importScripts("entities/behaviors/waypoint_behavior.js");
 importScripts("entities/behaviors/inventory_item_behavior.js");
 importScripts("entities/behaviors/talk_action.js");
 importScripts("entities/behaviors/talk_action_say.js");
+importScripts("entities/behaviors/talk_action_give.js");
 importScripts("player.js");
 importScripts("map.js");
 importScripts("render_slice.js");

@@ -25,17 +25,13 @@ GameBehaviorFlub.prototype.frame = function (lastFrameTime) {
             onlyOnce: true,
             entity: this.entity,
             actions: [
-                new TalkActionSay({
-                    id: 'question',
-                    gameText: { text: 'Do you even?', fillStyle: '#00F' },
-                    options: [
-                        { text: 'Yes', gotoId: 'question' },
-                        { text: 'No' }
-                    ]
-                }),
-                new TalkActionSay({
-                    gameText: { text: 'Woo!', fillStyle: '#F00' }
-                })
+                TalkActionSay.create('Do you even?', '#00F', null, [
+                    { text: 'Yes', gotoId: 'pluk' },
+                    { text: 'No' } ], 'question'),
+                TalkActionSay.create('Woo!', '#F00', null, null, null, 'done'),
+                TalkActionGive.create(new GameEntityPluk(), 'pluk'),
+                TalkActionSay.create("Here's your pluk, hero!", '#0F0'),
+                TalkActionSay.create('done!', null, null, null, 'done')
             ]
         }));
     }

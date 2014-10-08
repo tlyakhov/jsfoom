@@ -359,8 +359,8 @@ Renderer.prototype.render = function (renderTarget) {
         this.renderSector(slice);
     }
 
-    for (var sid in this.frameSectors) {
-        var sector = this.frameSectors[sid];
+    for (var sid in this.map.player.sector.pvs) {
+        var sector = this.map.player.sector.pvs[sid];
 
         for (var i = 0; i < sector.entities.length; i++) {
             if (isA(sector.entities[i], RenderableEntity) && sector.entities[i].visible)

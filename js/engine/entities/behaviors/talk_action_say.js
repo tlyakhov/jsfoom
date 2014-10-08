@@ -5,9 +5,30 @@ function TalkActionSay(options) {
 
     this.gameText = { text: 'Question?', fillStyle: '#8F8' };
     this.options = [];
-    this.delay = 0;
+
     $.extend(true, this, options);
+
+    if(this.options && this.options.length > 0)
+        this.delay = 0;
 }
+
+TalkActionSay.create = function(text, fillStyle, delay, options, id, gotoId) {
+    var tas = new TalkActionSay();
+    if(text)
+        tas.gameText.text = text;
+    if(fillStyle)
+        tas.gameText.fillStyle = fillStyle;
+    if(delay)
+        tas.delay = delay;
+    if(options)
+        tas.options = options;
+    if(id)
+        tas.id = id;
+    if(gotoId)
+        tas.gotoId = gotoId;
+
+    return tas;
+};
 
 TalkActionSay.editableProperties = {};
 
@@ -28,7 +49,7 @@ TalkActionSay.prototype.answer = function (option) {
     if(globalGame.state == 'question')
         globalGame.state = 'game';
     if (option.gotoId) {
-        for (var i = 0; i < this.behavior.actions; i++) {
+        for (var i = 0; i < this.behavior.actions.length; i++) {
             var action = this.behavior.actions[i];
 
             if (action.id == option.gotoId) {
@@ -38,8 +59,7 @@ TalkActionSay.prototype.answer = function (option) {
         }
     }
     else {
-        this.behavior.currentAction++;
-
+        TalkAction.prototype.act.call(this);
     }
 };
 
