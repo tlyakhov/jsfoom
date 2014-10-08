@@ -15,10 +15,15 @@ This project is just a personal exploration of in-browser JavaScript performance
 * Sectors with non-orthogonal walls of variable height.
 * Texture mapped floors, ceilings, and walls.
 * Fully dynamic lighting with dynamic shadow maps.
-* Objects represented as sprites with multiple angles.
 * Bilinear filtering & mipmapping for images and shadow maps.
+* Objects represented as sprites with multiple angles.
+* Separation of game/engine code.
+* Inventory items
+* Behavioral system for entities.
+    - Scriptable NPC conversations
+    - NPCs can give player inventory items.
 * Various effect sectors (doors, underwater sectors)
-* Physics and collision detection.
+* Physics and collision detection for player and objects.
 * Level editor:
   - Realtime 3D view.
   - Edit any sector/segment/entity property.
@@ -36,14 +41,14 @@ This project is just a personal exploration of in-browser JavaScript performance
 
 * Level editor features and bugfixes:
   - Fixing slice/cut errors.
-  - Fixing entity+sector linking errors during motion.
   - Material management, editing.
+  - Behavior scripting, editing.
 * In-game UI/settings
 * Better memory use/pre-loading of textures and lighting.
-* Framework for game logic, AI, and player objectives.
+* More robust framework for game logic, AI, and player objectives.
   - Player/entity inventory
   - Weapons
-  - Scriptable entity behaviors (patrol, search, speak, attack, defend)
+  - More scriptable entity behaviors (patrol, search, speak, attack, defend)
   - Entities with effects (keys+locked doors, moving platforms, entity drops)
   - Level win/lose conditions.
 * Sound
