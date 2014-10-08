@@ -1,6 +1,6 @@
-inherit(TalkAction, TalkActionQuestion);
+inherit(TalkAction, TalkActionSay);
 
-function TalkActionQuestion(options) {
+function TalkActionSay(options) {
     TalkAction.call(this, options);
 
     this.gameText = { text: 'Question?', fillStyle: '#8F8' };
@@ -9,19 +9,24 @@ function TalkActionQuestion(options) {
     $.extend(true, this, options);
 }
 
-TalkActionQuestion.editableProperties = {};
+TalkActionSay.editableProperties = {};
 
-classes['TalkActionQuestion'] = TalkActionQuestion;
+classes['TalkActionSay'] = TalkActionSay;
 
-TalkActionQuestion.prototype.act = function () {
+TalkActionSay.prototype.act = function () {
     globalGame.gameTextQueue.push($.extend(true, {}, this.gameText, { question: this })); // Clone it, must be unique.
-    globalGame.state = 'question';
-    globalGame.talkActionQuestion = this;
-    globalGame.talkActionAnswerCallback = $.proxy(this.answer, this);
+    if(this.options && this.options.length > 0) {
+        globalGame.state = 'question';
+        globalGame.talkActionQuestion = this;
+        globalGame.talkActionAnswerCallback = $.proxy(this.answer, this);
+    }
+    else
+        this.answer(this.gameText);
 };
 
-TalkActionQuestion.prototype.answer = function (option) {
-    globalGame.state = 'game';
+TalkActionSay.prototype.answer = function (option) {
+    if(globalGame.state == 'question')
+        globalGame.state = 'game';
     if (option.gotoId) {
         for (var i = 0; i < this.behavior.actions; i++) {
             var action = this.behavior.actions[i];
@@ -38,7 +43,7 @@ TalkActionQuestion.prototype.answer = function (option) {
     }
 };
 
-TalkActionQuestion.prototype.serialize = function () {
+TalkActionSay.prototype.serialize = function () {
     var r = TalkAction.prototype.serialize.call(this);
 
     r.gameText = this.gameText;
@@ -47,7 +52,7 @@ TalkActionQuestion.prototype.serialize = function () {
     return r;
 };
 
-TalkActionQuestion.deserialize = function (data, behavior, action) {
+TalkActionSay.deserialize = function (data, behavior, action) {
     action = TalkAction.deserialize(data, behavior, action);
 
     action.gameText = data.gameText;

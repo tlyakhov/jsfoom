@@ -629,6 +629,8 @@ var testMap = new Map({
 
 function loadTestMap() {
     globalGame.map = globalEditor.map = Map.deserialize(testMap);
+    if (globalGame.renderer)
+        globalGame.renderer.map = globalGame.map;
     globalGame.map.entitiesPaused = true;
     globalGame.resetRenderWorkers();
 }

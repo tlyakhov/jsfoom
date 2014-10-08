@@ -219,6 +219,8 @@ Editor.prototype.menuSelect = function (e) {
             this.map = Map.deserialize(globalDefaultMap);
             this.map.entitiesPaused = this.entitiesPaused;
             globalGame.map = this.map;
+            if (globalGame.renderer)
+                globalGame.renderer.map = this.map;
         }, this));
     }
     else if (item.id == 'menu-file-open') {
@@ -792,4 +794,15 @@ Editor.prototype.setCursor = function (cursor) {
         $('#' + this.canvasId).css('cursor', cursor);
     else
         $('#' + this.canvasId).css('cursor', 'auto');
+};
+
+Editor.prototype.gamePick = function(picked) {
+    for(var i = 0; i < picked.length; i++) {
+        if(picked[i].type == 'hi' || picked[i].type == 'lo' || picked[i].type == 'mid') {
+            this.selectObject([ picked[i].segment ]);
+        }
+        else if(picked[i].type == 'floor' || picked[i].type == 'ceiling') {
+            this.selectObject([ picked[i].sector ]);
+        }
+    }
 };

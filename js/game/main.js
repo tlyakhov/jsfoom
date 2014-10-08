@@ -21,6 +21,7 @@ function GameMain(options) {
     this.workers = [];
     this.workerFrameReady = [];
     this.workerDbgMeasure = [];
+    this.pickCallback = null;
     this.prevKeys = {};
     this.keys = {};
     this.gameTextQueue = [ ];
@@ -34,7 +35,7 @@ function GameMain(options) {
 GameMain.prototype.go = function () {
     $('#' + this.canvasId).attr('width', this.screenWidth);
     $('#' + this.canvasId).attr('height', this.screenHeight + 64);
-
+    $('#' + this.canvasId).on('mousedown', $.proxy(this.canvasClick, this));
     this.renderContext = document.getElementById(this.canvasId).getContext('2d');
     this.renderImgData = this.renderContext.createImageData(this.screenWidth, this.screenHeight);
     this.renderBuffer = new ArrayBuffer(this.renderImgData.data.length);
@@ -55,13 +56,24 @@ GameMain.prototype.go = function () {
         this.workerDbgMeasure.push(0);
     }
 
-    if (this.workers.length == 0) {
-        this.renderer = new Renderer({ canvas: this.canvasId, map: this.map, screenWidth: this.screenWidth, screenHeight: this.screenHeight });
-    }
+    //if (this.workers.length == 0) {
+    this.renderer = new Renderer({ canvas: this.canvasId, map: this.map, screenWidth: this.screenWidth, screenHeight: this.screenHeight });
+    //}
 
     this.checkRenderWorkers();
 
     setInterval($.proxy(this.timer, this), 16);
+};
+
+GameMain.prototype.canvasClick = function (evt) {
+    var canvas = document.getElementById(this.canvasId);
+    var rect = canvas.getBoundingClientRect();
+    var x = fast_floor((evt.clientX - rect.left) / (rect.right - rect.left) * canvas.width);
+    var y = fast_floor((evt.clientY - rect.top) / (rect.bottom - rect.top) * canvas.height);
+
+    if(this.pickCallback) {
+        this.pickCallback(this.renderer.pick(x, y));
+    }
 };
 
 GameMain.prototype.onTextureLoad = function (worker, texture) {

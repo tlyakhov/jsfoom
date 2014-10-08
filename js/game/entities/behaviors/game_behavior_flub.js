@@ -25,7 +25,7 @@ GameBehaviorFlub.prototype.frame = function (lastFrameTime) {
             onlyOnce: true,
             entity: this.entity,
             actions: [
-                new TalkActionQuestion({
+                new TalkActionSay({
                     id: 'question',
                     gameText: { text: 'Do you even?', fillStyle: '#00F' },
                     options: [
@@ -33,7 +33,7 @@ GameBehaviorFlub.prototype.frame = function (lastFrameTime) {
                         { text: 'No' }
                     ]
                 }),
-                new TalkActionPrint({
+                new TalkActionSay({
                     gameText: { text: 'Woo!', fillStyle: '#F00' }
                 })
             ]

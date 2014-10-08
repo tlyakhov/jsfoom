@@ -4,10 +4,12 @@ function TalkBehavior(options) {
     Behavior.call(this, options);
 
     this.actions = [];
+    this.onlyOnce = false;
+    this.resetWhenPlayerLeaves = false;
+
     this.currentAction = null;
     this.actionTime = preciseTime();
     this.delay = 0;
-    this.onlyOnce = false;
     this.state = 'ready';
 
     $.extend(true, this, options);
@@ -60,7 +62,7 @@ TalkBehavior.prototype.frame = function (lastFrameTime) {
                 this.currentAction = 0;
         }
     }
-    else {
+    else if(this.resetWhenPlayerLeaves) {
         this.currentAction = null;
     }
 };
@@ -69,6 +71,7 @@ TalkBehavior.prototype.serialize = function () {
     var r = Behavior.prototype.serialize.call(this);
 
     r.onlyOnce = this.onlyOnce;
+    r.resetWhenPlayerLeaves = this.resetWhenPlayerLeaves;
 
     r.actions = [];
     for (var i = 0; i < this.actions.length; i++) {
@@ -82,6 +85,7 @@ TalkBehavior.deserialize = function (data, entity, behavior) {
     behavior = Behavior.deserialize(data, entity, behavior);
 
     behavior.onlyOnce = data.onlyOnce;
+    behavior.resetWhenPlayerLeaves = data.resetWhenPlayerLeaves;
 
     for (var i = 0; i < data.actions.length; i++) {
         if (i >= behavior.actions.length)

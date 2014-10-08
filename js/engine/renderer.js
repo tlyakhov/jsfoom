@@ -370,3 +370,136 @@ Renderer.prototype.render = function (renderTarget) {
 
     this.frame++;
 };
+
+Renderer.prototype.pick = function(screenX, screenY) {
+    var picked = [];
+    
+    this.frameSectors = {};
+
+    var yStart = 0;
+    var yEnd = this.screenHeight - 1;
+    var rayTable = fast_floor(this.map.player.angle * this.trigCount / 360.0) + screenX - this.screenWidth / 2 + 1;
+    while (rayTable < 0)
+        rayTable += this.trigCount;
+
+    while (rayTable >= this.trigCount)
+        rayTable -= this.trigCount;
+
+    var ray = new Float64Array(4);
+    ray[0] = this.map.player.pos[0];
+    ray[1] = this.map.player.pos[1];
+    ray[2] = this.map.player.pos[0] + this.maxViewDist * this.trigTable[rayTable].cos;
+    ray[3] = this.map.player.pos[1] + this.maxViewDist * this.trigTable[rayTable].sin;
+
+    var sector = this.map.player.sector;
+
+    while(sector) {
+        this.frameSectors[sector.id] = sector;
+
+        var distance = GAME_CONSTANTS.maxViewDistance;
+        var currentDistance = null;
+        var intersection = null;
+        var segment = null;
+        var u = null;
+        
+        for (var j = 0; j < sector.segments.length; j++) {
+            var s = sector.segments[j];
+
+            if (vec3dot(vec3create(ray[2] - ray[0], ray[3] - ray[1], 0, true), s.normal) > 0)
+                continue;
+
+            var isect = s.intersect(ray[0], ray[1], ray[2], ray[3]);
+
+            if (isect == undefined)
+                continue;
+
+            var dx = Math.abs(isect[0] - this.map.player.pos[0]);
+            var dy = Math.abs(isect[1] - this.map.player.pos[1]);
+
+            if (dy > dx)
+                currentDistance = Math.abs(dy / this.trigTable[rayTable].sin);
+            else
+                currentDistance = Math.abs(dx / this.trigTable[rayTable].cos);
+
+            if (currentDistance > distance)
+                continue;
+
+            distance = currentDistance;
+            intersection = isect;
+            segment = s;
+
+            u = Math.sqrt(sqr((intersection[0] - segment.ax)) +
+                sqr((intersection[1] - segment.ay))) / segment.length; // 0.0 - 1.0
+        }
+
+        if (!distance)
+            break;
+
+        var projectedHeightTop = (sector.topZ - (this.map.player.pos[2] + this.map.player.height)) * this.viewFix[screenX] / distance;
+        var projectedHeightBottom = (sector.bottomZ - (this.map.player.pos[2] + this.map.player.height)) * this.viewFix[screenX] / distance;
+
+        var sliceStart = fast_floor(this.screenHeight / 2 - projectedHeightTop);
+        var sliceEnd = fast_floor(this.screenHeight / 2 - projectedHeightBottom);
+        var clippedStart = fast_floor(Math.max(sliceStart, yStart));
+        var clippedEnd = fast_floor(Math.min(sliceEnd, yEnd));
+
+        if(screenY >= yStart && screenY < clippedStart) {
+            picked.push({ type: 'ceiling', sector: sector, segment: segment });
+            break;
+        }
+        else if(screenY >= clippedEnd && screenY < yEnd)  {
+            picked.push({ type: 'floor', sector: sector, segment: segment });
+            break;
+        }
+
+        if (segment.adjacentSectorId) {
+            var adj = segment.getAdjacentSector();
+
+            if (!adj)
+                return;
+
+            var adjSegment = segment.getAdjacentSegment();
+
+            if (!adjSegment)
+                return;
+
+            var adjProjectedHeightTop = (adj.topZ - (this.map.player.pos[2] + this.map.player.height)) * this.viewFix[screenX] / distance;
+            var adjProjectedHeightBottom = (adj.bottomZ - (this.map.player.pos[2] + this.map.player.height)) * this.viewFix[screenX] / distance;
+
+            var adjSliceTop = fast_floor(this.screenHeight / 2 - adjProjectedHeightTop);
+            var adjSliceBottom = fast_floor(this.screenHeight / 2 - adjProjectedHeightBottom);
+            var adjClippedTop = fast_floor(Math.max(adjSliceTop, clippedStart));
+            var adjClippedBottom = fast_floor(Math.min(adjSliceBottom, clippedEnd));
+
+            if(screenY >= clippedStart && screenY < adjClippedTop) {
+                picked.push({ type: 'hi', sector: adj, segment: adjSegment });
+                break;
+            }
+            else if(screenY >= adjClippedBottom && screenY < clippedEnd)  {
+                picked.push({ type: 'lo', sector: adj, segment: adjSegment });
+                break;
+            }
+
+            sector = adj;
+            yStart = adjClippedTop;
+            yEnd = adjClippedBottom;
+        }
+        else {
+            if(screenY >= clippedStart && screenY < clippedEnd) {
+                picked.push({ type: 'mid', sector: sector, segment: segment });
+                break;
+            }
+        }
+    }
+    
+    /*for (var sid in this.frameSectors) {
+        sector = this.frameSectors[sid];
+
+        for (var i = 0; i < sector.entities.length; i++) {
+            if (isA(sector.entities[i], RenderableEntity) && sector.entities[i].visible)
+                this.renderEntity(renderTarget, sector.entities[i]);
+        }
+    }*/
+    
+    return picked;
+};
