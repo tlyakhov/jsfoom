@@ -5,7 +5,11 @@ function RenderableEntity(options) {
 
     this.width = 64.0;
     this.height = 64.0;
-    this.sprites = {};
+    this.sprites = [];
+    this.spriteState = 'idle';
+    this.spriteHash = {};
+    this.spriteCounts = {};
+    this.spriteFrame = 0;
     this.zOffset = 0.0;
     this.visible = true;
 
@@ -18,14 +22,50 @@ RenderableEntity.editableProperties = Entity.editableProperties.concat([
     { name: 'visible', friendly: 'Visible', type: 'bool' },
     { name: 'width', friendly: 'Width', type: 'float' },
     { name: 'height', friendly: 'Height', type: 'float' },
-    { name: 'zOffset', friendly: 'Vertical Offset', type: 'float' }
+    { name: 'zOffset', friendly: 'Vertical Offset', type: 'float' },
+    { name: 'spriteState', friendly: 'Sprite State', type: 'string' }
 ]);
 
 
 RenderableEntity.prototype.getSprite = function (angle) {
-    var index = fast_floor(angle * Object.keys(this.sprites).length / 360.0);
+    if(!this.spriteCounts[this.spriteState + '_angle']) {
+        var angles = {};
+        var frames = {};
+        for(var i = 0; i < this.sprites.length; i++) {
+            if(this.sprites[i].state != this.spriteState)
+                continue;
 
-    return this.sprites[index];
+            angles[this.sprites[i].angle] = true;
+            frames[this.sprites[i].frame] = true;
+        }
+        this.spriteCounts[this.spriteState + '_angle'] = Object.keys(angles).length;
+        this.spriteCounts[this.spriteState + '_frame'] = Object.keys(frames).length;
+    }
+
+    if(this.spriteCounts[this.spriteState + '_angle'] == 0 || this.spriteCounts[this.spriteState + '_frame'] == 0)
+        return null;
+
+    var aIndex = fast_floor(angle * this.spriteCounts[this.spriteState + '_angle'] / 360.0);
+    var fIndex = this.spriteFrame % this.spriteCounts[this.spriteState + '_frame'];
+
+    var key = this.spriteState + '_' + aIndex + '_' + fIndex;
+
+    if(!this.spriteHash[key]) {
+        for(var i = 0; i < this.sprites.length; i++) {
+            if(this.sprites[i].state == this.spriteState && this.sprites[i].angle == aIndex && this.sprites[i].frame == fIndex) {
+                this.spriteHash[key] = this.sprites[i];
+                break;
+            }
+        }
+    }
+
+    return this.spriteHash[key];
+};
+
+RenderableEntity.prototype.frame = function(lastFrameTime) {
+    Entity.prototype.frame.call(this, lastFrameTime);
+
+    this.spriteFrame++;
 };
 
 RenderableEntity.prototype.serialize = function () {
@@ -35,10 +75,11 @@ RenderableEntity.prototype.serialize = function () {
     r.height = this.height;
     r.zOffset = this.zOffset;
     r.visible = this.visible;
-    r.sprites = {};
+    r.spriteState = this.spriteState;
+    r.sprites = [];
 
-    for (var s in this.sprites) {
-        r.sprites[s] = this.sprites[s].serialize();
+    for(var i = 0; i < this.sprites.length; i++) {
+        r.sprites.push(this.sprites[i].serialize());
     }
 
     return r;
@@ -51,17 +92,22 @@ RenderableEntity.deserialize = function (data, map, entity) {
     entity.height = data.height;
     entity.zOffset = data.zOffset;
     entity.visible = data.visible;
+    entity.spriteState = data.spriteState;
+
+    entity.spriteHash = {};
 
     if (!entity.sprites)
-        entity.sprites = {};
-    for (var s in data.sprites) {
-        entity.sprites[s] = Sprite.deserialize(data.sprites[s], entity.sprites[s]);
+        entity.sprites = [];
+
+    for (var i = 0; i < data.sprites.length; i++) {
+        if (i >= entity.sprites.length)
+            entity.sprites.push(Sprite.deserialize(data.sprites[i]));
+        else
+            entity.sprites[i] = Sprite.deserialize(data.sprites[i], entity.sprites[i]);
     }
 
-    for (var s in entity.sprites) {
-        if (!data.sprites[s])
-            delete entity.sprites[s];
-    }
-
+    if (entity.sprites.length > data.sprites.length)
+        entity.sprites.splice(data.sprites.length, entity.sprites.length - data.sprites.length);
+    
     return entity;
 };

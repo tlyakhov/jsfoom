@@ -507,7 +507,7 @@ Editor.prototype.drawEntity = function (entity) {
         this.drawEntityAngle(entity);
     }
     else if (isA(entity, LightEntity))
-        this.context.strokeStyle = '#' + rgb2hex(entity.diffuse);
+        this.context.strokeStyle = '#' + rgb2hex(entity.behaviors[0].diffuse);
     else if (isA(entity, SpriteEntity)) {
         this.context.strokeStyle = '#AAA';
         this.drawEntityAngle(entity);

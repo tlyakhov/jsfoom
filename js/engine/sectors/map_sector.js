@@ -51,7 +51,7 @@ MapSector.prototype.updatePVS = function (normalX, normalY, sector) {
         this.pvs = {};
         this.pvs[this.id] = this;
         this.pvsLights = this.entities.filter(function (element) {
-            return isA(element, LightEntity);
+            return element.hasBehavior(LightBehavior);
         });
         sector = this;
     }
@@ -65,7 +65,7 @@ MapSector.prototype.updatePVS = function (normalX, normalY, sector) {
         if ((normalX == undefined || normalX * segment.normal[0] + normalY * segment.normal[1] >= 0) && !this.pvs[adj.sector.id]) {
             this.pvs[adj.sector.id] = adj.sector;
             this.pvsLights = this.pvsLights.concat(adj.sector.entities.filter(function (element) {
-                return isA(element, LightEntity);
+                return element.hasBehavior(LightBehavior);
             }));
             if (normalX == undefined)
                 this.updatePVS(segment.normal[0], segment.normal[1], adj.sector);
@@ -103,54 +103,62 @@ MapSector.prototype.markVisibleLights = function (point) {
     var tempvec = vec3blank(true);
     // Shadows!
     for (var i = 0; i < this.pvsLights.length; i++) {
-        var light = this.pvsLights[i];
+        var lightEntity = this.pvsLights[i];
 
-        light.marked = true;
-        var rayLength = vec3dist(point, light.pos);
+        for (var j = 0; j < lightEntity.behaviors.length; j++) {
+            if (!isA(lightEntity.behaviors[j], LightBehavior))
+                continue;
 
-        if (rayLength == 0) {
-            continue;
-        }
+            var light = lightEntity.behaviors[j];
 
-        var sector = this;
+            light.marked = true;
 
-        while (sector) {
-            var next = null;
-            for (var j = 0; j < sector.segments.length; j++) {
-                var segment = sector.segments[j];
+            var rayLength = vec3dist(point, lightEntity.pos);
 
-                vec3sub(light.pos, point, tempvec);
+            if (rayLength == 0) {
+                continue;
+            }
 
-                if (vec3dot(tempvec, segment.normal) > 0)
-                    continue;
+            var sector = this;
 
-                var lightIntersection = segment.intersect(point[0], point[1], light.pos[0], light.pos[1]);
+            while (sector) {
+                var next = null;
+                for (var k = 0; k < sector.segments.length; k++) {
+                    var segment = sector.segments[k];
 
-                if (lightIntersection && segment.adjacentSectorId) {
-                    var adj = segment.getAdjacentSector();
+                    vec3sub(lightEntity.pos, point, tempvec);
 
-                    if (!adj)
+                    if (vec3dot(tempvec, segment.normal) > 0)
                         continue;
 
-                    // Get the z
-                    var r = Math.sqrt(sqr(lightIntersection[0] - point[0]) + sqr(lightIntersection[1] - point[1])) / rayLength;
-                    var z = r * light.pos[2] + (1.0 - r) * point[2];
+                    var lightIntersection = segment.intersect(point[0], point[1], lightEntity.pos[0], lightEntity.pos[1]);
 
-                    if (z >= adj.bottomZ && z <= adj.topZ) {
-                        next = adj;
+                    if (lightIntersection && segment.adjacentSectorId) {
+                        var adj = segment.getAdjacentSector();
+
+                        if (!adj)
+                            continue;
+
+                        // Get the z
+                        var r = Math.sqrt(sqr(lightIntersection[0] - point[0]) + sqr(lightIntersection[1] - point[1])) / rayLength;
+                        var z = r * lightEntity.pos[2] + (1.0 - r) * point[2];
+
+                        if (z >= adj.bottomZ && z <= adj.topZ) {
+                            next = adj;
+                        }
+                        else {
+                            light.marked = false;
+                        }
                     }
-                    else {
+                    else if (lightIntersection) { // This light is in shadow
                         light.marked = false;
                     }
                 }
-                else if (lightIntersection) { // This light is in shadow
-                    light.marked = false;
-                }
+                if (next)
+                    sector = next;
+                else
+                    break;
             }
-            if (next)
-                sector = next;
-            else
-                break;
         }
     }
 };
@@ -172,27 +180,33 @@ MapSector.prototype.calculateLighting = function (segment, normal, lightmap, map
     var i = this.pvsLights.length;
 
     while (i--) {
-        var light = this.pvsLights[i];
+        var lightEntity = this.pvsLights[i];
+        for(var j = 0; j < lightEntity.behaviors.length; j++) {
+            if(!isA(lightEntity.behaviors[j], LightBehavior))
+                continue;
 
-        if (!light.marked) {
-            light.marked = true;
-            continue;
-        }
+            var light = lightEntity.behaviors[j];
 
-        var l = vec3sub(light.pos, point, vec3blank(true));
+            if (!light.marked) {
+                light.marked = true;
+                continue;
+            }
 
-        var distance = vec3length(l);
-        vec3mul(l, 1.0 / distance, l);
+            var l = vec3sub(lightEntity.pos, point, vec3blank(true));
 
-        var attenuation = light.strength / sqr((distance / light.boundingRadius) + 1.0);
+            var distance = vec3length(l);
+            vec3mul(l, 1.0 / distance, l);
 
-        if (attenuation < GAME_CONSTANTS.lightAttenuationEpsilon)
-            continue;
+            var attenuation = light.strength / sqr((distance / lightEntity.boundingRadius) + 1.0);
 
-        var diffuseLight = vec3dot(normal, l) * attenuation;
+            if (attenuation < GAME_CONSTANTS.lightAttenuationEpsilon)
+                continue;
 
-        if (diffuseLight > 0) {
-            vec3add(diffuseSum, vec3mul(light.diffuse, diffuseLight, tempvec), diffuseSum);
+            var diffuseLight = vec3dot(normal, l) * attenuation;
+
+            if (diffuseLight > 0) {
+                vec3add(diffuseSum, vec3mul(light.diffuse, diffuseLight, tempvec), diffuseSum);
+            }
         }
     }
 

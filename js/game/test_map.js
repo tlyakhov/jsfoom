@@ -224,7 +224,7 @@ var testMap = new Map({
             floorMaterialId: 'Painful Slime',
             ceilMaterialId: 'Default Floor',
             entities: [
-                new LightEntity({ pos: vec3create(-240, 0, -30), strength: 50, diffuse: vec3create(0.1, 1.0, 0.1) })
+                new LightEntity({ pos: vec3create(-240, 0, -30), behaviors: [ new LightBehavior({ strength: 50, diffuse: vec3create(0.1, 1.0, 0.1) }) ] })
             ],
             segments: [
                 new MapSegment({ ax: -180, ay: -30,
@@ -255,7 +255,7 @@ var testMap = new Map({
             floorMaterialId: 'Painful Slime',
             ceilMaterialId: 'Default Floor',
             entities: [
-                new LightEntity({ pos: vec3create(-240, -100, -30), strength: 50, diffuse: vec3create(0.1, 1.0, 0.1) })
+                new LightEntity({ pos: vec3create(-240, -100, -30), behaviors: [ new LightBehavior({ strength: 50, diffuse: vec3create(0.1, 1.0, 0.1) }) ] })
             ],
             segments: [
                 new MapSegment({ ax: -180, ay: -30,
@@ -278,7 +278,7 @@ var testMap = new Map({
             floorMaterialId: 'Painful Slime',
             ceilMaterialId: 'Default Floor',
             entities: [
-                new LightEntity({ pos: vec3create(-240, 100, -30), strength: 50, diffuse: vec3create(0.1, 1.0, 0.1) })
+                new LightEntity({ pos: vec3create(-240, 100, -30), behaviors: [ new LightBehavior({ strength: 50, diffuse: vec3create(0.1, 1.0, 0.1) }) ] })
             ],
             segments: [
                 new MapSegment({ ax: -180, ay: 30,
@@ -370,7 +370,7 @@ var testMap = new Map({
             ceilMaterialId: 'Sky',
             floorTargetSectorId: 'sector17',
             entities: [
-                new LightEntity({ pos: vec3create(350, 80, 90), diffuse: vec3create(0.4, 0.6, 1.0), strength: 130 })
+                new LightEntity({ pos: vec3create(350, 80, 90), behaviors: [ new LightBehavior({ diffuse: vec3create(0.4, 0.6, 1.0), strength: 130 }) ] })
             ],
             segments: [
                 new MapSegment({ ax: 300, ay: 20,

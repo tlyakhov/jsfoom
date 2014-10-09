@@ -21,7 +21,9 @@ TalkActionGive.create = function(item, id, gotoId) {
     return tag;
 };
 
-TalkActionGive.editableProperties = {};
+TalkActionGive.editableProperties = TalkAction.editableProperties.concat([
+    { name: 'item', friendly: 'Inventory Item', type: 'inventoryItem' }
+]);
 
 classes['TalkActionGive'] = TalkActionGive;
 

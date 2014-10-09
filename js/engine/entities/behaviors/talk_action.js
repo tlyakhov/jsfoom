@@ -1,13 +1,17 @@
 function TalkAction(options) {
     this.id = "TalkAction_" + (new ObjectId().toString());
-    this.delay = 3000;
+    this.delay = 1000;
     this.behavior = null;
     this.gotoId = null;
 
     $.extend(true, this, options);
 }
 
-TalkAction.editableProperties = {};
+TalkAction.editableProperties = [
+    { name: 'id', friendly: 'ID', type: 'string' },
+    { name: 'delay', friendly: 'Delay', type: 'float' },
+    { name: 'gotoId', friendly: 'Go-to ID', type: 'string' }
+];
 
 classes['TalkAction'] = TalkAction;
 

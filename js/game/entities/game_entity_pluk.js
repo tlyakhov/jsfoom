@@ -1,8 +1,8 @@
 inherit(SpriteEntity, GameEntityPluk);
 
-var globalGameEntityPlukSprites = {
-    0: new Sprite({ textureSrc: '/data/game/pluk.png', angleIndex: 0 })
-};
+var globalGameEntityPlukSprites = [
+    new Sprite({ textureSrc: '/data/game/pluk.png', angleIndex: 0 })
+];
 
 function GameEntityPluk(options) {
     SpriteEntity.call(this, options);

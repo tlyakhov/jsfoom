@@ -30,7 +30,10 @@ TalkActionSay.create = function(text, fillStyle, delay, options, id, gotoId) {
     return tas;
 };
 
-TalkActionSay.editableProperties = {};
+TalkActionSay.editableProperties = TalkAction.editableProperties.concat([
+    { name: 'gameText', friendly: 'Game Text', type: 'gameText' },
+    { name: 'options', friendly: 'Options', type: 'array' }
+]);
 
 classes['TalkActionSay'] = TalkActionSay;
 

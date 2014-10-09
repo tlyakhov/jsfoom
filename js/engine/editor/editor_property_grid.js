@@ -1,13 +1,13 @@
 Editor.prototype.renderPropertyName = function (row, type, set, meta) {
     if (type == 'sort') {
         if (row.name == 'id')
-            return '!!' + row.friendly;
+            return row.depth + '!!!' + row.friendly;
         else if (row.type == 'type')
-            return '!!!' + row.friendly;
+            return row.depth + '!!!!' + row.friendly;
         else if (row.type == 'material_id')
-            return '!' + row.friendly;
+            return row.depth + '!!' + row.friendly;
         else
-            return row.friendly;
+            return row.depth + '!' + row.friendly;
     }
 
     return row.friendly;
@@ -182,6 +182,39 @@ Editor.prototype.addPropertyGridExtraSector = function (sector) {
     anchor.appendTo(jqPropExtras);
 };
 
+Editor.prototype.propertyGridRow = function(type, dt, objects, parent, depth) {
+    var properties = type.editableProperties;
+
+    if(!properties)
+        return;
+
+    for (var i = 0; i < properties.length; i++) {
+        var prop = properties[i];
+
+        var fullFriendly = parent ? parent + '.' + prop.friendly : prop.friendly;
+
+        if(prop.type == 'array' && objects.length > 1) {
+            dt.row.add({ name: prop.name, friendly: fullFriendly, value: "Can't edit array for multiple objects.", type: prop.type, depth: depth });
+        }
+        else if(prop.type == 'array') {
+            var array = objects[0][prop.name];
+            for(var j = 0; j < array.length; j++) {
+                this.propertyGridRow(array[j].constructor, dt, [ array[j] ], fullFriendly + '[' + j + ']', depth + 1);
+            }
+        }
+        else {
+            var all = [];
+            for (var j = 0; j < objects.length; j++) {
+                if (isA(objects[j], MapPoint)) // Ignore points, they have no properties
+                    continue;
+
+                all.push(objects[j][prop.name]);
+            }
+            dt.row.add({ name: prop.name, friendly: fullFriendly, value: all, type: prop.type, depth: depth });
+        }
+    }
+};
+
 Editor.prototype.refreshPropertyGrid = function () {
     var jqPropEditor = $('#' + this.propEditorId);
     var jqPropExtras = $('#' + this.propExtrasId);
@@ -211,33 +244,19 @@ Editor.prototype.refreshPropertyGrid = function () {
         var key = selectedObject.constructor.name;
         if (!uniqueTypes[key]) {
             uniqueTypes[key] = true;
-            dt.row.add({ friendly: 'Type', name: 'type', value: key, type: 'type' });
+            dt.row.add({ friendly: 'Type', name: 'type', value: key, type: 'type', depth: 0 });
         }
 
         type = selectedObject.constructor;
     }
 
     if (Object.keys(uniqueTypes).length > 1) {
-        dt.row.add({ name: '', friendly: '', value: 'Selected objects have multiple types', type: 'string' });
+        dt.row.add({ name: '', friendly: '', value: 'Selected objects have multiple types', type: 'string', depth: 0 });
         dt.rows().invalidate().draw();
         return;
     }
 
-    var properties = type.editableProperties;
-
-    for (var i = 0; i < properties.length; i++) {
-        var prop = properties[i];
-
-        var all = [];
-        for (var j = 0; j < this.selectedObjects.length; j++) {
-            if (isA(this.selectedObjects[j], MapPoint)) // Ignore points, they have no properties
-                continue;
-
-            all.push(this.selectedObjects[j][prop.name]);
-        }
-        dt.row.add({ name: prop.name, friendly: prop.friendly, value: all, type: prop.type });
-    }
-
+    this.propertyGridRow(type, dt, this.selectedObjects, null, 0);
     dt.rows().invalidate().draw();
 
     for (var i = 0; i < sectors.length; i++) {

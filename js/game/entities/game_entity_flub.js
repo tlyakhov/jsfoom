@@ -1,15 +1,15 @@
 inherit(SpriteEntity, GameEntityFlub);
 
-var globalGameEntityFlubSprites = {
-    0: new Sprite({ textureSrc: '/data/game/flub-back.png', angleIndex: 0 }),
-    1: new Sprite({ textureSrc: '/data/game/flub-back-right.png', angleIndex: 1 }),
-    2: new Sprite({ textureSrc: '/data/game/flub-right.png', angleIndex: 2 }),
-    3: new Sprite({ textureSrc: '/data/game/flub-front-right.png', angleIndex: 3 }),
-    4: new Sprite({ textureSrc: '/data/game/flub-front.png', angleIndex: 4 }),
-    5: new Sprite({ textureSrc: '/data/game/flub-front-left.png', angleIndex: 5 }),
-    6: new Sprite({ textureSrc: '/data/game/flub-left.png', angleIndex: 6 }),
-    7: new Sprite({ textureSrc: '/data/game/flub-back-left.png', angleIndex: 7 })
-};
+var globalGameEntityFlubSprites = [
+    new Sprite({ textureSrc: '/data/game/flub-back.png', angle: 0, frame: 0 }),
+    new Sprite({ textureSrc: '/data/game/flub-back-right.png', angle: 1, frame: 0 }),
+    new Sprite({ textureSrc: '/data/game/flub-right.png', angle: 2, frame: 0 }),
+    new Sprite({ textureSrc: '/data/game/flub-front-right.png', angle: 3, frame: 0 }),
+    new Sprite({ textureSrc: '/data/game/flub-front.png', angle: 4, frame: 0 }),
+    new Sprite({ textureSrc: '/data/game/flub-front-left.png', angle: 5, frame: 0 }),
+    new Sprite({ textureSrc: '/data/game/flub-left.png', angle: 6, frame: 0 }),
+    new Sprite({ textureSrc: '/data/game/flub-back-left.png', angle: 7, frame: 0 })
+];
 
 function GameEntityFlub(options) {
     SpriteEntity.call(this, options);

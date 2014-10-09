@@ -30,6 +30,15 @@ Entity.editableProperties = [
     { name: 'behaviors', friendly: 'Behaviors', type: 'array' }
 ];
 
+Entity.prototype.hasBehavior = function(clazz) {
+    for(var i = 0; i < this.behaviors.length; i++) {
+        if(isA(this.behaviors[i], clazz))
+            return true;
+    }
+
+    return false;
+};
+
 Entity.prototype.angleTo = function (x, y) {
     var dx = this.pos[0] - x;
     var dy = this.pos[1] - y;
