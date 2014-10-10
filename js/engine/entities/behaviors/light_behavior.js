@@ -7,7 +7,8 @@ function LightBehavior(options) {
     this.strength = 50.0;
     this.marked = true;
 
-    this.lastPos = null;
+    this.lastPos = vec3blank();
+
     $.extend(true, this, options);
 }
 
@@ -28,7 +29,9 @@ LightBehavior.prototype.frame = function (lastFrameTime) {
     if (this.lastPos && (entity.pos[0] != this.lastPos[0] || entity.pos[1] != this.lastPos[1] || entity.pos[2] != this.lastPos[2]))
         map.clearLightmaps();
 
-    this.lastPos = vec3clone(entity.pos);
+    this.lastPos[0] = entity.pos[0];
+    this.lastPos[1] = entity.pos[1];
+    this.lastPos[2] = entity.pos[2];
 };
 
 LightBehavior.prototype.serialize = function () {

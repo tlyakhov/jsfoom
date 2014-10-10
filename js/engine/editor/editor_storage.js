@@ -22,7 +22,7 @@ EditorStorage.allLevelNames = function () {
 };
 
 EditorStorage.saveLevel = function (name, map) {
-    localStorage.setItem(EditorStorage.prefixLevel + name, map.stringSerialize());
+    localStorage.setItem(EditorStorage.prefixLevel + name, stringSerialize(map));
 };
 
 EditorStorage.loadLevel = function (name, map) {

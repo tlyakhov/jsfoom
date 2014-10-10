@@ -16,6 +16,17 @@ function Material(options) {
 
 classes['Material'] = Material;
 
+Material.editableProperties = [
+    { name: 'id', friendly: 'ID', type: 'string' },
+    { name: 'textureSrc', friendly: 'Texture Source', type: 'string' },
+    { name: 'ambient', friendly: 'Ambient Color', type: 'vector' },
+    { name: 'diffuse', friendly: 'Diffuse Color', type: 'vector' },
+    { name: 'renderAsSky', friendly: 'Render as sky?', type: 'bool' },
+    { name: 'staticBackground', friendly: 'Static Background?', type: 'bool' },
+    { name: 'hurt', friendly: 'Hurt', type: 'float' },
+    { name: 'isLiquid', friendly: 'Is Liquid?', type: 'bool' }
+];
+
 Material.prototype.getTexture = function () {
     if (!this.textureSrc)
         return null;

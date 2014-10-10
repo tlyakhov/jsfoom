@@ -1,16 +1,18 @@
 Editor.prototype.renderPropertyName = function (row, type, set, meta) {
     if (type == 'sort') {
+        var depth = padNumber(row.depth, 2);
+        var index = 4;
         if (row.name == 'id')
-            return row.depth + '!!!' + row.friendly;
+            index = 1;
         else if (row.type == 'type')
-            return row.depth + '!!!!' + row.friendly;
+            index = 0;
         else if (row.type == 'material_id')
-            return row.depth + '!!' + row.friendly;
-        else
-            return row.depth + '!' + row.friendly;
+            index = 2;
+
+        return row.friendly;
     }
 
-    return row.friendly;
+    return "<span style='padding-left:" + row.depth * 10 + "px'></span>" + row.friendly;
 };
 
 Editor.prototype.dataPropertyValue = function (row, type, set, meta) {
@@ -22,11 +24,14 @@ Editor.prototype.dataPropertyValue = function (row, type, set, meta) {
             var split = set.split(',')
             set = vec3create(parseFloat(split[0]), parseFloat(split[1]), parseFloat(split[2]));
         }
+        else if(row.type == 'bool') {
+            set = set == 'true';
+        }
 
         row.value = set;
 
         var sp = this.newAction(SetPropertyEditorAction);
-        sp.act(row.name, set);
+        sp.act(row.objects, row.name, set);
     }
 
     return row.value;
@@ -53,6 +58,23 @@ Editor.prototype.renderPropertyValue = function (data, type, row, meta) {
     var result = '';
     var values = isArray ? row.value : [ row.value ];
 
+    if(row.type == 'serializable') {
+        return stringSerialize(values[0]);
+    }
+    else if(row.type == 'array') {
+        return "<div class='btn-group btn-group-xs'>" +
+            "    <button type='button' class='btn btn-default'>Add</button>" +
+            "    <button type='button' class='btn btn-default'>Clear</button>" +
+            "</div>";
+    }
+    else if (row.type == 'arrayElement') {
+        return "<div class='btn-group btn-group-xs'>" +
+            "    <button type='button' class='btn btn-default'>Up</button>" +
+            "    <button type='button' class='btn btn-default'>Down</button>" +
+            "    <button type='button' class='btn btn-default'>Delete</button>" +
+            "</div>";
+    }
+
     for (var i = 0; i < values.length; i++) {
         var value = values[i];
 
@@ -69,11 +91,16 @@ Editor.prototype.renderPropertyValue = function (data, type, row, meta) {
             result += value;
     }
 
+    if(row.name == 'id')
+        result = '<b>' + result + '</b>';
+    else if(row.type == 'type')
+        result = '<i>' + result + '</i>';
+
     return result;
 };
 
 var EDITOR_PROPERTY_TYPE_MAP = {
-    bool: 'text',
+    bool: 'checklist',
     float: 'text',
     string: 'text',
     material_id: 'select2',
@@ -104,7 +131,8 @@ Editor.prototype.propertyRowCallback = function (row, data) {
         var cellData = cell.data();
         var rowData = dt.row(cell.index().row).data();
 
-        if (rowData.name.length == 0 || rowData.name == 'type' || cell.index().column == 0)
+        if (rowData.name.length == 0 || rowData.name == 'type' || cell.index().column == 0 ||
+            rowData.type == 'array')
             return;
 
         var isEnum = typeof2(rowData.type) == '[object Array]';
@@ -120,6 +148,9 @@ Editor.prototype.propertyRowCallback = function (row, data) {
 
                 if (rowData.type == 'vector') {
                     return cellData[0] + ', ' + cellData[1] + ', ' + cellData[2];
+                }
+                else if(rowData.type == 'bool') {
+                    return cellData == 'true';
                 }
 
                 return cellData;
@@ -155,6 +186,10 @@ Editor.prototype.propertyRowCallback = function (row, data) {
                         });
                     }
                 }
+                else if(rowData.type == 'bool')
+                {
+                    result.push({ 'true' : rowData.friendly });
+                }
 
                 return result;
             },
@@ -182,7 +217,7 @@ Editor.prototype.addPropertyGridExtraSector = function (sector) {
     anchor.appendTo(jqPropExtras);
 };
 
-Editor.prototype.propertyGridRow = function(type, dt, objects, parent, depth) {
+Editor.prototype.propertyGridObject = function(type, dt, objects, parent, depth) {
     var properties = type.editableProperties;
 
     if(!properties)
@@ -194,12 +229,40 @@ Editor.prototype.propertyGridRow = function(type, dt, objects, parent, depth) {
         var fullFriendly = parent ? parent + '.' + prop.friendly : prop.friendly;
 
         if(prop.type == 'array' && objects.length > 1) {
-            dt.row.add({ name: prop.name, friendly: fullFriendly, value: "Can't edit array for multiple objects.", type: prop.type, depth: depth });
+            dt.row.add({ name: prop.name,
+                friendly: fullFriendly,
+                value: "Can't edit array for multiple objects.",
+                type: prop.type,
+                parent: parent,
+                depth: depth,
+                objects: objects });
         }
         else if(prop.type == 'array') {
+            dt.row.add({ name: prop.name,
+                friendly: fullFriendly,
+                value: '',
+                type: prop.type,
+                parent: parent,
+                depth: depth,
+                objects: objects });
             var array = objects[0][prop.name];
             for(var j = 0; j < array.length; j++) {
-                this.propertyGridRow(array[j].constructor, dt, [ array[j] ], fullFriendly + '[' + j + ']', depth + 1);
+                var thisParent = fullFriendly + '[' + j + ']';
+                dt.row.add({ friendly: thisParent,
+                    name: prop.name + '[' + j + ']',
+                    value: '',
+                    type: 'arrayElement',
+                    parent: thisParent,
+                    depth: depth + 1,
+                    objects: [ array[j] ] });
+                dt.row.add({ friendly: thisParent + '.Type',
+                    name: 'type',
+                    value: array[j].constructor.name,
+                    type: 'type',
+                    parent: thisParent,
+                    depth: depth + 1,
+                    objects: objects });
+                this.propertyGridObject(array[j].constructor, dt, [ array[j] ], thisParent, depth + 1);
             }
         }
         else {
@@ -210,7 +273,13 @@ Editor.prototype.propertyGridRow = function(type, dt, objects, parent, depth) {
 
                 all.push(objects[j][prop.name]);
             }
-            dt.row.add({ name: prop.name, friendly: fullFriendly, value: all, type: prop.type, depth: depth });
+            dt.row.add({ name: prop.name,
+                friendly: fullFriendly,
+                value: all,
+                type: prop.type,
+                parent: parent,
+                depth: depth,
+                objects: objects });
         }
     }
 };
@@ -244,19 +313,19 @@ Editor.prototype.refreshPropertyGrid = function () {
         var key = selectedObject.constructor.name;
         if (!uniqueTypes[key]) {
             uniqueTypes[key] = true;
-            dt.row.add({ friendly: 'Type', name: 'type', value: key, type: 'type', depth: 0 });
+            dt.row.add({ friendly: 'Type', name: 'type', value: key, type: 'type', parent: null, depth: 0 });
         }
 
         type = selectedObject.constructor;
     }
 
     if (Object.keys(uniqueTypes).length > 1) {
-        dt.row.add({ name: '', friendly: '', value: 'Selected objects have multiple types', type: 'string', depth: 0 });
+        dt.row.add({ name: '', friendly: '', value: 'Selected objects have multiple types', type: 'string', parent: null, depth: 0 });
         dt.rows().invalidate().draw();
         return;
     }
 
-    this.propertyGridRow(type, dt, this.selectedObjects, null, 0);
+    this.propertyGridObject(type, dt, this.selectedObjects, null, 0);
     dt.rows().invalidate().draw();
 
     for (var i = 0; i < sectors.length; i++) {

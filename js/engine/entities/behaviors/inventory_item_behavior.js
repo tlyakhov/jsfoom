@@ -11,7 +11,10 @@ function InventoryItemBehavior(options) {
 
 classes['InventoryItemBehavior'] = InventoryItemBehavior;
 
-InventoryItemBehavior.editableProperties = Behavior.editableProperties;
+InventoryItemBehavior.editableProperties = Behavior.editableProperties.concat([
+    { name: 'name', friendly: 'Name', type: 'string' },
+    { name: 'count', friendly: 'Count', type: 'float' }
+]);
 
 InventoryItemBehavior.prototype.reset = function () {
     Behavior.prototype.reset.call(this);

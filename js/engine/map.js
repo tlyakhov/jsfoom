@@ -27,7 +27,8 @@ classes['Map'] = Map;
 
 Map.editableProperties = [
     { name: 'spawnX', friendly: 'Player Spawn X', type: 'float' },
-    { name: 'spawnY', friendly: 'Player Spawn Y', type: 'float' }
+    { name: 'spawnY', friendly: 'Player Spawn Y', type: 'float' },
+    { name: 'materials', friendly: 'Materials', type: 'array' }
 ];
 
 Map.prototype.getMaterial = function (id) {
@@ -222,19 +223,6 @@ Map.deserialize = function (data, map) {
     map.player.collide();
 
     return map;
-};
-
-Map.prototype.stringSerialize = function () {
-    var replacer = function (key, value) {
-        var type = typeof2(value);
-
-        if (type == '[object Float64Array]')
-            return Array.apply([], value);
-        else
-            return value;
-    };
-
-    return JSON.stringify(this.serialize(), replacer);
 };
 
 Map.prototype.autoPortal = function (sectors) {

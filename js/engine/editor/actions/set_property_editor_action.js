@@ -11,14 +11,17 @@ function SetPropertyEditorAction(editor) {
 
 classes['SetPropertyEditorAction'] = SetPropertyEditorAction;
 
-SetPropertyEditorAction.prototype.act = function (property, value) {
-    this.selectedObjects = this.editor.selectedObjects;
+SetPropertyEditorAction.prototype.act = function (objects, property, value) {
+    this.selectedObjects = objects;
     this.property = property;
     this.value = value;
 
     for (var i = 0; i < this.selectedObjects.length; i++) {
         this.originalValues.push(this.selectedObjects[i][property]);
         this.selectedObjects[i][property] = value;
+        if((isA(this.selectedObjects[i], Entity) && this.selectedObjects[i].hasBehavior(LightBehavior)) ||
+            isA(this.selectedObjects[i], LightBehavior))
+            this.editor.map.clearLightmaps();
     }
     this.editor.actionFinished();
 };

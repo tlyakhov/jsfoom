@@ -271,7 +271,7 @@ Editor.prototype.menuSelect = function (e) {
         this.saveAs();
     }
     else if (item.id == 'menu-file-download') {
-        var s = this.map.stringSerialize();
+        var s = stringSerialize(this.map);
 
         window.open('data:application/json;base64,' + (window.btoa ? btoa(s) : s));
     }
@@ -804,5 +804,7 @@ Editor.prototype.gamePick = function(picked) {
         else if(picked[i].type == 'floor' || picked[i].type == 'ceiling') {
             this.selectObject([ picked[i].sector ]);
         }
+        else
+            this.selectObject([ picked[i].entity ]);
     }
 };

@@ -153,3 +153,33 @@ function preciseTime() {
 
     return new Date().valueOf();
 }
+
+function padNumber(num, size) {
+    var s = num+"";
+    while (s.length < size) s = "0" + s;
+    return s;
+}
+
+function stringSerialize(obj) {
+    var replacer = function (key, value) {
+        var type = typeof2(value);
+
+        if (type == '[object Float64Array]')
+            return Array.apply([], value);
+        else
+            return value;
+    };
+
+    var isArray = typeof2(obj) === '[object Array]';
+
+    if(isArray) {
+        var a = [];
+        for(var i = 0; i < obj.length; i++) {
+            a.push(obj[i].serialize());
+        }
+
+        return JSON.stringify(a, replacer);
+    }
+    else
+        return JSON.stringify(obj.serialize(), replacer);
+}

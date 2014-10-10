@@ -9,7 +9,6 @@ function Renderer(options) {
     this.maxViewDist = GAME_CONSTANTS.maxViewDistance;
     this.frame = 0;
     this.frameTint = 0;
-    this.frameSectors = {};
     this.workerWidth = 0;
     this.counter = 0;
 
@@ -216,8 +215,6 @@ Renderer.prototype.renderSlice = function (slice) {
 };
 
 Renderer.prototype.renderSector = function (slice) {
-    this.frameSectors[slice.sector.id] = slice.sector;
-
     slice.distance = GAME_CONSTANTS.maxViewDistance;
 
     var dist = null;
@@ -315,7 +312,6 @@ Renderer.prototype.renderEntity = function (renderTarget, entity) {
 };
 
 Renderer.prototype.render = function (renderTarget) {
-    this.frameSectors = {};
     this.counter = 0;
 
     var xStart = (globalWorkerId != undefined) ? globalWorkerId * this.workerWidth : 0;
@@ -373,9 +369,6 @@ Renderer.prototype.render = function (renderTarget) {
 
 Renderer.prototype.pick = function(screenX, screenY) {
     var picked = [];
-    
-    this.frameSectors = {};
-
     var yStart = 0;
     var yEnd = this.screenHeight - 1;
     var rayTable = fast_floor(this.map.player.angle * this.trigCount / 360.0) + screenX - this.screenWidth / 2 + 1;
@@ -392,11 +385,11 @@ Renderer.prototype.pick = function(screenX, screenY) {
     ray[3] = this.map.player.pos[1] + this.maxViewDist * this.trigTable[rayTable].sin;
 
     var sector = this.map.player.sector;
+    var distance = null;
 
     while(sector) {
-        this.frameSectors[sector.id] = sector;
+        distance = null;
 
-        var distance = GAME_CONSTANTS.maxViewDistance;
         var currentDistance = null;
         var intersection = null;
         var segment = null;
@@ -421,7 +414,7 @@ Renderer.prototype.pick = function(screenX, screenY) {
             else
                 currentDistance = Math.abs(dx / this.trigTable[rayTable].cos);
 
-            if (currentDistance > distance)
+            if (distance != null && currentDistance > distance)
                 continue;
 
             distance = currentDistance;
@@ -491,15 +484,50 @@ Renderer.prototype.pick = function(screenX, screenY) {
             }
         }
     }
-    
-    /*for (var sid in this.frameSectors) {
-        sector = this.frameSectors[sid];
+
+    for (var sid in this.map.player.sector.pvs) {
+        sector = this.map.player.sector.pvs[sid];
 
         for (var i = 0; i < sector.entities.length; i++) {
-            if (isA(sector.entities[i], RenderableEntity) && sector.entities[i].visible)
-                this.renderEntity(renderTarget, sector.entities[i]);
+            if (!isA(sector.entities[i], RenderableEntity) && sector.entities[i].visible)
+                continue;
+            var entity = sector.entities[i];
+            var etop = this.map.player.angleTo(entity.pos[0], entity.pos[1]);
+            var ang = etop - this.map.player.angle;
+
+            if (ang < -this.fov / 2)
+                ang += 360.0;
+            if (ang > this.fov / 2)
+                ang -= 360.0;
+
+            var d = this.map.player.distanceTo(entity.pos[0], entity.pos[1]);
+            var x = (ang + this.fov / 2.0) * this.screenWidth / this.fov;
+            var vfixindex = Math.min(Math.max(fast_floor(x), 0), this.screenWidth - 1);
+            var z = entity.pos[2] + entity.zOffset - (this.map.player.pos[2] + this.map.player.height);
+            var y1 = fast_floor(this.screenHeight / 2 - (z + entity.height) * this.viewFix[vfixindex] / d);
+            var y2 = fast_floor(this.screenHeight / 2 - z * this.viewFix[vfixindex] / d);
+
+            var scale = (y2 - y1) * entity.width / entity.height;
+            var x1 = fast_floor(x - scale * 0.5);
+            var x2 = fast_floor(x + scale * 0.5);
+
+            var xStart = (globalWorkerId != undefined) ? globalWorkerId * this.workerWidth : 0;
+            var xEnd = (globalWorkerId != undefined) ? xStart + this.workerWidth : this.screenWidth;
+            var clippedX1 = Math.max(x1, xStart);
+            var clippedX2 = Math.min(x2, xEnd);
+            var clippedY1 = Math.max(y1, 0);
+            var clippedY2 = Math.min(y2, this.screenHeight - 1);
+
+            if(screenX >= clippedX1 && screenX < clippedX2 &&
+                screenY >= clippedY1 && screenY < clippedY2 &&
+                d < distance)
+            {
+                picked = [];
+                picked.push({ type: 'entity', entity: entity });
+                distance = d;
+            }
         }
-    }*/
+    }
     
     return picked;
 };
