@@ -5,6 +5,7 @@ function LightBehavior(options) {
 
     this.diffuse = vec3create(1.0, 1.0, 1.0);
     this.strength = 50.0;
+    this.attenuation = true;
     this.marked = true;
 
     this.lastPos = vec3blank();
@@ -16,7 +17,8 @@ classes['LightBehavior'] = LightBehavior;
 
 LightBehavior.editableProperties = Behavior.editableProperties.concat([
     { name: 'diffuse', friendly: 'Diffuse', type: 'vector' },
-    { name: 'strength', friendly: 'Strength', type: 'float' }
+    { name: 'strength', friendly: 'Strength', type: 'float' },
+    { name: 'attenuation', friendly: 'Diffuses?', type: 'bool'}
 ]);
 
 
@@ -39,6 +41,7 @@ LightBehavior.prototype.serialize = function () {
 
     r.diffuse = this.diffuse;
     r.strength = this.strength;
+    r.attenuation = this.attenuation;
 
     return r;
 };
@@ -48,6 +51,7 @@ LightBehavior.deserialize = function (data, entity, behavior) {
 
     behavior.diffuse = data.diffuse;
     behavior.strength = data.strength;
+    behavior.attenuation = data.attenuation;
 
     return behavior;
 };

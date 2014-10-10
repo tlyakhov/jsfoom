@@ -80,6 +80,12 @@ Editor.prototype.go = function () {
         data: []
     });
 
+    $('body').on('click', '.prop-grid-array-add a', $.proxy(this.onPropGridArrayAdd, this));
+    $('body').on('click', '.prop-grid-array-clear', $.proxy(this.onPropGridArrayClear, this));
+    $('body').on('click', '.prop-grid-array-up', $.proxy(this.onPropGridArrayUp, this));
+    $('body').on('click', '.prop-grid-array-down', $.proxy(this.onPropGridArrayDown, this));
+    $('body').on('click', '.prop-grid-array-delete', $.proxy(this.onPropGridArrayDelete, this));
+
     var entityTypes = [ LightEntity, GameEntityFlub, GameEntityPluk ];
     var entityList = [];
     var sectorTypes = [ MapSector, MapSectorWater, MapSectorVerticalDoor ];
@@ -506,8 +512,11 @@ Editor.prototype.drawEntity = function (entity) {
         this.context.strokeStyle = '#555';
         this.drawEntityAngle(entity);
     }
-    else if (isA(entity, LightEntity))
-        this.context.strokeStyle = '#' + rgb2hex(entity.behaviors[0].diffuse);
+    else if (isA(entity, LightEntity)) {
+        var behavior = entity.getBehavior(LightBehavior);
+        if(behavior)
+            this.context.strokeStyle = '#' + rgb2hex(behavior.diffuse);
+    }
     else if (isA(entity, SpriteEntity)) {
         this.context.strokeStyle = '#AAA';
         this.drawEntityAngle(entity);

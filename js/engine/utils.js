@@ -39,6 +39,51 @@ function isA(object, clazz) {
     return false;
 }
 
+
+function typeIsA(type, clazz) {
+    if (!type)
+        return false;
+
+    if (type == clazz)
+        return true;
+
+    if (!type.superclasses)
+        return false;
+
+    for (var i = 0; i < type.superclasses.length; i++) {
+        if (type.superclasses[i] == clazz)
+            return true;
+    }
+
+    return false;
+}
+
+function subclassesOf(clazz) {
+    if(typeof clazz == 'string')
+        clazz = classes[clazz];
+
+    var subclasses = [];
+    for(var clazz2 in classes) {
+        if(typeIsA(classes[clazz2], clazz))
+            subclasses.push(classes[clazz2]);
+    }
+
+    subclasses.sort(function(a, b) {
+        if (a.name < b.name)
+            return -1;
+        else if(a.name > b.name)
+            return 1;
+        else
+            return 0;
+    });
+
+    return subclasses;
+}
+
+function camelCase(capitalized) {
+    return capitalized[0].toLowerCase() + capitalized.substring(1);
+}
+
 function fast_floor(v) {
     return v | 0;
 }

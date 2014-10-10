@@ -43,12 +43,8 @@ TalkAction.prototype.serialize = function () {
 };
 
 TalkAction.deserialize = function (data, behavior, talkAction) {
-    if (!talkAction)
+    if (!talkAction || talkAction.constructor.name != data._type)
         talkAction = createFromName(data._type, {});
-
-    if (talkAction.constructor.name != data._type) {
-        talkAction.__proto__ = classes[data._type];
-    }
 
     talkAction.id = data.id;
     talkAction.delay = data.delay;

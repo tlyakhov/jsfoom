@@ -51,6 +51,92 @@ Editor.prototype.renderMaterial = function (m) {
     return "<img src=\"" + material.textureSrc + "\" class=\"editor-property-image\" /><b>" + material.id + "</b>";
 };
 
+Editor.prototype.onPropGridArrayAdd = function(evt) {
+    var selectedClass = $(evt.target).text();
+    var dt = $('#' + this.propEditorId).DataTable();
+    var cell = dt.cell($(evt.target).parent().parent().parent().parent());
+    var rowData = dt.row(cell.index().row).data();
+    var object = rowData.objects[0];
+
+    var props = object.constructor.editableProperties;
+    var prop = null;
+
+    for(var i = 0; i < props.length; i++) {
+        if(props[i].name == rowData.name) {
+            prop = props[i];
+            break;
+        }
+    }
+
+    var newObject = createFromName(selectedClass);
+    if(prop.parentReference)
+        newObject[prop.parentReference] = object;
+    if(newObject.map != undefined && newObject.map)
+        newObject.map = this.map;
+
+    var newArray = object[rowData.name].slice(0);
+    newArray.push(newObject);
+
+    var ap = this.newAction(ArrayPropertyEditorAction);
+    ap.act(object, rowData.name, newArray);
+};
+
+Editor.prototype.onPropGridArrayClear = function(evt) {
+    var dt = $('#' + this.propEditorId).DataTable();
+    var cell = dt.cell($(evt.target).parent().parent());
+    var rowData = dt.row(cell.index().row).data();
+    var object = rowData.objects[0];
+
+    var ap = this.newAction(ArrayPropertyEditorAction);
+    ap.act(object, rowData.name, []);
+};
+
+Editor.prototype.onPropGridArrayUp = function(evt) {
+    var dt = $('#' + this.propEditorId).DataTable();
+    var cell = dt.cell($(evt.target).parent().parent());
+    var rowData = dt.row(cell.index().row).data();
+    var object = rowData.objects[0];
+    var array = rowData.objects[1];
+    var parent = rowData.objects[2];
+
+    var newArray = array.slice(0);
+    newArray.splice(rowData.index, 1);
+    newArray.splice(rowData.index - 1, 0, object);
+
+    var ap = this.newAction(ArrayPropertyEditorAction);
+    ap.act(parent, rowData.name, newArray);
+};
+
+Editor.prototype.onPropGridArrayDown = function(evt) {
+    var dt = $('#' + this.propEditorId).DataTable();
+    var cell = dt.cell($(evt.target).parent().parent());
+    var rowData = dt.row(cell.index().row).data();
+    var object = rowData.objects[0];
+    var array = rowData.objects[1];
+    var parent = rowData.objects[2];
+
+    var newArray = array.slice(0);
+    newArray.splice(rowData.index, 1);
+    newArray.splice(rowData.index + 1, 0, object);
+
+    var ap = this.newAction(ArrayPropertyEditorAction);
+    ap.act(parent, rowData.name, newArray);
+};
+
+Editor.prototype.onPropGridArrayDelete = function(evt) {
+    var dt = $('#' + this.propEditorId).DataTable();
+    var cell = dt.cell($(evt.target).parent().parent());
+    var rowData = dt.row(cell.index().row).data();
+    var array = rowData.objects[1];
+    var parent = rowData.objects[2];
+
+    var newArray = array.slice(0);
+    newArray.splice(rowData.index, 1);
+
+    var ap = this.newAction(ArrayPropertyEditorAction);
+    ap.act(parent, rowData.name, newArray);
+};
+
 Editor.prototype.renderPropertyValue = function (data, type, row, meta) {
     var isArray = typeof2(row.value) === '[object Array]';
     var isEnum = typeof2(row.type) === '[object Array]';
@@ -62,17 +148,45 @@ Editor.prototype.renderPropertyValue = function (data, type, row, meta) {
         return stringSerialize(values[0]);
     }
     else if(row.type == 'array') {
+        var options = [];
+
+        var object = row.objects[0];
+        var props = object.constructor.editableProperties;
+        var prop = null;
+
+        for(var i = 0; i < props.length; i++) {
+            if(props[i].name == row.name) {
+                prop = props[i];
+                break;
+            }
+        }
+
+        var available = subclassesOf(prop.childType);
+
+        for(var i = 0; i < available.length; i++) {
+            options.push("<li><a href='#'>" + available[i].name + "</a></li>");
+        }
+
         return "<div class='btn-group btn-group-xs'>" +
-            "    <button type='button' class='btn btn-default'>Add</button>" +
-            "    <button type='button' class='btn btn-default'>Clear</button>" +
+            "    <button type='button' class='btn btn-default dropdown-toggle' data-toggle='dropdown'>Add</button>" +
+            "    <ul class='dropdown-menu prop-grid-array-add' role='menu'>" +
+            options.join('') +
+            "    </ul>" +
+            "    <button type='button' class='btn btn-default prop-grid-array-clear'>Clear</button>" +
             "</div>";
     }
     else if (row.type == 'arrayElement') {
-        return "<div class='btn-group btn-group-xs'>" +
-            "    <button type='button' class='btn btn-default'>Up</button>" +
-            "    <button type='button' class='btn btn-default'>Down</button>" +
-            "    <button type='button' class='btn btn-default'>Delete</button>" +
-            "</div>";
+        var result = "<div class='btn-group btn-group-xs'>";
+
+        if(row.index > 0)
+            result += "    <button type='button' class='btn btn-default prop-grid-array-up'>Up</button>";
+        if(row.index < row.objects[2][row.name].length - 1)
+            result += "    <button type='button' class='btn btn-default prop-grid-array-down'>Down</button>";
+
+        result += "    <button type='button' class='btn btn-default prop-grid-array-delete'>Delete</button>";
+        result += "</div>";
+
+        return result;
     }
 
     for (var i = 0; i < values.length; i++) {
@@ -132,7 +246,7 @@ Editor.prototype.propertyRowCallback = function (row, data) {
         var rowData = dt.row(cell.index().row).data();
 
         if (rowData.name.length == 0 || rowData.name == 'type' || cell.index().column == 0 ||
-            rowData.type == 'array')
+            rowData.type == 'array' || rowData.type == 'arrayElement')
             return;
 
         var isEnum = typeof2(rowData.type) == '[object Array]';
@@ -249,12 +363,13 @@ Editor.prototype.propertyGridObject = function(type, dt, objects, parent, depth)
             for(var j = 0; j < array.length; j++) {
                 var thisParent = fullFriendly + '[' + j + ']';
                 dt.row.add({ friendly: thisParent,
-                    name: prop.name + '[' + j + ']',
+                    name: prop.name,
                     value: '',
                     type: 'arrayElement',
                     parent: thisParent,
                     depth: depth + 1,
-                    objects: [ array[j] ] });
+                    objects: [ array[j], array, objects[0] ],
+                    index: j });
                 dt.row.add({ friendly: thisParent + '.Type',
                     name: 'type',
                     value: array[j].constructor.name,

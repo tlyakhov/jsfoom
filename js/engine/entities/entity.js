@@ -27,16 +27,16 @@ Entity.editableProperties = [
     { name: 'angle', friendly: 'Angle', type: 'float' },
     { name: 'boundingRadius', friendly: 'Bounding Radius', type: 'float' },
     { name: 'collisionResponse', friendly: 'Collision Response', type: [ 'slide', 'bounce', 'stop' ] },
-    { name: 'behaviors', friendly: 'Behaviors', type: 'array' }
+    { name: 'behaviors', friendly: 'Behaviors', type: 'array', childType: 'Behavior', parentReference: 'entity' }
 ];
 
-Entity.prototype.hasBehavior = function(clazz) {
+Entity.prototype.getBehavior = function(clazz) {
     for(var i = 0; i < this.behaviors.length; i++) {
         if(isA(this.behaviors[i], clazz))
-            return true;
+            return this.behaviors[i];
     }
 
-    return false;
+    return null;
 };
 
 Entity.prototype.angleTo = function (x, y) {

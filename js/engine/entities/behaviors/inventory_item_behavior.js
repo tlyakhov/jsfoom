@@ -27,6 +27,9 @@ InventoryItemBehavior.prototype.reset = function () {
     if (index >= 0) {
         player.inventory.splice(index, 1);
     }
+
+    if(this.entity.getBehavior(LightBehavior))
+        map.clearLightmaps();
 };
 
 InventoryItemBehavior.prototype.frame = function (lastFrameTime) {
@@ -51,6 +54,9 @@ InventoryItemBehavior.prototype.give = function() {
     globalGame.gameTextQueue.push({ text: 'Got ' + this.count + ' ' + this.name + '!', fillStyle: GAME_CONSTANTS.inventoryGatherTextStyle });
     entity.active = false;
     entity.visible = false;
+
+    if(entity.getBehavior(LightBehavior))
+        map.clearLightmaps();
 };
 
 InventoryItemBehavior.prototype.serialize = function () {

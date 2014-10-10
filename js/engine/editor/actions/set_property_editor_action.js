@@ -19,7 +19,7 @@ SetPropertyEditorAction.prototype.act = function (objects, property, value) {
     for (var i = 0; i < this.selectedObjects.length; i++) {
         this.originalValues.push(this.selectedObjects[i][property]);
         this.selectedObjects[i][property] = value;
-        if((isA(this.selectedObjects[i], Entity) && this.selectedObjects[i].hasBehavior(LightBehavior)) ||
+        if((isA(this.selectedObjects[i], Entity) && this.selectedObjects[i].getBehavior(LightBehavior)) ||
             isA(this.selectedObjects[i], LightBehavior))
             this.editor.map.clearLightmaps();
     }

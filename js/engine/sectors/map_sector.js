@@ -51,7 +51,7 @@ MapSector.prototype.updatePVS = function (normalX, normalY, sector) {
         this.pvs = {};
         this.pvs[this.id] = this;
         this.pvsLights = this.entities.filter(function (element) {
-            return element.hasBehavior(LightBehavior);
+            return element.getBehavior(LightBehavior) != null;
         });
         sector = this;
     }
@@ -65,7 +65,7 @@ MapSector.prototype.updatePVS = function (normalX, normalY, sector) {
         if ((normalX == undefined || normalX * segment.normal[0] + normalY * segment.normal[1] >= 0) && !this.pvs[adj.sector.id]) {
             this.pvs[adj.sector.id] = adj.sector;
             this.pvsLights = this.pvsLights.concat(adj.sector.entities.filter(function (element) {
-                return element.hasBehavior(LightBehavior);
+                return element.getBehavior(LightBehavior) != null;
             }));
             if (normalX == undefined)
                 this.updatePVS(segment.normal[0], segment.normal[1], adj.sector);
@@ -104,6 +104,9 @@ MapSector.prototype.markVisibleLights = function (point) {
     // Shadows!
     for (var i = 0; i < this.pvsLights.length; i++) {
         var lightEntity = this.pvsLights[i];
+
+        if(!lightEntity.active)
+            continue;
 
         for (var j = 0; j < lightEntity.behaviors.length; j++) {
             if (!isA(lightEntity.behaviors[j], LightBehavior))
@@ -181,6 +184,10 @@ MapSector.prototype.calculateLighting = function (segment, normal, lightmap, map
 
     while (i--) {
         var lightEntity = this.pvsLights[i];
+
+        if(!lightEntity.active)
+            continue;
+
         for(var j = 0; j < lightEntity.behaviors.length; j++) {
             if(!isA(lightEntity.behaviors[j], LightBehavior))
                 continue;
@@ -197,7 +204,7 @@ MapSector.prototype.calculateLighting = function (segment, normal, lightmap, map
             var distance = vec3length(l);
             vec3mul(l, 1.0 / distance, l);
 
-            var attenuation = light.strength / sqr((distance / lightEntity.boundingRadius) + 1.0);
+            var attenuation = light.attenuation ? light.strength / sqr((distance / lightEntity.boundingRadius) + 1.0) : 1.0;
 
             if (attenuation < GAME_CONSTANTS.lightAttenuationEpsilon)
                 continue;

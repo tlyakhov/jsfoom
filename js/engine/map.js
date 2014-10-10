@@ -28,7 +28,7 @@ classes['Map'] = Map;
 Map.editableProperties = [
     { name: 'spawnX', friendly: 'Player Spawn X', type: 'float' },
     { name: 'spawnY', friendly: 'Player Spawn Y', type: 'float' },
-    { name: 'materials', friendly: 'Materials', type: 'array' }
+    { name: 'materials', friendly: 'Materials', type: 'array', childType: 'Material', parentReference: 'map' }
 ];
 
 Map.prototype.getMaterial = function (id) {
