@@ -1,5 +1,8 @@
+inherit(EngineObject, Entity);
+
 function Entity(options) {
-    this.id = "Entity_" + (new ObjectId().toString());
+    EngineObject.call(this, options);
+    
     this.map = null;
     this.sector = null;
     this.pos = vec3create(0.0, 0.0, 0.0);
@@ -20,15 +23,15 @@ function Entity(options) {
 
 classes['Entity'] = Entity;
 
-Entity.editableProperties = [
-    { name: 'id', friendly: 'ID', type: 'string' },
+Entity.editorHidden = true;
+Entity.editableProperties = EngineObject.editableProperties.concat([
     { name: 'active', friendly: 'Active', type: 'bool' },
     { name: 'pos', friendly: 'Position', type: 'vector' },
     { name: 'angle', friendly: 'Angle', type: 'float' },
     { name: 'boundingRadius', friendly: 'Bounding Radius', type: 'float' },
     { name: 'collisionResponse', friendly: 'Collision Response', type: [ 'slide', 'bounce', 'stop' ] },
     { name: 'behaviors', friendly: 'Behaviors', type: 'array', childType: 'Behavior', parentReference: 'entity' }
-];
+]);
 
 Entity.prototype.getBehavior = function(clazz) {
     for(var i = 0; i < this.behaviors.length; i++) {
@@ -247,31 +250,28 @@ Entity.prototype.hurt = function (amount) {
 };
 
 Entity.prototype.serialize = function () {
-    var r = {
-        _type: this.constructor.name,
-        id: this.id,
-        pos: this.pos,
-        angle: this.angle,
-        vel: this.vel,
-        hurtTime: this.hurtTime,
-        boundingRadius: this.boundingRadius,
-        collisionResponse: this.collisionResponse,
-        health: this.health,
-        mountHeight: this.mountHeight,
-        behaviors: [],
-        active: this.active
-    };
+    var r = EngineObject.prototype.serialize.call(this);
+
+    r.pos = this.pos;
+    r.angle = this.angle;
+    r.vel = this.vel;
+    r.hurtTime = this.hurtTime;
+    r.boundingRadius = this.boundingRadius;
+    r.collisionResponse = this.collisionResponse;
+    r.health = this.health;
+    r.mountHeight = this.mountHeight;
+    r.behaviors = [];
+    r.active = this.active;
 
     for (var i = 0; i < this.behaviors.length; i++)
         r.behaviors.push(this.behaviors[i].serialize());
+
     return r;
 };
 
 Entity.deserialize = function (data, map, entity) {
-    if (!entity || entity.constructor.name != data._type)
-        entity = createFromName(data._type, {});
+    entity = EngineObject.deserialize(data, entity);
 
-    entity.id = data.id;
     entity.pos = data.pos;
     entity.angle = data.angle;
     entity.vel = data.vel;

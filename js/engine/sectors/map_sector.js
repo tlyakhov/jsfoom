@@ -1,6 +1,8 @@
+inherit(EngineObject, MapSector);
+
 function MapSector(options) {
-    // Defaults
-    this.id = "Sector_" + (new ObjectId().toString());
+    EngineObject.call(this, options);
+    
     this.segments = [];
     this.entities = [];
     this.map = null;
@@ -33,8 +35,7 @@ function MapSector(options) {
         this.update();
 }
 
-MapSector.editableProperties = [
-    { name: 'id', friendly: 'ID', type: 'string' },
+MapSector.editableProperties = EngineObject.editableProperties.concat([
     { name: 'topZ', friendly: 'Ceiling Height', type: 'float' },
     { name: 'bottomZ', friendly: 'Floor Height', type: 'float' },
     { name: 'hurt', friendly: 'Hit points', type: 'float' },
@@ -42,7 +43,7 @@ MapSector.editableProperties = [
     { name: 'ceilScale', friendly: 'Ceiling Texture Scale', type: 'float' },
     { name: 'ceilMaterialId', friendly: 'Ceiling Material', type: 'material_id' },
     { name: 'floorMaterialId', friendly: 'Floor Material', type: 'material_id' }
-];
+]);
 
 classes['MapSector'] = MapSector;
 
@@ -624,27 +625,25 @@ MapSector.prototype.clone = function () {
 };
 
 MapSector.prototype.serialize = function () {
-    var r = {
-        _type: this.constructor.name,
-        id: this.id,
-        version: this.version,
-        bottomZ: this.bottomZ,
-        topZ: this.topZ,
-        floorMaterialId: this.floorMaterialId,
-        ceilMaterialId: this.ceilMaterialId,
-        center: this.center,
-        min: this.min,
-        max: this.max,
-        lightmapWidth: this.lightmapWidth,
-        lightmapHeight: this.lightmapHeight,
-        floorScale: this.floorScale,
-        ceilScale: this.ceilScale,
-        hurt: this.hurt,
-        floorTargetSectorId: this.floorTargetSectorId,
-        ceilTargetSectorId: this.ceilTargetSectorId,
-        segments: [],
-        entities: []
-    };
+    var r = EngineObject.prototype.serialize.call(this);
+
+    r.version = this.version;
+    r.bottomZ = this.bottomZ;
+    r.topZ = this.topZ;
+    r.floorMaterialId = this.floorMaterialId;
+    r.ceilMaterialId = this.ceilMaterialId;
+    r.center = this.center;
+    r.min = this.min;
+    r.max = this.max;
+    r.lightmapWidth = this.lightmapWidth;
+    r.lightmapHeight = this.lightmapHeight;
+    r.floorScale = this.floorScale;
+    r.ceilScale = this.ceilScale;
+    r.hurt = this.hurt;
+    r.floorTargetSectorId = this.floorTargetSectorId;
+    r.ceilTargetSectorId = this.ceilTargetSectorId;
+    r.segments = [];
+    r.entities = [];
 
     for (var i = 0; i < this.segments.length; i++) {
         r.segments.push(this.segments[i].serialize());
@@ -660,10 +659,8 @@ MapSector.prototype.serialize = function () {
 };
 
 MapSector.deserialize = function (data, map, sector) {
-    if (!sector || sector.constructor.name != data._type)
-        sector = createFromName(data._type, {});
+    sector = EngineObject.deserialize(data, sector);
 
-    sector.id = data.id;
     sector.bottomZ = data.bottomZ;
     sector.topZ = data.topZ;
     sector.floorMaterialId = data.floorMaterialId;

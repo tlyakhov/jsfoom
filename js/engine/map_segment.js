@@ -1,5 +1,8 @@
+inherit(EngineObject, MapSegment);
+
 function MapSegment(options) {
-    this.id = "Segment_" + (new ObjectId().toString());
+    EngineObject.call(this, options);
+    
     this.ax = 0.0;
     this.ay = 0.0;
     this.bx = 0.0;
@@ -30,8 +33,7 @@ function MapSegment(options) {
     this.update();
 }
 
-MapSegment.editableProperties = [
-    { name: 'id', friendly: 'ID', type: 'string' },
+MapSegment.editableProperties = EngineObject.editableProperties.concat([
     { name: 'ax', friendly: 'X', type: 'float' },
     { name: 'ay', friendly: 'Y', type: 'float' },
     { name: 'midMaterialId', friendly: 'Middle Material', type: 'material_id' },
@@ -41,7 +43,7 @@ MapSegment.editableProperties = [
     { name: 'midBehavior', friendly: 'Middle Mapping', type: [ 'scaleNone', 'scaleWidth', 'scaleHeight', 'scaleAll']},
     { name: 'loBehavior', friendly: 'High Mapping', type: [ 'scaleNone', 'scaleWidth', 'scaleHeight', 'scaleAll']},
     { name: 'hiBehavior', friendly: 'Low Mapping', type: [ 'scaleNone', 'scaleWidth', 'scaleHeight', 'scaleAll']}
-];
+]);
 
 classes['MapSegment'] = MapSegment;
 
@@ -286,34 +288,31 @@ MapSegment.prototype.lightmapAddressToWorld = function (mapIndex, pool) {
 };
 
 MapSegment.prototype.serialize = function () {
-    var r = {
-        id: this.id,
-        ax: this.ax,
-        ay: this.ay,
-        bx: this.bx,
-        by: this.by,
-        midMaterialId: this.midMaterialId,
-        midBehavior: this.midBehavior,
-        loMaterialId: this.loMaterialId,
-        loBehavior: this.loBehavior,
-        hiMaterialId: this.hiMaterialId,
-        hiBehavior: this.hiBehavior,
-        length: this.length,
-        normal: this.normal,
-        lightmapWidth: this.lightmapWidth,
-        lightmapHeight: this.lightmapHeight,
-        adjacentSectorId: this.adjacentSectorId,
-        flags: this.flags
-    };
+    var r = EngineObject.prototype.serialize.call(this);
+    
+    r.ax = this.ax;
+    r.ay = this.ay;
+    r.bx = this.bx;
+    r.by = this.by;
+    r.midMaterialId = this.midMaterialId;
+    r.midBehavior = this.midBehavior;
+    r.loMaterialId = this.loMaterialId;
+    r.loBehavior = this.loBehavior;
+    r.hiMaterialId = this.hiMaterialId;
+    r.hiBehavior = this.hiBehavior;
+    r.length = this.length;
+    r.normal = this.normal;
+    r.lightmapWidth = this.lightmapWidth;
+    r.lightmapHeight = this.lightmapHeight;
+    r.adjacentSectorId = this.adjacentSectorId;
+    r.flags = this.flags;
 
     return r;
 };
 
 MapSegment.deserialize = function (data, sector, segment) {
-    if (!segment)
-        segment = new MapSegment();
+    segment = EngineObject.deserialize(data, segment);
 
-    segment.id = data.id;
     segment.ax = data.ax;
     segment.ay = data.ay;
     segment.bx = data.bx;

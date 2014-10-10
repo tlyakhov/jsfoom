@@ -1,5 +1,8 @@
+inherit(EngineObject, Behavior);
+
 function Behavior(options) {
-    this.id = "Behavior_" + (new ObjectId().toString());
+    EngineObject.call(this, options);
+
     this.entity = null;
     this.resetEntity = null;
     this.resetSector = null;
@@ -7,9 +10,8 @@ function Behavior(options) {
     $.extend(true, this, options);
 }
 
-Behavior.editableProperties = [
-    { name: 'id', friendly: 'ID', type: 'string' }
-];
+Behavior.editorHidden = true;
+Behavior.editableProperties = EngineObject.editableProperties;
 
 classes['Behavior'] = Behavior;
 
@@ -39,20 +41,9 @@ Behavior.prototype.frame = function (lastFrameTime) {
     }
 };
 
-Behavior.prototype.serialize = function () {
-    var r = {
-        _type: this.constructor.name,
-        id: this.id
-    };
-
-    return r;
-};
-
 Behavior.deserialize = function (data, entity, behavior) {
-    if (!behavior || behavior.constructor.name != data._type)
-        behavior = createFromName(data._type, {});
+    behavior = EngineObject.deserialize(data, behavior);
 
-    behavior.id = data.id;
     behavior.entity = entity;
 
     return behavior;

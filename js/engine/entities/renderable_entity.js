@@ -18,12 +18,14 @@ function RenderableEntity(options) {
 
 classes['RenderableEntity'] = RenderableEntity;
 
+RenderableEntity.editorHidden = true;
 RenderableEntity.editableProperties = Entity.editableProperties.concat([
     { name: 'visible', friendly: 'Visible', type: 'bool' },
     { name: 'width', friendly: 'Width', type: 'float' },
     { name: 'height', friendly: 'Height', type: 'float' },
     { name: 'zOffset', friendly: 'Vertical Offset', type: 'float' },
-    { name: 'spriteState', friendly: 'Sprite State', type: 'string' }
+    { name: 'spriteState', friendly: 'Sprite State', type: 'string' },
+    { name: 'sprites', friendly: 'Sprites', type: 'array', childType: 'Sprite' }
 ]);
 
 

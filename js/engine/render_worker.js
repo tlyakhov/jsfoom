@@ -4,6 +4,7 @@ importScripts("../lib/hashcode.js");
 importScripts("../game/constants.js");
 importScripts("utils.js");
 importScripts("object_cache.js");
+importScripts("engine_object.js");
 importScripts("vector3.js");
 importScripts("texture.js");
 importScripts("texture_cache.js");

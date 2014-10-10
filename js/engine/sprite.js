@@ -1,4 +1,8 @@
+inherit(EngineObject, Sprite);
+
 function Sprite(options) {
+    EngineObject.call(this, options);
+
     this.textureSrc = 'data/bricks.png';
     this.texture = null;
     this.state = 'idle';
@@ -9,6 +13,13 @@ function Sprite(options) {
 }
 
 classes['Sprite'] = Sprite;
+
+Sprite.editableProperties = EngineObject.editableProperties.concat([
+    { name: 'textureSrc', friendly: 'textureSrc', type: 'string' },
+    { name: 'state', friendly: 'State', type: 'string' },
+    { name: 'frame', friendly: 'Frame', type: 'float' },
+    { name: 'angle', friendly: 'Angle', type: 'float' }
+]);
 
 Sprite.prototype.getTexture = function () {
     if (!this.textureSrc)
@@ -21,19 +32,17 @@ Sprite.prototype.getTexture = function () {
 };
 
 Sprite.prototype.serialize = function () {
-    var r = {
-        textureSrc: this.textureSrc,
-        angle: this.angle,
-        frame: this.frame,
-        state: this.state
-    };
+    var r = EngineObject.prototype.serialize.call(this);
+    r.textureSrc = this.textureSrc;
+    r.angle = this.angle;
+    r.frame = this.frame;
+    r.state = this.state;
 
     return r;
 };
 
 Sprite.deserialize = function (data, sprite) {
-    if (!sprite)
-        sprite = new Sprite();
+    sprite = EngineObject.deserialize(data, sprite);
 
     sprite.textureSrc = data.textureSrc;
     sprite.angle = data.angle;

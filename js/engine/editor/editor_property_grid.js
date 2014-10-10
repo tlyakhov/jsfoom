@@ -158,7 +158,7 @@ Editor.prototype.renderPropertyValue = function (data, type, row, meta) {
             }
         }
 
-        var available = subclassesOf(prop.childType);
+        var available = subclassesOf(prop.childType).filter(function(s) { return !s.editorHidden; });
 
         for(var i = 0; i < available.length; i++) {
             options.push("<li><a href='#'>" + available[i].name + "</a></li>");

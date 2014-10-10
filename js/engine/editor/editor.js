@@ -86,9 +86,9 @@ Editor.prototype.go = function () {
     $('body').on('click', '.prop-grid-array-down', $.proxy(this.onPropGridArrayDown, this));
     $('body').on('click', '.prop-grid-array-delete', $.proxy(this.onPropGridArrayDelete, this));
 
-    var entityTypes = subclassesOf(Entity);
+    var entityTypes = subclassesOf(Entity).filter(function(s) { return !s.editorHidden; });
     var entityList = [];
-    var sectorTypes = subclassesOf(MapSector);
+    var sectorTypes = subclassesOf(MapSector).filter(function(s) { return !s.editorHidden; });
     var sectorList = [];
 
     for (var i = 0; i < entityTypes.length; i++) {
@@ -150,6 +150,8 @@ Editor.prototype.go = function () {
     jqMenu.kendoMenu({
         select: $.proxy(this.menuSelect, this)
     });
+
+    triggerResize();
 
     setInterval($.proxy(this.timer, this), 16);
 };
@@ -411,6 +413,9 @@ Editor.prototype.onKeyPress = function (e) {
     }
     else if (e.keyCode == KEY_DEL || e.keyCode == KEY_BACKSPACE) {
         $('#menu-edit-delete').trigger('click');
+    }
+    else if (e.keyCode == KEY_E && e.ctrlKey) {
+        $('#menu-view-entities-paused').trigger('click');
     }
 
     e.preventDefault();

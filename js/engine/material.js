@@ -1,5 +1,8 @@
+inherit(EngineObject, Material);
+
 function Material(options) {
-    this.id = "Material_" + (new ObjectId().toString());
+    EngineObject.call(this, options);
+
     this.textureSrc = 'data/bricks.png';
     this.texture = null;
     this.ambient = vec3create(10, 10, 10);
@@ -16,8 +19,7 @@ function Material(options) {
 
 classes['Material'] = Material;
 
-Material.editableProperties = [
-    { name: 'id', friendly: 'ID', type: 'string' },
+Material.editableProperties = EngineObject.editableProperties.concat([
     { name: 'textureSrc', friendly: 'Texture Source', type: 'string' },
     { name: 'ambient', friendly: 'Ambient Color', type: 'vector' },
     { name: 'diffuse', friendly: 'Diffuse Color', type: 'vector' },
@@ -25,7 +27,7 @@ Material.editableProperties = [
     { name: 'staticBackground', friendly: 'Static Background?', type: 'bool' },
     { name: 'hurt', friendly: 'Hurt', type: 'float' },
     { name: 'isLiquid', friendly: 'Is Liquid?', type: 'bool' }
-];
+]);
 
 Material.prototype.getTexture = function () {
     if (!this.textureSrc)
@@ -87,25 +89,22 @@ Material.prototype.sample = function (slice, u, v, light, scaledHeight) {
 };
 
 Material.prototype.serialize = function () {
-    var r = {
-        id: this.id,
-        textureSrc: this.textureSrc,
-        ambient: this.ambient,
-        diffuse: this.diffuse,
-        renderAsSky: this.renderAsSky,
-        staticBackground: this.staticBackground,
-        hurt: this.hurt,
-        isLiquid: this.isLiquid
-    };
+    var r = EngineObject.prototype.serialize.call(this);
+
+    r.textureSrc = this.textureSrc;
+    r.ambient = this.ambient;
+    r.diffuse = this.diffuse;
+    r.renderAsSky = this.renderAsSky;
+    r.staticBackground = this.staticBackground;
+    r.hurt = this.hurt;
+    r.isLiquid = this.isLiquid;
 
     return r;
 };
 
 Material.deserialize = function (data, material) {
-    if (!material)
-        material = new Material();
+    material = EngineObject.deserialize(data, material);
 
-    material.id = data.id;
     material.textureSrc = data.textureSrc;
     material.ambient = data.ambient;
     material.diffuse = data.diffuse;

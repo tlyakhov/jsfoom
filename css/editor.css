@@ -2,7 +2,6 @@ html,
 body {
     margin: 0;
     padding: 0;
-    height: 100%;
 }
 
 .container {
@@ -17,6 +16,8 @@ body {
 
 #main-splitter {
     flex: 1 1 auto;
+    height: 100%;
+    border-width: 0;
 }
 
 #toolbar {
@@ -29,6 +30,7 @@ body {
 
 #prop-splitter {
     height: 100%;
+    border-width: 0;
 }
 
 #edit-view {

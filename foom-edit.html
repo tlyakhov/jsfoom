@@ -52,6 +52,7 @@
     <script src="js/game/constants.js"></script>
     <script src="js/engine/utils.js"></script>
     <script src="js/engine/object_cache.js"></script>
+    <script src="js/engine/engine_object.js"></script>
     <script src="js/engine/vector3.js"></script>
     <script src="js/engine/texture.js"></script>
     <script src="js/engine/texture_cache.js"></script>
@@ -119,7 +120,13 @@
         globalGame.pickCallback = $.proxy(globalEditor.gamePick, globalEditor);
 
         function triggerResize() {
-            $('#main-splitter').data('kendoSplitter').trigger('resize');
+            var newWidth = window.innerWidth;
+            var newHeight = window.innerHeight;
+
+            $('.container').width(newWidth + 'px');
+            $('.container').height(newHeight + 'px');
+
+            $('#main-splitter').data('kendoSplitter').resize(true);//trigger('resize');
         }
         function onMainResize(e) {
             $('#edit-canvas').attr('width', $('#edit-view').width());
@@ -130,6 +137,7 @@
             $('#main-splitter').kendoSplitter({
                 resize: onMainResize
             });
+
             $('#prop-splitter').kendoSplitter({
                 orientation: 'vertical',
                 panes: [
@@ -137,12 +145,12 @@
                     { }
                 ]
             });
-
-            $(window).resize(triggerResize);
+            $('#main-splitter').data('kendoSplitter').resize(true);
 
             globalGame.go();
-
+            $(window).resize(triggerResize);
             triggerResize();
+
         });
     </script>
 </head>
