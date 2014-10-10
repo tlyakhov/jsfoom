@@ -30,9 +30,6 @@ importScripts("player.js");
 importScripts("map.js");
 importScripts("render_slice.js");
 importScripts("renderer.js");
-importScripts("../game/entities/game_entity_flub.js");
-importScripts("../game/entities/game_entity_pluk.js");
-importScripts("../game/entities/behaviors/game_behavior_flub.js");
 
 var renderer = null;
 var globalRenderTarget = null;
@@ -49,6 +46,7 @@ onmessage = function (e) {
         globalWorkersTotal = data.workers;
         renderer = new Renderer({ screenWidth: data.screenWidth, screenHeight: data.screenHeight });
         globalRenderTarget = new Uint32Array(data.screenWidth * data.screenHeight / globalWorkersTotal);
+        loadAssets(data.assets);
     }
     else if (data.type == 'reset') {
         renderer.map = map = new Map();

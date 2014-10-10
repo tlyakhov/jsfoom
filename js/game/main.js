@@ -2,6 +2,7 @@ var globalWorkerId = undefined; // We're not a worker
 
 function GameMain(options) {
     this.canvasId = null;
+    this.loadedCallback = null;
     this.map = null;
     this.renderer = null;
     this.prevTime = preciseTime();
@@ -33,36 +34,46 @@ function GameMain(options) {
 }
 
 GameMain.prototype.go = function () {
-    $('#' + this.canvasId).attr('width', this.screenWidth);
-    $('#' + this.canvasId).attr('height', this.screenHeight + 64);
-    $('#' + this.canvasId).on('mousedown', $.proxy(this.canvasClick, this));
-    this.renderContext = document.getElementById(this.canvasId).getContext('2d');
-    this.renderImgData = this.renderContext.createImageData(this.screenWidth, this.screenHeight);
-    this.renderBuffer = new ArrayBuffer(this.renderImgData.data.length);
-    this.renderBuffer8 = new Uint8ClampedArray(this.renderBuffer);
-    this.renderTarget = new Uint32Array(this.renderBuffer);
+    loadAssets(GAME_CONSTANTS.codeAssets, $.proxy(function() {
+        if(!this.map) {
+            this.map = Map.deserialize(window[GAME_CONSTANTS.firstMap]);
+        }
 
-    for (var i = 0; i < GAME_CONSTANTS.renderWorkers; i++) {
-        var worker = new Worker('js/engine/render_worker.js');
-        worker.onmessage = $.proxy(this.onWorkerMessage, this);
-        worker.onerror = $.proxy(this.onWorkerError, this);
-        worker.postMessage({ id: i,
-            type: 'init',
-            screenWidth: this.screenWidth,
-            screenHeight: this.screenHeight,
-            workers: GAME_CONSTANTS.renderWorkers });
-        this.workers.push(worker);
-        this.workerFrameReady.push(true);
-        this.workerDbgMeasure.push(0);
-    }
+        $('#' + this.canvasId).attr('width', this.screenWidth);
+        $('#' + this.canvasId).attr('height', this.screenHeight + 64);
+        $('#' + this.canvasId).on('mousedown', $.proxy(this.canvasClick, this));
+        this.renderContext = document.getElementById(this.canvasId).getContext('2d');
+        this.renderImgData = this.renderContext.createImageData(this.screenWidth, this.screenHeight);
+        this.renderBuffer = new ArrayBuffer(this.renderImgData.data.length);
+        this.renderBuffer8 = new Uint8ClampedArray(this.renderBuffer);
+        this.renderTarget = new Uint32Array(this.renderBuffer);
 
-    //if (this.workers.length == 0) {
-    this.renderer = new Renderer({ canvas: this.canvasId, map: this.map, screenWidth: this.screenWidth, screenHeight: this.screenHeight });
-    //}
+        for (var i = 0; i < GAME_CONSTANTS.renderWorkers; i++) {
+            var worker = new Worker('js/engine/render_worker.js');
+            worker.onmessage = $.proxy(this.onWorkerMessage, this);
+            worker.onerror = $.proxy(this.onWorkerError, this);
+            worker.postMessage({ id: i,
+                type: 'init',
+                screenWidth: this.screenWidth,
+                screenHeight: this.screenHeight,
+                workers: GAME_CONSTANTS.renderWorkers,
+                assets: GAME_CONSTANTS.codeAssets });
+            this.workers.push(worker);
+            this.workerFrameReady.push(true);
+            this.workerDbgMeasure.push(0);
+        }
 
-    this.checkRenderWorkers();
+        //if (this.workers.length == 0) {
+        this.renderer = new Renderer({ canvas: this.canvasId, map: this.map, screenWidth: this.screenWidth, screenHeight: this.screenHeight });
+        //}
 
-    setInterval($.proxy(this.timer, this), 16);
+        this.checkRenderWorkers();
+
+        setInterval($.proxy(this.timer, this), 16);
+
+        if(this.loadedCallback)
+            this.loadedCallback();
+    }, this));
 };
 
 GameMain.prototype.canvasClick = function (evt) {

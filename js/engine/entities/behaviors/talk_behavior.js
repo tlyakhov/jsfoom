@@ -22,7 +22,7 @@ function TalkBehavior(options) {
 TalkBehavior.editableProperties = Behavior.editableProperties.concat([
     { name: 'onlyOnce', friendly: 'Only once?', type: 'bool' },
     { name: 'resetWhenPlayerLeaves', friendly: 'Reset When Player Leaves?', type: 'bool' },
-    { name: 'actions', friendly: 'Actions', type: 'array' }
+    { name: 'actions', friendly: 'Actions', type: 'array', childType: 'TalkAction', parentReference: 'behavior' }
 ]);
 
 classes['TalkBehavior'] = TalkBehavior;

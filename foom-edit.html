@@ -78,13 +78,8 @@
     <script src="js/engine/map.js"></script>
     <script src="js/engine/render_slice.js"></script>
     <script src="js/engine/renderer.js"></script>
-    <script src="js/game/sprite_sets.js"></script>
     <script src="js/game/input.js"></script>
     <script src="js/game/main.js"></script>
-    <script src="js/game/entities/game_entity_flub.js"></script>
-    <script src="js/game/entities/game_entity_pluk.js"></script>
-    <script src="js/game/entities/behaviors/game_behavior_flub.js"></script>
-    <script src="js/game/test_map.js"></script>
     <script src="js/engine/editor/default_map.js"></script>
     <script src="js/engine/editor/map_point.js"></script>
     <script src="js/engine/editor/editor.js"></script>
@@ -107,7 +102,8 @@
             screenWidth: 640,
             screenHeight: 360,
             canvasId: 'render-canvas',
-            map: Map.deserialize(globalDefaultMap)
+            map: Map.deserialize(globalDefaultMap),
+            loadedCallback: function() { globalEditor.go(); }
         });
 
         var globalEditor = new Editor({
@@ -145,7 +141,6 @@
             $(window).resize(triggerResize);
 
             globalGame.go();
-            globalEditor.go();
 
             triggerResize();
         });

@@ -24,9 +24,6 @@ Editor.prototype.dataPropertyValue = function (row, type, set, meta) {
             var split = set.split(',')
             set = vec3create(parseFloat(split[0]), parseFloat(split[1]), parseFloat(split[2]));
         }
-        else if(row.type == 'bool') {
-            set = set == 'true';
-        }
 
         row.value = set;
 
@@ -168,22 +165,22 @@ Editor.prototype.renderPropertyValue = function (data, type, row, meta) {
         }
 
         return "<div class='btn-group btn-group-xs'>" +
-            "    <button type='button' class='btn btn-default dropdown-toggle' data-toggle='dropdown'>Add</button>" +
+            "    <button type='button' class='btn btn-default dropdown-toggle' data-toggle='dropdown'><span class='glyphicon glyphicon-plus'></span></button>" +
             "    <ul class='dropdown-menu prop-grid-array-add' role='menu'>" +
             options.join('') +
             "    </ul>" +
-            "    <button type='button' class='btn btn-default prop-grid-array-clear'>Clear</button>" +
+            "    <button type='button' class='btn btn-default prop-grid-array-clear'><span class='glyphicon glyphicon-remove'></span></button>" +
             "</div>";
     }
     else if (row.type == 'arrayElement') {
         var result = "<div class='btn-group btn-group-xs'>";
 
         if(row.index > 0)
-            result += "    <button type='button' class='btn btn-default prop-grid-array-up'>Up</button>";
+            result += "    <button type='button' class='btn btn-default prop-grid-array-up'><span class='glyphicon glyphicon-chevron-up'></span></button>";
         if(row.index < row.objects[2][row.name].length - 1)
-            result += "    <button type='button' class='btn btn-default prop-grid-array-down'>Down</button>";
+            result += "    <button type='button' class='btn btn-default prop-grid-array-down'><span class='glyphicon glyphicon-chevron-down'></span></button>";
 
-        result += "    <button type='button' class='btn btn-default prop-grid-array-delete'>Delete</button>";
+        result += "    <button type='button' class='btn btn-default prop-grid-array-delete'><span class='glyphicon glyphicon-minus'></span></button>";
         result += "</div>";
 
         return result;
@@ -200,6 +197,9 @@ Editor.prototype.renderPropertyValue = function (data, type, row, meta) {
         }
         else if (row.type == 'vector') {
             result += '[<b>' + value[0] + '</b>,<b>' + value[1] + '</b>,<b>' + value[2] + '</b>]';
+        }
+        else if (row.type == 'bool') {
+            result += value ? "<span class='glyphicon glyphicon-ok'></span>" : "<span class='glyphicon glyphicon-ban-circle'></span>";
         }
         else
             result += value;
@@ -249,6 +249,15 @@ Editor.prototype.propertyRowCallback = function (row, data) {
             rowData.type == 'array' || rowData.type == 'arrayElement')
             return;
 
+        if(rowData.type == 'bool') {
+            element.off('click');
+            element.on('click',  function(evt) {
+                var tcell = dt.cell(evt.delegateTarget);
+                tcell.data(!tcell.data()).draw();
+                return true;
+            });
+            return;
+        }
         var isEnum = typeof2(rowData.type) == '[object Array]';
 
         element.editable({
@@ -262,9 +271,6 @@ Editor.prototype.propertyRowCallback = function (row, data) {
 
                 if (rowData.type == 'vector') {
                     return cellData[0] + ', ' + cellData[1] + ', ' + cellData[2];
-                }
-                else if(rowData.type == 'bool') {
-                    return cellData == 'true';
                 }
 
                 return cellData;
@@ -299,10 +305,6 @@ Editor.prototype.propertyRowCallback = function (row, data) {
                             id: map.materials[i].id
                         });
                     }
-                }
-                else if(rowData.type == 'bool')
-                {
-                    result.push({ 'true' : rowData.friendly });
                 }
 
                 return result;

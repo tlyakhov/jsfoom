@@ -228,3 +228,21 @@ function stringSerialize(obj) {
     else
         return JSON.stringify(obj.serialize(), replacer);
 }
+
+function loadAssets(assets, done) {
+    var count = 0;
+    for (var i = 0; i < assets.length; i++) {
+        if (globalWorkerId == undefined) {
+            $.getScript(assets[i]).always(function() {
+                count++;
+                if(count == assets.length && done)
+                    done();
+            });
+        }
+        else {
+            importScripts(assets[i]);
+        }
+    }
+    if (globalWorkerId != undefined && done)
+        done();
+}

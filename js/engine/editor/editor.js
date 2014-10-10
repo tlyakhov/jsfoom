@@ -86,9 +86,9 @@ Editor.prototype.go = function () {
     $('body').on('click', '.prop-grid-array-down', $.proxy(this.onPropGridArrayDown, this));
     $('body').on('click', '.prop-grid-array-delete', $.proxy(this.onPropGridArrayDelete, this));
 
-    var entityTypes = [ LightEntity, GameEntityFlub, GameEntityPluk ];
+    var entityTypes = subclassesOf(Entity);
     var entityList = [];
-    var sectorTypes = [ MapSector, MapSectorWater, MapSectorVerticalDoor ];
+    var sectorTypes = subclassesOf(MapSector);
     var sectorList = [];
 
     for (var i = 0; i < entityTypes.length; i++) {

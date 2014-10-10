@@ -36,5 +36,12 @@ var GAME_CONSTANTS = {
     inventoryGatherDistance: 30,
     inventoryGatherTextStyle: '#666',
     infoBarSrc: '/data/game/infobar.png',
-    avatarSrc: '/data/game/avatar.png'
+    avatarSrc: '/data/game/avatar.png',
+    firstMap: 'testMap',
+    codeAssets: [
+        '/js/game/assets/entities/behaviors/flub.js',
+        '/js/game/assets/entities/flub.js',
+        '/js/game/assets/entities/pluk.js',
+        '/js/game/assets/maps/test_map.js'
+    ]
 };

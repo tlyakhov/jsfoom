@@ -1,3 +1,22 @@
+var testMonsterSprites = [
+    new Sprite({ textureSrc: '/data/test_sprite/Test0012.png', state: 'idle', angle: 0 }),
+    new Sprite({ textureSrc: '/data/test_sprite/Test0013.png', state: 'idle', angle: 1 }),
+    new Sprite({ textureSrc: '/data/test_sprite/Test0014.png', state: 'idle', angle: 2 }),
+    new Sprite({ textureSrc: '/data/test_sprite/Test0015.png', state: 'idle', angle: 3 }),
+    new Sprite({ textureSrc: '/data/test_sprite/Test0000.png', state: 'idle', angle: 4 }),
+    new Sprite({ textureSrc: '/data/test_sprite/Test0001.png', state: 'idle', angle: 5 }),
+    new Sprite({ textureSrc: '/data/test_sprite/Test0002.png', state: 'idle', angle: 6 }),
+    new Sprite({ textureSrc: '/data/test_sprite/Test0003.png', state: 'idle', angle: 7 }),
+    new Sprite({ textureSrc: '/data/test_sprite/Test0004.png', state: 'idle', angle: 8 }),
+    new Sprite({ textureSrc: '/data/test_sprite/Test0005.png', state: 'idle', angle: 9 }),
+    new Sprite({ textureSrc: '/data/test_sprite/Test0006.png', state: 'idle', angle: 10 }),
+    new Sprite({ textureSrc: '/data/test_sprite/Test0007.png', state: 'idle', angle: 11 }),
+    new Sprite({ textureSrc: '/data/test_sprite/Test0008.png', state: 'idle', angle: 12 }),
+    new Sprite({ textureSrc: '/data/test_sprite/Test0009.png', state: 'idle', angle: 13 }),
+    new Sprite({ textureSrc: '/data/test_sprite/Test0010.png', state: 'idle', angle: 14 }),
+    new Sprite({ textureSrc: '/data/test_sprite/Test0011.png', state: 'idle', angle: 15 })
+];
+
 var testMap = new Map({
     spawnX: 0,
     spawnY: -70,
