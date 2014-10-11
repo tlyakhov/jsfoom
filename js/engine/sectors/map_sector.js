@@ -231,7 +231,7 @@ MapSector.prototype.calculateLighting = function (segment, normal, lightmap, map
             var distance = vec3length(l);
             vec3mul(l, 1.0 / distance, l);
 
-            var attenuation = light.attenuation ? light.strength / sqr((distance / lightEntity.boundingRadius) + 1.0) : 1.0;
+            var attenuation = light.attenuation > 0.0 ? light.strength / Math.pow((distance / lightEntity.boundingRadius) + 1.0, light.attenuation) : 1.0;
 
             if (attenuation < GAME_CONSTANTS.lightAttenuationEpsilon)
                 continue;

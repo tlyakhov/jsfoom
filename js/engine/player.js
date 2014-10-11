@@ -14,6 +14,7 @@ function Player(options) {
 
 classes['Player'] = Player;
 
+Player.editorHidden = true;
 Player.editableProperties = Entity.editableProperties;
 
 Player.prototype.frame = function (lastFrameTime) {

@@ -112,7 +112,7 @@ var testMap = new Map({
                 new GameEntityFlub({ pos: vec3create(-17, 68, 0) }),
                 new GameEntityPluk({ pos: vec3create(45, 68, 0) }),
                 new GameEntityPluk({ pos: vec3create(85, 68, 0) }),
-                new LightEntity({ pos: vec3create(0, 68, 32) })
+                new LightEntity({ pos: vec3create(0, 68, 32), behaviors: [ new LightBehavior({attenuation: 0 })]})
             ],
             segments: [
                 new MapSegment({ ax: -100, ay: 100,
@@ -243,7 +243,7 @@ var testMap = new Map({
             floorMaterialId: 'Painful Slime',
             ceilMaterialId: 'Default Floor',
             entities: [
-                new LightEntity({ pos: vec3create(-240, 0, -30), behaviors: [ new LightBehavior({ strength: 50, diffuse: vec3create(0.1, 1.0, 0.1) }) ] })
+                new LightEntity({ pos: vec3create(-240, 0, -30), behaviors: [ new LightBehavior({ diffuse: vec3create(0.1, 1.0, 0.1) }) ] })
             ],
             segments: [
                 new MapSegment({ ax: -180, ay: -30,
@@ -274,7 +274,7 @@ var testMap = new Map({
             floorMaterialId: 'Painful Slime',
             ceilMaterialId: 'Default Floor',
             entities: [
-                new LightEntity({ pos: vec3create(-240, -100, -30), behaviors: [ new LightBehavior({ strength: 50, diffuse: vec3create(0.1, 1.0, 0.1) }) ] })
+                new LightEntity({ pos: vec3create(-240, -100, -30), behaviors: [ new LightBehavior({ diffuse: vec3create(0.1, 1.0, 0.1) }) ] })
             ],
             segments: [
                 new MapSegment({ ax: -180, ay: -30,
@@ -297,7 +297,7 @@ var testMap = new Map({
             floorMaterialId: 'Painful Slime',
             ceilMaterialId: 'Default Floor',
             entities: [
-                new LightEntity({ pos: vec3create(-240, 100, -30), behaviors: [ new LightBehavior({ strength: 50, diffuse: vec3create(0.1, 1.0, 0.1) }) ] })
+                new LightEntity({ pos: vec3create(-240, 100, -30), behaviors: [ new LightBehavior({ diffuse: vec3create(0.1, 1.0, 0.1) }) ] })
             ],
             segments: [
                 new MapSegment({ ax: -180, ay: 30,
@@ -389,7 +389,7 @@ var testMap = new Map({
             ceilMaterialId: 'Sky',
             floorTargetSectorId: 'sector17',
             entities: [
-                new LightEntity({ pos: vec3create(350, 80, 90), behaviors: [ new LightBehavior({ diffuse: vec3create(0.4, 0.6, 1.0), strength: 130 }) ] })
+                new LightEntity({ pos: vec3create(350, 80, 90), behaviors: [ new LightBehavior({ diffuse: vec3create(0.4, 0.6, 1.0), strength: 25 }) ] })
             ],
             segments: [
                 new MapSegment({ ax: 300, ay: 20,

@@ -4,8 +4,8 @@ function LightBehavior(options) {
     Behavior.call(this, options);
 
     this.diffuse = vec3create(1.0, 1.0, 1.0);
-    this.strength = 50.0;
-    this.attenuation = true;
+    this.strength = 15.0;
+    this.attenuation = 1.2;
     this.marked = true;
 
     this.lastPos = vec3blank();
@@ -18,7 +18,7 @@ classes['LightBehavior'] = LightBehavior;
 LightBehavior.editableProperties = Behavior.editableProperties.concat([
     { name: 'diffuse', friendly: 'Diffuse', type: 'vector' },
     { name: 'strength', friendly: 'Strength', type: 'float' },
-    { name: 'attenuation', friendly: 'Diffuses?', type: 'bool'}
+    { name: 'attenuation', friendly: 'Diffuse Factor', type: 'float'}
 ]);
 
 
