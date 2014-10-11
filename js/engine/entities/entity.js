@@ -262,6 +262,7 @@ Entity.prototype.serialize = function () {
     r.mountHeight = this.mountHeight;
     r.behaviors = [];
     r.active = this.active;
+    r.sectorId = this.sector ? this.sector.id : null;
 
     for (var i = 0; i < this.behaviors.length; i++)
         r.behaviors.push(this.behaviors[i].serialize());
@@ -282,6 +283,8 @@ Entity.deserialize = function (data, map, entity) {
     entity.mountHeight = data.mountHeight;
     entity.active = data.active;
     entity.map = map;
+    if(!entity.sector || entity.sector.id != data.sectorId)
+        entity.sector = map.getSector(data.sectorId);
 
     for (var i = 0; i < data.behaviors.length; i++) {
         if (i >= entity.behaviors.length)

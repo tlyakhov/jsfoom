@@ -1,8 +1,9 @@
-inherit(Behavior, TalkBehavior);
+inherit(InteractionBehavior, TalkBehavior);
 
 function TalkBehavior(options) {
-    Behavior.call(this, options);
+    InteractionBehavior.call(this, options);
 
+    this.entityClasses = [ 'Player' ];
     this.actions = [];
     this.onlyOnce = false;
     this.resetWhenPlayerLeaves = false;
@@ -11,6 +12,7 @@ function TalkBehavior(options) {
     this.actionTime = preciseTime();
     this.delay = 0;
     this.state = 'ready';
+    this.interacted = false;
 
     $.extend(true, this, options);
 
@@ -19,7 +21,7 @@ function TalkBehavior(options) {
     }
 }
 
-TalkBehavior.editableProperties = Behavior.editableProperties.concat([
+TalkBehavior.editableProperties = InteractionBehavior.editableProperties.concat([
     { name: 'onlyOnce', friendly: 'Only once?', type: 'bool' },
     { name: 'resetWhenPlayerLeaves', friendly: 'Reset When Player Leaves?', type: 'bool' },
     { name: 'actions', friendly: 'Actions', type: 'array', childType: 'TalkAction', parentReference: 'behavior' }
@@ -27,52 +29,57 @@ TalkBehavior.editableProperties = Behavior.editableProperties.concat([
 
 classes['TalkBehavior'] = TalkBehavior;
 
-TalkBehavior.prototype.frame = function (lastFrameTime) {
-    Behavior.prototype.frame.call(this, lastFrameTime);
+TalkBehavior.prototype.frame = function(lastFrameTime) {
+    this.interacted = false;
+    InteractionBehavior.prototype.frame.call(this, lastFrameTime);
+
+    if(!this.interacted && this.resetWhenPlayerLeaves) {
+        this.currentAction = null;
+    }
+};
+
+TalkBehavior.prototype.interact = function (lastFrameTime, target) {
+    InteractionBehavior.prototype.interact.call(this, lastFrameTime, target);
 
     if (this.actions.length == 0)
         return;
 
     var entity = this.entity;
     var map = this.entity.map;
-    var player = map.player;
 
-    if (vec3dist2(entity.pos, player.pos) <= sqr(GAME_CONSTANTS.talkDistance)) {
-        if (this.currentAction == null && this.state != 'done') {
-            this.currentAction = 0;
+    this.interacted = true;
+
+    if (this.currentAction == null && this.state != 'done') {
+        this.currentAction = 0;
+        this.state = 'act';
+    }
+
+    if (this.state == 'delay') {
+        if (preciseTime() - this.actionTime > this.delay) {
             this.state = 'act';
         }
+    }
+    else if (this.state == 'act') {
+        var ca = this.currentAction;
+        this.actions[ca].act();
+        this.actionTime = preciseTime();
 
-        if (this.state == 'delay') {
-            if (preciseTime() - this.actionTime > this.delay) {
-                this.state = 'act';
-            }
-        }
-        else if (this.state == 'act') {
-            var ca = this.currentAction;
-            this.actions[ca].act();
-            this.actionTime = preciseTime();
-
-            if (this.actions[ca].delay > 0) {
-                this.state = 'delay';
-                this.delay = this.actions[ca].delay;
-            }
-        }
-
-        if (this.currentAction >= this.actions.length) {
-            if (this.onlyOnce)
-                this.state = 'done';
-            else
-                this.currentAction = 0;
+        if (this.actions[ca].delay > 0) {
+            this.state = 'delay';
+            this.delay = this.actions[ca].delay;
         }
     }
-    else if(this.resetWhenPlayerLeaves) {
-        this.currentAction = null;
+
+    if (this.currentAction >= this.actions.length) {
+        if (this.onlyOnce)
+            this.state = 'done';
+        else
+            this.currentAction = 0;
     }
 };
 
 TalkBehavior.prototype.serialize = function () {
-    var r = Behavior.prototype.serialize.call(this);
+    var r = InteractionBehavior.prototype.serialize.call(this);
 
     r.onlyOnce = this.onlyOnce;
     r.resetWhenPlayerLeaves = this.resetWhenPlayerLeaves;
@@ -86,7 +93,7 @@ TalkBehavior.prototype.serialize = function () {
 };
 
 TalkBehavior.deserialize = function (data, entity, behavior) {
-    behavior = Behavior.deserialize(data, entity, behavior);
+    behavior = InteractionBehavior.deserialize(data, entity, behavior);
 
     behavior.onlyOnce = data.onlyOnce;
     behavior.resetWhenPlayerLeaves = data.resetWhenPlayerLeaves;

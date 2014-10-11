@@ -444,6 +444,7 @@ var testMap = new Map({
             floorMaterialId: 'Default Floor',
             ceilMaterialId: 'Water',
             ceilTargetSectorId: 'sector15',
+            tags: [ 'underwater' ],
             segments: [
                 new MapSegment({ ax: 300, ay: 150,
                     midMaterialId: null,
@@ -464,6 +465,10 @@ var testMap = new Map({
         new MapSectorWater({ id: 'sector18', bottomZ: -230, topZ: -20,
             floorMaterialId: 'Default Floor',
             ceilMaterialId: 'Default Floor',
+            tags: [ 'underwater' ],
+            entities: [ new LightEntity({ pos: vec3create(340, 260, -125),
+                behaviors: [ new LightBehavior({ diffuse: vec3create(0.8, 0.8, 1.0), attenuation: false })]
+            })],
             segments: [
                 new MapSegment({ ax: 300, ay: 150,
                     midMaterialId: null,
@@ -492,6 +497,7 @@ var testMap = new Map({
         new MapSectorWater({ id: 'sector19', bottomZ: -50, topZ: -20,
             floorMaterialId: 'Default Floor',
             ceilMaterialId: 'Default Floor',
+            tags: [ 'underwater' ],
             segments: [
                 new MapSegment({ ax: 600, ay: 150,
                     midMaterialId: 'mat6',
@@ -542,6 +548,7 @@ var testMap = new Map({
             floorMaterialId: 'Default Floor',
             ceilMaterialId: 'Water',
             ceilTargetSectorId: 'sector20',
+            tags: [ 'underwater' ],
             segments: [
                 new MapSegment({ ax: 300, ay: 400,
                     midMaterialId: 'mat6',
@@ -563,6 +570,10 @@ var testMap = new Map({
             floorMaterialId: 'Default Floor',
             ceilMaterialId: 'Water',
             ceilTargetSectorId: 'sector23',
+            tags: [ 'underwater' ],
+            entities: [ new LightEntity({ pos: vec3create(610, 175, -50),
+                behaviors: [ new LightBehavior({ diffuse: vec3create(0.8, 0.8, 1.0), attenuation: false })]
+            })],
             segments: [
                 new MapSegment({ ax: 620, ay: 150,
                     midMaterialId: 'mat6',
@@ -604,6 +615,9 @@ var testMap = new Map({
         new MapSector({ id: 'sector24', bottomZ: -10, topZ: 70,
             floorMaterialId: 'mat1',
             ceilMaterialId: 'Default',
+            entities: [ new LightEntity({ pos: vec3create(700, 175, 50),
+                behaviors: [ new LightBehavior({ })]
+            })],
             segments: [
                 new MapSegment({ ax: 620, ay: 150,
                     midMaterialId: 'mat6',

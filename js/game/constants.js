@@ -31,7 +31,7 @@ var GAME_CONSTANTS = {
     maxGameTextTime: 15 * 1000,
     maxGameText: 25,
     gameTextFadeTime: 1000,
-    talkDistance: 100,
+    interactionDistance: 70,
     wanderSectorProbablity: 0.25,
     inventoryGatherDistance: 30,
     inventoryGatherTextStyle: '#666',

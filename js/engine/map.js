@@ -44,6 +44,9 @@ Map.prototype.getMaterial = function (id) {
 };
 
 Map.prototype.getSector = function (id) {
+    if(!id)
+        return null;
+
     for (var i = 0; i < this.sectors.length; i++) {
         if (this.sectors[i].id == id)
             return this.sectors[i];
@@ -220,7 +223,8 @@ Map.deserialize = function (data, map) {
 
     Player.deserialize(data.player, map, map.player);
 
-    map.player.collide();
+    if(!map.player.sector || map.player.sector != map.getSector(map.player.sector.id))
+        map.player.collide();
 
     return map;
 };

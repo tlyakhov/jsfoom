@@ -19,6 +19,8 @@ importScripts("entities/renderable_entity.js");
 importScripts("entities/sprite_entity.js");
 importScripts("entities/light_entity.js");
 importScripts("entities/behaviors/behavior.js");
+importScripts("entities/behaviors/interaction_behavior.js");
+importScripts("entities/behaviors/melee_behavior.js");
 importScripts("entities/behaviors/light_behavior.js");
 importScripts("entities/behaviors/talk_behavior.js");
 importScripts("entities/behaviors/wander_behavior.js");
