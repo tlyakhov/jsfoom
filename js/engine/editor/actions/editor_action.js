@@ -1,5 +1,8 @@
 function EditorAction(editor) {
     this.editor = editor;
+
+    this.oldMap = null;
+    this.newMap = null;
 }
 
 classes['EditorAction'] = EditorAction;
@@ -22,7 +25,11 @@ EditorAction.prototype.onMouseUp = function (e) {
 EditorAction.prototype.frame = function () {
 };
 EditorAction.prototype.undo = function () {
+    if(this.oldMap)
+        this.editor.map = Map.deserialize(this.oldMap, this.editor.map);
 };
 EditorAction.prototype.redo = function () {
+    if(this.newMap)
+        this.editor.map = Map.deserialize(this.newMap, this.editor.map);
 };
 

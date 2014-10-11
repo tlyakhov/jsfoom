@@ -19,7 +19,7 @@ Sprite.editableProperties = EngineObject.editableProperties.concat([
     { name: 'state', friendly: 'State', type: 'string' },
     { name: 'frame', friendly: 'Frame', type: 'float' },
     { name: 'angle', friendly: 'Angle', type: 'float' }
-]);
+]).filter(function(prop) { return prop.name != 'id' });
 
 Sprite.prototype.getTexture = function () {
     if (!this.textureSrc)

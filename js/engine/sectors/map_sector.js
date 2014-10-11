@@ -170,14 +170,40 @@ MapSector.prototype.markVisibleLights = function (point) {
 MapSector.prototype.calculateLighting = function (segment, normal, lightmap, mapIndex, point) {
     var tempvec = vec3blank();
 
-    if (segment && !this.isPointInside(point[0], point[1])) {
-        var closest = segment.closestToPoint(point[0], point[1], true);
-        point[0] = closest[0];
-        point[1] = closest[1];
-        vec3add(point, vec3mul(segment.normal, 0.5, tempvec), point);
+    if (!this.isPointInside(point[0], point[1])) {
+        for(var i = 0; i < this.segments.length; i++) {
+            var s = this.segments[i];
+
+            if(s.whichSide(point[0], point[1]) > 0)
+                continue;
+
+            var closest = s.closestToPoint(point[0], point[1], true);
+            var v = vec3blank(true);
+            vec3sub(closest, point, v);
+            v[2] = 0;
+            var d = vec3length(v);
+
+            if(d > GAME_CONSTANTS.lightGrid * 2)
+                continue;
+            if(d > GAME_CONSTANTS.intersectEpsilon) {
+                vec3normalize(v, v);
+                vec3mul(v, d + GAME_CONSTANTS.lightGrid * 0.5, v);
+                vec3add(point, v, point);
+            }
+            else
+                vec3add(point, vec3mul(s.normal, GAME_CONSTANTS.lightGrid * 0.5, tempvec), point);
+        }
     }
 
-    this.markVisibleLights(point);//vec3add(point, vec3mul(normal, 0.1, tempvec), tempvec));
+    // Debugging
+/*    if (!this.isPointInside(point[0], point[1])) {
+        lightmap[mapIndex + 0] = 1.0;
+        lightmap[mapIndex + 1] = 0;
+        lightmap[mapIndex + 2] = 0;
+        return;
+    }*/
+
+    this.markVisibleLights(point);
 
     var diffuseSum = vec3blank();
 
@@ -618,8 +644,18 @@ MapSector.prototype.area = function () {
     return sum * 0.5;
 };
 
+MapSector.prototype.visibleTags = function() {
+    var tags = this.tags.slice(0);
+
+    for(var i = 0; i < this.entities.length; i++) {
+        tags = tags.concat(this.entities[i].tags);
+    }
+
+    return tags;
+};
+
 MapSector.prototype.clone = function () {
-    var ns = classes[this.constructor.name].deserialize(this.serialize(), this.map);
+    var ns = MapSector.deserialize(this.serialize(), this.map);
     ns.id = "Sector_" + (new ObjectId().toString());
     return ns;
 };

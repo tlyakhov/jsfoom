@@ -1,5 +1,8 @@
+inherit(EngineObject, Map);
+
 function Map(options) {
-    this.id = null;
+    EngineObject.call(this, options);
+
     this.sectors = [];
     this.materials = [];
     this.spawnX = 0;
@@ -25,11 +28,11 @@ function Map(options) {
 
 classes['Map'] = Map;
 
-Map.editableProperties = [
+Map.editableProperties = EngineObject.editableProperties.concat([
     { name: 'spawnX', friendly: 'Player Spawn X', type: 'float' },
     { name: 'spawnY', friendly: 'Player Spawn Y', type: 'float' },
     { name: 'materials', friendly: 'Materials', type: 'array', childType: 'Material', parentReference: 'map' }
-];
+]);
 
 Map.prototype.getMaterial = function (id) {
     for (var i = 0; i < this.materials.length; i++) {
@@ -169,14 +172,13 @@ Map.prototype.resetAllEntities = function () {
 };
 
 Map.prototype.serialize = function () {
-    var r = {
-        id: this.id,
-        spawnX: this.spawnX,
-        spawnY: this.spawnY,
-        player: this.player.serialize(),
-        sectors: [],
-        materials: []
-    };
+    var r = EngineObject.prototype.serialize.call(this);
+
+    r.spawnX = this.spawnX;
+    r.spawnY = this.spawnY;
+    r.player = this.player.serialize();
+    r.sectors = [];
+    r.materials = [];
 
     for (var i = 0; i < this.sectors.length; i++) {
         r.sectors.push(this.sectors[i].serialize());
@@ -190,10 +192,8 @@ Map.prototype.serialize = function () {
 };
 
 Map.deserialize = function (data, map) {
-    if (!map)
-        map = new Map();
+    map = EngineObject.deserialize(data, map);
 
-    map.id = data.id;
     map.spawnX = data.spawnX;
     map.spawnY = data.spawnY;
 
@@ -271,4 +271,13 @@ Map.prototype.clearLightmaps = function () {
 
     while (index--)
         this.sectors[index].clearLightmaps();
+};
+
+Map.prototype.visibleTags = function() {
+    var tags = [];
+    for(var i = 0; i < this.sectors.length; i++) {
+        tags = tags.concat(this.sectors[i].visibleTags());
+    }
+
+    return tags;
 };

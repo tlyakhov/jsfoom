@@ -273,7 +273,10 @@ Renderer.prototype.renderEntity = function (renderTarget, entity) {
     if (!texture)
         return;
 
-    var diffuse = this.map.light(entity.pos, vec3create(0, 0, 1, true), entity.sector, null, 0, 0, true);
+    var fDiffuse = this.map.light(entity.pos, vec3create(0, 0, 1, true), entity.sector, null, 0, 0, true);
+    var cDiffuse = this.map.light(entity.pos, vec3create(0, 0, -1, true), entity.sector, null, 0, 0, true);
+    var diffuse = vec3mul(vec3add(fDiffuse, cDiffuse, fDiffuse), 0.5, fDiffuse);
+
     var d = this.map.player.distanceTo(entity.pos[0], entity.pos[1]);
     var x = (ang + this.fov / 2.0) * this.screenWidth / this.fov;
     var vfixindex = Math.min(Math.max(fast_floor(x), 0), this.screenWidth - 1);
@@ -489,7 +492,7 @@ Renderer.prototype.pick = function(screenX, screenY) {
         sector = this.map.player.sector.pvs[sid];
 
         for (var i = 0; i < sector.entities.length; i++) {
-            if (!isA(sector.entities[i], RenderableEntity) && sector.entities[i].visible)
+            if (!(isA(sector.entities[i], RenderableEntity) && sector.entities[i].visible))
                 continue;
             var entity = sector.entities[i];
             var etop = this.map.player.angleTo(entity.pos[0], entity.pos[1]);

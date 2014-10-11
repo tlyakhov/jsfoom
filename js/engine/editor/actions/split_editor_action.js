@@ -20,24 +20,10 @@ SplitEditorAction.prototype.onMouseDown = function (e) {
 SplitEditorAction.prototype.onMouseMove = function (e) {
 };
 SplitEditorAction.prototype.onMouseUp = function (e) {
-    this.redo();
-    this.editor.actionFinished();
-};
-
-SplitEditorAction.prototype.undo = function () {
-    for (var i = 0; i < this.newSegments.length; i++) {
-        var sector = this.newSegments[i].sector;
-        var index = $.inArray(this.newSegments[i], sector.segments);
-
-        if (index != -1) {
-            sector.segments.splice(index, 1);
-        }
-    }
-};
-
-SplitEditorAction.prototype.redo = function () {
-    this.newSegments = [];
     var editor = this.editor;
+
+    this.oldMap = editor.map.serialize();
+    this.newSegments = [];
     var md = vec3clone(editor.mouseDownWorld);
     var m = vec3clone(editor.mouseWorld);
     if (editor.gridVisible) {
@@ -69,5 +55,6 @@ SplitEditorAction.prototype.redo = function () {
             j++; // Otherwise, infinite splitting loop!
         }
     }
+    editor.actionFinished();
+    this.newMap = editor.map.serialize();
 };
-

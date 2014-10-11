@@ -26,6 +26,8 @@ AddSectorEditorAction.prototype.removeFromMap = function () {
 
     if (index >= 0)
         this.editor.map.sectors.splice(index, 1);
+
+    this.editor.map.autoPortal();
 };
 
 AddSectorEditorAction.prototype.addToMap = function () {
@@ -33,6 +35,7 @@ AddSectorEditorAction.prototype.addToMap = function () {
     if ($.inArray(this.sector, this.editor.map.sectors) == -1)
         this.editor.map.sectors.push(this.sector);
     this.sector.update();
+    this.editor.map.autoPortal([this.sector]);
 };
 
 AddSectorEditorAction.prototype.onMouseDown = function (e) {

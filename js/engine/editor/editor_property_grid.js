@@ -218,6 +218,7 @@ var EDITOR_PROPERTY_TYPE_MAP = {
     float: 'text',
     string: 'text',
     material_id: 'select2',
+    tags: 'select2',
     vector: 'text'
 };
 
@@ -312,7 +313,8 @@ Editor.prototype.propertyRowCallback = function (row, data) {
             select2: {
                 formatResult: $.proxy(editor.propertySelectFormatter, editor),
                 formatSelection: $.proxy(editor.propertySelectFormatter, editor),
-                width: '300px'
+                width: '300px',
+                tags: rowData.type == 'tags' ? [ 'tags1', 'tags2' ] : undefined
             },
             mode: 'inline',
             type: isEnum ? 'select2' : EDITOR_PROPERTY_TYPE_MAP[rowData.type],
