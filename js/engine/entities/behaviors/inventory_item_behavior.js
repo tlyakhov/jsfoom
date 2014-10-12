@@ -6,6 +6,7 @@ function InventoryItemBehavior(options) {
     this.minDistance = GAME_CONSTANTS.inventoryGatherDistance;
     this.name = 'Inventory Item';
     this.count = 1;
+    this.mustBeFacing = false;
     this.givenTo = null;
 
     $.extend(true, this, options);

@@ -30,6 +30,8 @@ TalkBehavior.editableProperties = InteractionBehavior.editableProperties.concat(
 classes['TalkBehavior'] = TalkBehavior;
 
 TalkBehavior.prototype.frame = function(lastFrameTime) {
+    if(!this.active)
+        return;
     this.interacted = false;
     InteractionBehavior.prototype.frame.call(this, lastFrameTime);
 

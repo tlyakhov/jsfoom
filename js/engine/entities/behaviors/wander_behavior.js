@@ -21,6 +21,8 @@ WanderBehavior.editableProperties = Behavior.editableProperties.concat([
 classes['WanderBehavior'] = WanderBehavior;
 
 WanderBehavior.prototype.frame = function (lastFrameTime) {
+    if(!this.active)
+        return;
     Behavior.prototype.frame.call(this, lastFrameTime);
 
     var entity = this.entity;

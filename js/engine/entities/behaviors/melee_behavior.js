@@ -15,6 +15,8 @@ MeleeBehavior.editableProperties = InteractionBehavior.editableProperties.concat
 ]);
 
 MeleeBehavior.prototype.frame = function(lastFrameTime) {
+    if(!this.active)
+        return;
     this.minDistance = this.entity.boundingRadius * 1.5;
     InteractionBehavior.prototype.frame.call(this, lastFrameTime);
 };

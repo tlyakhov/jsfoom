@@ -6,12 +6,15 @@ function Behavior(options) {
     this.entity = null;
     this.resetEntity = null;
     this.resetSector = null;
+    this.active = true;
 
     $.extend(true, this, options);
 }
 
 Behavior.editorHidden = true;
-Behavior.editableProperties = EngineObject.editableProperties;
+Behavior.editableProperties = EngineObject.editableProperties.concat([
+    { name: 'active', friendly: 'Active', type: 'bool' }
+]);
 
 classes['Behavior'] = Behavior;
 

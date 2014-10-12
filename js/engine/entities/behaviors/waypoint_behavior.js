@@ -21,6 +21,8 @@ WaypointBehavior.editableProperties = Behavior.editableProperties.concat([
 classes['WaypointBehavior'] = WaypointBehavior;
 
 WaypointBehavior.prototype.frame = function (lastFrameTime) {
+    if(!this.active)
+        return;
     Behavior.prototype.frame.call(this, lastFrameTime);
 
     var entity = this.entity;

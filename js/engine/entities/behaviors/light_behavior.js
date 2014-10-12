@@ -23,6 +23,8 @@ LightBehavior.editableProperties = Behavior.editableProperties.concat([
 
 
 LightBehavior.prototype.frame = function (lastFrameTime) {
+    if(!this.active)
+        return;
     Behavior.prototype.frame.call(this, lastFrameTime);
 
     var entity = this.entity;
