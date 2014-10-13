@@ -15,6 +15,7 @@ function Entity(options) {
     this.mountHeight = GAME_CONSTANTS.playerMountHeight;
     this.behaviors = [];
     this.active = true;
+    this.audioEngineEntity = null;
 
     if (options) {
         $.extend(true, this, options);
@@ -226,6 +227,9 @@ Entity.prototype.collide = function () {
 };
 
 Entity.prototype.frame = function (lastFrameTime) {
+    if(!this.audioEngineEntity)
+        this.audioEngineEntity = new AudioEngineEntity({ entity: this });
+
     var frameScale = lastFrameTime / 10.0;
 
     if (Math.abs(this.vel[0]) > GAME_CONSTANTS.velocityEpsilon || Math.abs(this.vel[1]) > GAME_CONSTANTS.velocityEpsilon || Math.abs(this.vel[2]) > GAME_CONSTANTS.velocityEpsilon) {

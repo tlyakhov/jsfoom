@@ -1,26 +1,29 @@
-inherit(InteractionBehavior, RifleBehavior);
+inherit(AttackBehavior, RifleBehavior);
 
 function RifleBehavior(options) {
-    InteractionBehavior.call(this, options);
+    AttackBehavior.call(this, options);
 
     this.strength = 5.0;
     this.minDistance = null;
+    this.soundSrc = 'data/sounds/rifle.wav';
 
     $.extend(true, this, options);
 }
 
 classes['RifleBehavior'] = RifleBehavior;
 
-RifleBehavior.editableProperties = InteractionBehavior.editableProperties.concat([
-    { name: 'strength', friendly: 'Strength', type: 'float' }
+RifleBehavior.editableProperties = AttackBehavior.editableProperties.concat([
+    { name: 'strength', friendly: 'Strength', type: 'float' },
+    { name: 'soundSrc', friendly: 'Sound Source', type: 'string' }
 ]);
 
 RifleBehavior.prototype.frame = function(lastFrameTime) {
-    InteractionBehavior.prototype.frame.call(this, lastFrameTime);
+    AttackBehavior.prototype.frame.call(this, lastFrameTime);
 };
 
-RifleBehavior.prototype.interact = function (lastFrameTime, target) {
-    InteractionBehavior.prototype.interact.call(this, lastFrameTime, target);
+RifleBehavior.prototype.attack = function (lastFrameTime, target) {
+    if(!AttackBehavior.prototype.attack.call(this, lastFrameTime, target))
+        return false;
 
     var sector = this.entity.sector;
     var ray = vec3sub(target.pos, this.entity.pos, vec3blank());
@@ -75,13 +78,19 @@ RifleBehavior.prototype.interact = function (lastFrameTime, target) {
     }
 
     if(!blocked) {
-        if (target.hurtTime == 0)
-            target.hurt(this.strength);
+        if(this.soundSrc) {
+            var sound = audioEngine.get(this.soundSrc);
+            this.entity.audioEngineEntity.play(sound);
+        }
+        target.hurt(this.strength);
+        return true;
     }
+
+    return false;
 };
 
 RifleBehavior.prototype.serialize = function () {
-    var r = InteractionBehavior.prototype.serialize.call(this);
+    var r = AttackBehavior.prototype.serialize.call(this);
 
     r.strength = this.strength;
 
@@ -89,7 +98,7 @@ RifleBehavior.prototype.serialize = function () {
 };
 
 RifleBehavior.deserialize = function (data, entity, behavior) {
-    behavior = InteractionBehavior.deserialize(data, entity, behavior);
+    behavior = AttackBehavior.deserialize(data, entity, behavior);
 
     behavior.strength = data.strength;
 

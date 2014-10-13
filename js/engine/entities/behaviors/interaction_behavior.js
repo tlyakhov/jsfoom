@@ -6,6 +6,7 @@ function InteractionBehavior(options) {
     this.entityClasses = [ 'Player' ];
     this.minDistance = GAME_CONSTANTS.interactionDistance;
     this.mustBeFacing = true;
+    this.stopMoving = false;
     this.interactingEntity = null;
 
     $.extend(true, this, options);
@@ -17,11 +18,15 @@ InteractionBehavior.editorHidden = true;
 InteractionBehavior.editableProperties = Behavior.editableProperties.concat([
     { name: 'entityClasses', friendly: 'Entity Classes', type: 'tags' },
     { name: 'minDistance', friendly: 'Minimum Distance', type: 'float' },
-    { name: 'mustBeFacing', friendly: 'Must be facing?', type: 'bool' }
+    { name: 'mustBeFacing', friendly: 'Must be facing?', type: 'bool' },
+    { name: 'stopMoving', friendly: 'Stop Moving?', type: 'bool' }
 ]);
 
 InteractionBehavior.prototype.startInteracting = function(target) {
     this.interactingEntity = target;
+
+    if(!this.stopMoving)
+        return;
 
     for(var j = 0; j < this.entity.behaviors.length; j++) {
         var behavior = this.entity.behaviors[j];
@@ -36,6 +41,11 @@ InteractionBehavior.prototype.startInteracting = function(target) {
 };
 
 InteractionBehavior.prototype.stopInteracting = function() {
+    this.interactingEntity = null;
+
+    if(!this.stopMoving)
+        return;
+
     for(var j = 0; j < this.entity.behaviors.length; j++) {
         var behavior = this.entity.behaviors[j];
 
@@ -43,8 +53,6 @@ InteractionBehavior.prototype.stopInteracting = function() {
             behavior.active = true;
         }
     }
-
-    this.interactingEntity = null;
 };
 
 InteractionBehavior.prototype.frame = function (lastFrameTime) {
@@ -86,16 +94,13 @@ InteractionBehavior.prototype.frame = function (lastFrameTime) {
 
             if(this.mustBeFacing)
             {
-                var ang = this.entity.angleTo(target.pos[0], target.pos[1]) + 180.0;
+                var ang = this.entity.angleTo(target.pos[0], target.pos[1]);
+                var diff = normalizeAngle(this.entity.angle - ang);
 
-                while(ang < 0)
-                    ang += 360.0;
-                while(ang > 360.0)
-                    ang -= 360.0;
-                console.log(ang);
-
-                var diff = this.entity.angle - ang;
-                if((diff > 0 && diff < 180) || (diff < 0 && diff > -180)) {
+                if(diff < 5 || diff > 355) {
+                    this.entity.angle = ang;
+                }
+                else if((diff > 0 && diff < 180)) {
                     this.entity.angle -= 5.0;
 
                     if(this.entity.angle - ang > 5)
@@ -107,7 +112,6 @@ InteractionBehavior.prototype.frame = function (lastFrameTime) {
                     if(ang - this.entity.angle > 5)
                         continue;
                 }
-
             }
 
             this.interact(lastFrameTime, target);

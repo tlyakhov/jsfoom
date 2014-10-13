@@ -20,6 +20,7 @@ importScripts("entities/sprite_entity.js");
 importScripts("entities/light_entity.js");
 importScripts("entities/behaviors/behavior.js");
 importScripts("entities/behaviors/interaction_behavior.js");
+importScripts("entities/behaviors/attack_behavior.js");
 importScripts("entities/behaviors/melee_behavior.js");
 importScripts("entities/behaviors/rifle_behavior.js");
 importScripts("entities/behaviors/rocket_behavior.js");

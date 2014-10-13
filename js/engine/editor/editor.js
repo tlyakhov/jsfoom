@@ -111,7 +111,8 @@ Editor.prototype.go = function () {
                 { id: 'undo', type: 'button', spriteCssClass: 'toolbar-fa fa fa-undo fa-fw', text: '', encoded: false, click: $.proxy(this.undo, this) },
                 { id: 'redo', type: 'button', spriteCssClass: 'toolbar-fa fa fa-repeat fa-fw', text: '', click: $.proxy(this.redo, this) },
                 { id: 'delete', type: 'button', spriteCssClass: 'toolbar-fa fa fa-times fa-fw', text: '', click: $.proxy(this.delete, this) },
-                { id: 'resetEntities', type: 'button', spriteCssClass: 'toolbar-fa fa fa-retweet fa-fw', text: '', click: $.proxy(this.resetEntities, this) }
+                { id: 'resetEntities', type: 'button', spriteCssClass: 'toolbar-fa fa fa-retweet fa-fw', text: '', click: $.proxy(this.resetEntities, this) },
+                { id: 'addMaterial', type: 'button', spriteCssClass: 'toolbar-fa fa fa-plus fa-fw', text: 'Add Material', click: $.proxy(this.addMaterial, this) }
             ] },
             { type: 'separator' },
             { id: 'toolGroup', type: 'buttonGroup', buttons: [
@@ -313,6 +314,11 @@ Editor.prototype.menuSelect = function (e) {
         this.map.entitiesPaused = this.entitiesPaused = !this.entitiesPaused;
         this.menuCheckToggle(item);
     }
+};
+
+Editor.prototype.addMaterial = function() {
+    var action = this.newAction(AddMaterialEditorAction);
+    action.act();
 };
 
 Editor.prototype.selectObject = function (objects) {

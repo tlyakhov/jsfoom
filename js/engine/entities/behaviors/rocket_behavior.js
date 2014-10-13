@@ -1,7 +1,7 @@
-inherit(InteractionBehavior, RocketBehavior);
+inherit(AttackBehavior, RocketBehavior);
 
 function RocketBehavior(options) {
-    InteractionBehavior.call(this, options);
+    AttackBehavior.call(this, options);
 
     this.strength = 5.0;
     this.minDistance = null;
@@ -11,20 +11,19 @@ function RocketBehavior(options) {
 
 classes['RocketBehavior'] = RocketBehavior;
 
-RocketBehavior.editableProperties = InteractionBehavior.editableProperties.concat([
+RocketBehavior.editableProperties = AttackBehavior.editableProperties.concat([
     { name: 'strength', friendly: 'Strength', type: 'float' }
 ]);
 
-RocketBehavior.prototype.frame = function(lastFrameTime) {
-    InteractionBehavior.prototype.frame.call(this, lastFrameTime);
-};
+RocketBehavior.prototype.attack = function (lastFrameTime, target) {
+    if(!AttackBehavior.prototype.attack.call(this, lastFrameTime, target))
+        return false;
 
-RocketBehavior.prototype.interact = function (lastFrameTime, target) {
-    InteractionBehavior.prototype.interact.call(this, lastFrameTime, target);
+    return true;
 };
 
 RocketBehavior.prototype.serialize = function () {
-    var r = InteractionBehavior.prototype.serialize.call(this);
+    var r = AttackBehavior.prototype.serialize.call(this);
 
     r.strength = this.strength;
 
@@ -32,7 +31,7 @@ RocketBehavior.prototype.serialize = function () {
 };
 
 RocketBehavior.deserialize = function (data, entity, behavior) {
-    behavior = InteractionBehavior.deserialize(data, entity, behavior);
+    behavior = AttackBehavior.deserialize(data, entity, behavior);
 
     behavior.strength = data.strength;
 

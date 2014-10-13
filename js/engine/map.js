@@ -57,6 +57,7 @@ Map.prototype.getSector = function (id) {
 
 Map.prototype.frame = function (lastFrameTime) {
     this.player.frame(lastFrameTime);
+    audioEngine.listener(this.player);
 
     for (var i = 0; i < this.sectors.length; i++) {
         var sector = this.sectors[i];

@@ -8,6 +8,8 @@ var GAME_CONSTANTS = {
     maxViewDistance: 1000000.0,
     fieldOfView: 75,
     debugLevel: 0,
+    // Audio constants
+    audioUnitsFactor: 12,
     // World constants
     gravity: 0.1,
     gravitySwim: 0.001,

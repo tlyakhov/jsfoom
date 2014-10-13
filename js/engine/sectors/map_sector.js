@@ -28,6 +28,7 @@ function MapSector(options) {
     this.floorTargetSectorId = null;
     this.ceilTargetSectorId = null;
     this.version = 0;
+    this.roomImpulse = '/data/sounds/impulses/empty_restaurant.wav';
 
     $.extend(true, this, options);
 
@@ -42,7 +43,8 @@ MapSector.editableProperties = EngineObject.editableProperties.concat([
     { name: 'floorScale', friendly: 'Floor Texture Scale', type: 'float' },
     { name: 'ceilScale', friendly: 'Ceiling Texture Scale', type: 'float' },
     { name: 'ceilMaterialId', friendly: 'Ceiling Material', type: 'material_id' },
-    { name: 'floorMaterialId', friendly: 'Floor Material', type: 'material_id' }
+    { name: 'floorMaterialId', friendly: 'Floor Material', type: 'material_id' },
+    { name: 'roomImpulse', friendly: 'Room Sound Impulse', type: 'string' }
 ]);
 
 classes['MapSector'] = MapSector;

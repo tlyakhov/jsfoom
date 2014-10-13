@@ -428,8 +428,10 @@ Renderer.prototype.pick = function(screenX, screenY) {
                 sqr((intersection[1] - segment.ay))) / segment.length; // 0.0 - 1.0
         }
 
-        if (!distance)
+        if (!distance) {
+            sector = null;
             break;
+        }
 
         var projectedHeightTop = (sector.topZ - (this.map.player.pos[2] + this.map.player.height)) * this.viewFix[screenX] / distance;
         var projectedHeightBottom = (sector.bottomZ - (this.map.player.pos[2] + this.map.player.height)) * this.viewFix[screenX] / distance;

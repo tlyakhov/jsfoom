@@ -34,7 +34,7 @@ TalkActionGive.prototype.act = function () {
     {
         if(isA(realItem.behaviors[i], InventoryItemBehavior))
         {
-            realItem.behaviors[i].give();
+            realItem.behaviors[i].interact(0, this.behavior.entity.map.player);
             break;
         }
     }

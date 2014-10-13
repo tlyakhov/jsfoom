@@ -12,7 +12,7 @@ function TalkBehavior(options) {
     this.actionTime = preciseTime();
     this.delay = 0;
     this.state = 'ready';
-    this.interacted = false;
+    this.stopMoving = true;
 
     $.extend(true, this, options);
 
@@ -29,13 +29,10 @@ TalkBehavior.editableProperties = InteractionBehavior.editableProperties.concat(
 
 classes['TalkBehavior'] = TalkBehavior;
 
-TalkBehavior.prototype.frame = function(lastFrameTime) {
-    if(!this.active)
-        return;
-    this.interacted = false;
-    InteractionBehavior.prototype.frame.call(this, lastFrameTime);
+TalkBehavior.prototype.stopInteracting = function() {
+    InteractionBehavior.prototype.stopInteracting.call(this);
 
-    if(!this.interacted && this.resetWhenPlayerLeaves) {
+    if(this.resetWhenPlayerLeaves) {
         this.currentAction = null;
     }
 };
@@ -45,11 +42,6 @@ TalkBehavior.prototype.interact = function (lastFrameTime, target) {
 
     if (this.actions.length == 0)
         return;
-
-    var entity = this.entity;
-    var map = this.entity.map;
-
-    this.interacted = true;
 
     if (this.currentAction == null && this.state != 'done') {
         this.currentAction = 0;

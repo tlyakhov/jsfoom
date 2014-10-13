@@ -80,7 +80,7 @@ Editor.prototype.onPropGridArrayAdd = function(evt) {
 
 Editor.prototype.onPropGridArrayClear = function(evt) {
     var dt = $('#' + this.propEditorId).DataTable();
-    var cell = dt.cell($(evt.target).parent().parent());
+    var cell = dt.cell($(evt.currentTarget).parent().parent());
     var rowData = dt.row(cell.index().row).data();
     var object = rowData.objects[0];
 
@@ -90,7 +90,7 @@ Editor.prototype.onPropGridArrayClear = function(evt) {
 
 Editor.prototype.onPropGridArrayUp = function(evt) {
     var dt = $('#' + this.propEditorId).DataTable();
-    var cell = dt.cell($(evt.target).parent().parent());
+    var cell = dt.cell($(evt.currentTarget).parent().parent());
     var rowData = dt.row(cell.index().row).data();
     var object = rowData.objects[0];
     var array = rowData.objects[1];
@@ -106,7 +106,7 @@ Editor.prototype.onPropGridArrayUp = function(evt) {
 
 Editor.prototype.onPropGridArrayDown = function(evt) {
     var dt = $('#' + this.propEditorId).DataTable();
-    var cell = dt.cell($(evt.target).parent().parent());
+    var cell = dt.cell($(evt.currentTarget).parent().parent());
     var rowData = dt.row(cell.index().row).data();
     var object = rowData.objects[0];
     var array = rowData.objects[1];
@@ -122,7 +122,7 @@ Editor.prototype.onPropGridArrayDown = function(evt) {
 
 Editor.prototype.onPropGridArrayDelete = function(evt) {
     var dt = $('#' + this.propEditorId).DataTable();
-    var cell = dt.cell($(evt.target).parent().parent());
+    var cell = dt.cell($(evt.currentTarget).parent().parent());
     var rowData = dt.row(cell.index().row).data();
     var array = rowData.objects[1];
     var parent = rowData.objects[2];

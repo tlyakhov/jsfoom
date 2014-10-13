@@ -1,7 +1,7 @@
-inherit(InteractionBehavior, MeleeBehavior);
+inherit(AttackBehavior, MeleeBehavior);
 
 function MeleeBehavior(options) {
-    InteractionBehavior.call(this, options);
+    AttackBehavior.call(this, options);
 
     this.strength = 5.0;
 
@@ -10,7 +10,7 @@ function MeleeBehavior(options) {
 
 classes['MeleeBehavior'] = MeleeBehavior;
 
-MeleeBehavior.editableProperties = InteractionBehavior.editableProperties.concat([
+MeleeBehavior.editableProperties = AttackBehavior.editableProperties.concat([
     { name: 'strength', friendly: 'Strength', type: 'float' }
 ]);
 
@@ -18,18 +18,20 @@ MeleeBehavior.prototype.frame = function(lastFrameTime) {
     if(!this.active)
         return;
     this.minDistance = this.entity.boundingRadius * 1.5;
-    InteractionBehavior.prototype.frame.call(this, lastFrameTime);
+    AttackBehavior.prototype.frame.call(this, lastFrameTime);
 };
 
-MeleeBehavior.prototype.interact = function (lastFrameTime, target) {
-    InteractionBehavior.prototype.interact.call(this, lastFrameTime, target);
+MeleeBehavior.prototype.attack = function (lastFrameTime, target) {
+    if(!AttackBehavior.prototype.attack.call(this, lastFrameTime, target))
+        return false;
 
-    if(target.hurtTime == 0)
-        target.hurt(this.strength);
+    target.hurt(this.strength);
+
+    return true;
 };
 
 MeleeBehavior.prototype.serialize = function () {
-    var r = InteractionBehavior.prototype.serialize.call(this);
+    var r = AttackBehavior.prototype.serialize.call(this);
 
     r.strength = this.strength;
 
@@ -37,7 +39,7 @@ MeleeBehavior.prototype.serialize = function () {
 };
 
 MeleeBehavior.deserialize = function (data, entity, behavior) {
-    behavior = InteractionBehavior.deserialize(data, entity, behavior);
+    behavior = AttackBehavior.deserialize(data, entity, behavior);
 
     behavior.strength = data.strength;
 
