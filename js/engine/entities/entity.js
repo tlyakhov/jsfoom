@@ -10,12 +10,16 @@ function Entity(options) {
     this.vel = vec3blank(false);
     this.hurtTime = 0;
     this.boundingRadius = 10.0;
-    this.collisionResponse = 'slide'; // can be 'slide', 'bounce', or 'stop'
+    this.collisionResponse = 'slide'; // can be 'slide', 'bounce', 'stop', or 'remove'
     this.health = 100;
     this.mountHeight = GAME_CONSTANTS.playerMountHeight;
     this.behaviors = [];
     this.active = true;
     this.audioEngineEntity = null;
+
+    this.moveSoundSrc = null;
+    this.moveSoundRate = 500;
+    this.moveSoundTriggerLast = preciseTime();
 
     if (options) {
         $.extend(true, this, options);
@@ -30,8 +34,10 @@ Entity.editableProperties = EngineObject.editableProperties.concat([
     { name: 'pos', friendly: 'Position', type: 'vector' },
     { name: 'angle', friendly: 'Angle', type: 'float' },
     { name: 'boundingRadius', friendly: 'Bounding Radius', type: 'float' },
-    { name: 'collisionResponse', friendly: 'Collision Response', type: [ 'slide', 'bounce', 'stop' ] },
-    { name: 'behaviors', friendly: 'Behaviors', type: 'array', childType: 'Behavior', parentReference: 'entity' }
+    { name: 'collisionResponse', friendly: 'Collision Response', type: [ 'slide', 'bounce', 'stop', 'remove' ] },
+    { name: 'behaviors', friendly: 'Behaviors', type: 'array', childType: 'Behavior', parentReference: 'entity' },
+    { name: 'moveSoundSrc', friendly: 'Move Sound Source', type: 'string' },
+    { name: 'moveSoundRate', friendly: 'Move Sound Rate', type: 'float' }
 ]);
 
 Entity.prototype.getBehavior = function(clazz) {
@@ -221,9 +227,32 @@ Entity.prototype.collide = function () {
             this.vel[0] = this.vel[0] - 2 * dot * segment.normal[0];
             this.vel[1] = this.vel[1] - 2 * dot * segment.normal[1];
         }
+        else if(this.collisionResponse == 'remove') {
+            this.remove();
+        }
     }
 
     return collided;
+};
+
+Entity.prototype.remove = function() {
+    if(this.sector) {
+        var index = $.inArray(this, this.sector.entities);
+
+        if (index != -1) {
+            this.sector.entities.splice(index, 1);
+            return;
+        }
+    }
+
+    for(var i = 0; i < this.map.sectors.length; i++) {
+        var index = $.inArray(this, this.map.sectors[i].entities);
+
+        if (index != -1) {
+            this.map.sectors[i].entities.splice(index, 1);
+            return;
+        }
+    }
 };
 
 Entity.prototype.frame = function (lastFrameTime) {
@@ -242,7 +271,18 @@ Entity.prototype.frame = function (lastFrameTime) {
             if (collidedSegments.length > 0)
                 break;
         }
+        if(this.moveSoundSrc) {
+            var speed = vec3length(this.vel);
+
+            if (preciseTime() - this.moveSoundTriggerLast > this.moveSoundRate / speed) {
+                this.moveSoundTriggerLast = preciseTime();
+                var sound = audioEngine.get(this.moveSoundSrc);
+                this.audioEngineEntity.play(sound);
+            }
+        }
     }
+
+
 
     for (var i = 0; i < this.behaviors.length; i++) {
         this.behaviors[i].frame(lastFrameTime);

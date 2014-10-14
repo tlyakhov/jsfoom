@@ -8,6 +8,7 @@ function InventoryItemBehavior(options) {
     this.count = 1;
     this.mustBeFacing = false;
     this.givenTo = null;
+    this.collectSoundSrc = '/data/sounds/collect.wav';
 
     $.extend(true, this, options);
 }
@@ -16,7 +17,8 @@ classes['InventoryItemBehavior'] = InventoryItemBehavior;
 
 InventoryItemBehavior.editableProperties = InteractionBehavior.editableProperties.concat([
     { name: 'name', friendly: 'Name', type: 'string' },
-    { name: 'count', friendly: 'Count', type: 'float' }
+    { name: 'count', friendly: 'Count', type: 'float' },
+    { name: 'collectSoundSrc', friendly: 'Collect Sound Source', type: 'string' }
 ]);
 
 InventoryItemBehavior.prototype.reset = function () {
@@ -54,6 +56,14 @@ InventoryItemBehavior.prototype.interact = function(lastFrameTime, target) {
 
     if(entity.getBehavior(LightBehavior))
         map.clearLightmaps();
+
+    if(this.collectSoundSrc) {
+        var sound = audioEngine.get(this.collectSoundSrc);
+        if(entity && entity.audioEngineEntity)
+            entity.audioEngineEntity.play(sound);
+        else
+            sound.play();
+    }
 };
 
 InventoryItemBehavior.prototype.serialize = function () {

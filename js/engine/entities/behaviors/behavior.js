@@ -22,7 +22,7 @@ Behavior.prototype.reset = function () {
     if (this.resetEntity == null)
         return; // Already reset
 
-    var e = Entity.deserialize(this.resetEntity, this.entity.map);
+    var e = classes[this.resetEntity._type].deserialize(this.resetEntity, this.entity.map);
 
     var sector = this.entity.sector;
     e.sector = this.resetSector;

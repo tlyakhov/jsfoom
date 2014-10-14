@@ -1,6 +1,6 @@
 var GAME_CONSTANTS = {
     // Rendering constants
-    renderWorkers: 8,
+    renderWorkers: isMobile() ? 4 : 8,
     intersectEpsilon: 1e-13,
     lightGrid: 8,
     velocityEpsilon: 1e-15,
@@ -43,6 +43,8 @@ var GAME_CONSTANTS = {
     codeAssets: [
         '/js/game/assets/entities/behaviors/flub.js',
         '/js/game/assets/entities/flub.js',
+        '/js/game/assets/entities/behaviors/evil_flub.js',
+        '/js/game/assets/entities/evil_flub.js',
         '/js/game/assets/entities/pluk.js',
         '/js/game/assets/maps/test_map.js'
     ]

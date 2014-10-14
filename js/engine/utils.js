@@ -246,3 +246,7 @@ function loadAssets(assets, done) {
     if (globalWorkerId != undefined && done)
         done();
 }
+
+function isMobile() {
+    return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+}

@@ -85,6 +85,8 @@ Editor.prototype.go = function () {
     $('body').on('click', '.prop-grid-array-up', $.proxy(this.onPropGridArrayUp, this));
     $('body').on('click', '.prop-grid-array-down', $.proxy(this.onPropGridArrayDown, this));
     $('body').on('click', '.prop-grid-array-delete', $.proxy(this.onPropGridArrayDelete, this));
+    $('body').on('click', '.prop-grid-object-add a', $.proxy(this.onPropGridObjectAdd, this));
+    $('body').on('click', '.prop-grid-object-clear', $.proxy(this.onPropGridObjectClear, this));
 
     var entityTypes = subclassesOf(Entity).filter(function(s) { return !s.editorHidden; });
     var entityList = [];

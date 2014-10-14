@@ -1,8 +1,8 @@
 importScripts("../lib/jquery.nodom.js");
 importScripts("../lib/object_id.js");
 importScripts("../lib/hashcode.js");
-importScripts("../game/constants.js");
 importScripts("utils.js");
+importScripts("../game/constants.js");
 importScripts("object_cache.js");
 importScripts("engine_object.js");
 importScripts("vector3.js");
@@ -21,6 +21,7 @@ importScripts("entities/light_entity.js");
 importScripts("entities/behaviors/behavior.js");
 importScripts("entities/behaviors/interaction_behavior.js");
 importScripts("entities/behaviors/attack_behavior.js");
+importScripts("entities/behaviors/projectile_behavior.js");
 importScripts("entities/behaviors/melee_behavior.js");
 importScripts("entities/behaviors/rifle_behavior.js");
 importScripts("entities/behaviors/rocket_behavior.js");

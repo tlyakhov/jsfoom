@@ -47,9 +47,12 @@ Player.prototype.hurt = function (amount) {
     this.hurtTime = GAME_CONSTANTS.playerHurtTime;
 };
 
-Player.prototype.move = function (angle, lastFrameTime) {
-    this.vel[0] += Math.cos(angle * deg2rad) * GAME_CONSTANTS.playerSpeed;
-    this.vel[1] += Math.sin(angle * deg2rad) * GAME_CONSTANTS.playerSpeed;
+Player.prototype.move = function (angle, lastFrameTime, speed) {
+    if(speed == undefined)
+        speed = 1.0;
+
+    this.vel[0] += Math.cos(angle * deg2rad) * GAME_CONSTANTS.playerSpeed * speed;
+    this.vel[1] += Math.sin(angle * deg2rad) * GAME_CONSTANTS.playerSpeed * speed;
 };
 
 Player.prototype.serialize = function () {

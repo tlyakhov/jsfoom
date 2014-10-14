@@ -78,6 +78,43 @@ Editor.prototype.onPropGridArrayAdd = function(evt) {
     ap.act(object, rowData.name, newArray);
 };
 
+Editor.prototype.onPropGridObjectAdd = function(evt) {
+    var selectedClass = $(evt.target).text();
+    var dt = $('#' + this.propEditorId).DataTable();
+    var cell = dt.cell($(evt.target).parent().parent().parent().parent());
+    var rowData = dt.row(cell.index().row).data();
+    var object = rowData.objects[0];
+
+    var props = object.constructor.editableProperties;
+    var prop = null;
+
+    for(var i = 0; i < props.length; i++) {
+        if(props[i].name == rowData.name) {
+            prop = props[i];
+            break;
+        }
+    }
+
+    var newObject = createFromName(selectedClass);
+    if(prop.parentReference)
+        newObject[prop.parentReference] = object;
+    if(newObject.map != undefined && newObject.map)
+        newObject.map = this.map;
+
+    var sp = this.newAction(SetPropertyEditorAction);
+    sp.act(rowData.objects, rowData.name, newObject);
+    this.refreshPropertyGrid();
+};
+
+Editor.prototype.onPropGridObjectClear = function(evt) {
+    var dt = $('#' + this.propEditorId).DataTable();
+    var cell = dt.cell($(evt.currentTarget).parent().parent());
+    var rowData = dt.row(cell.index().row).data();
+    var sp = this.newAction(SetPropertyEditorAction);
+    sp.act(rowData.objects, rowData.name, null);
+    this.refreshPropertyGrid();
+};
+
 Editor.prototype.onPropGridArrayClear = function(evt) {
     var dt = $('#' + this.propEditorId).DataTable();
     var cell = dt.cell($(evt.currentTarget).parent().parent());
@@ -143,6 +180,34 @@ Editor.prototype.renderPropertyValue = function (data, type, row, meta) {
 
     if(row.type == 'serializable') {
         return stringSerialize(values[0]);
+    }
+    else if(row.type == 'object') {
+        var options = [];
+
+        var object = row.objects[0];
+        var props = object.constructor.editableProperties;
+        var prop = null;
+
+        for(var i = 0; i < props.length; i++) {
+            if(props[i].name == row.name) {
+                prop = props[i];
+                break;
+            }
+        }
+
+        var available = subclassesOf(prop.childType).filter(function(s) { return !s.editorHidden; });
+
+        for(var i = 0; i < available.length; i++) {
+            options.push("<li><a href='#'>" + available[i].name + "</a></li>");
+        }
+
+        return "<div class='btn-group btn-group-xs'>" +
+            "    <button type='button' class='btn btn-default dropdown-toggle' data-toggle='dropdown'><span class='glyphicon glyphicon-plus'></span></button>" +
+            "    <ul class='dropdown-menu prop-grid-object-add' role='menu'>" +
+            options.join('') +
+            "    </ul>" +
+            "    <button type='button' class='btn btn-default prop-grid-object-clear'><span class='glyphicon glyphicon-remove'></span></button>" +
+            "</div>";
     }
     else if(row.type == 'array') {
         var options = [];
@@ -247,7 +312,7 @@ Editor.prototype.propertyRowCallback = function (row, data) {
         var rowData = dt.row(cell.index().row).data();
 
         if (rowData.name.length == 0 || rowData.name == 'type' || cell.index().column == 0 ||
-            rowData.type == 'array' || rowData.type == 'arrayElement')
+            rowData.type == 'array' || rowData.type == 'object' || rowData.type == 'arrayElement')
             return;
 
         if(rowData.type == 'bool') {
@@ -346,10 +411,10 @@ Editor.prototype.propertyGridObject = function(type, dt, objects, parent, depth)
 
         var fullFriendly = parent ? parent + '.' + prop.friendly : prop.friendly;
 
-        if(prop.type == 'array' && objects.length > 1) {
+        if((prop.type == 'array' || prop.type == 'object') && objects.length > 1) {
             dt.row.add({ name: prop.name,
                 friendly: fullFriendly,
-                value: "Can't edit array for multiple objects.",
+                value: "Can't edit array/object property for multiple objects.",
                 type: prop.type,
                 parent: parent,
                 depth: depth,
@@ -382,6 +447,26 @@ Editor.prototype.propertyGridObject = function(type, dt, objects, parent, depth)
                     depth: depth + 1,
                     objects: objects });
                 this.propertyGridObject(array[j].constructor, dt, [ array[j] ], thisParent, depth + 1);
+            }
+        }
+        else if(prop.type == 'object') {
+            dt.row.add({ name: prop.name,
+                friendly: fullFriendly,
+                value: '',
+                type: prop.type,
+                parent: parent,
+                depth: depth,
+                objects: objects });
+            var child = objects[0][prop.name];
+            if(child) {
+                dt.row.add({ friendly: fullFriendly + '.Type',
+                    name: 'type',
+                    value: child.constructor.name,
+                    type: 'type',
+                    parent: fullFriendly,
+                    depth: depth + 1,
+                    objects: objects });
+                this.propertyGridObject(child.constructor, dt, [ child ], fullFriendly, depth + 1);
             }
         }
         else {

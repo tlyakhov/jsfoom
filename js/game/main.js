@@ -19,6 +19,7 @@ function GameMain(options) {
     this.renderBuffer = null;
     this.renderBuffer8 = null;
     this.renderTarget = null;
+    this.touchStart = vec3blank();
     this.workers = [];
     this.workerFrameReady = [];
     this.workerDbgMeasure = [];
@@ -39,9 +40,14 @@ GameMain.prototype.go = function () {
             this.map = Map.deserialize(window[GAME_CONSTANTS.firstMap]);
         }
 
-        $('#' + this.canvasId).attr('width', this.screenWidth);
-        $('#' + this.canvasId).attr('height', this.screenHeight + 64);
-        $('#' + this.canvasId).on('mousedown', $.proxy(this.canvasClick, this));
+        var canvas = $('#' + this.canvasId);
+        canvas.attr('width', this.screenWidth);
+        canvas.attr('height', this.screenHeight + 64);
+        canvas.on('mousedown', $.proxy(this.onCanvasClick, this));
+        canvas.on('touchstart', $.proxy(this.onTouchStart, this));
+        canvas.on('touchmove', $.proxy(this.onTouchMove, this));
+        canvas.on('touchend', $.proxy(this.onTouchEnd, this));
+
         this.renderContext = document.getElementById(this.canvasId).getContext('2d');
         this.renderImgData = this.renderContext.createImageData(this.screenWidth, this.screenHeight);
         this.renderBuffer = new ArrayBuffer(this.renderImgData.data.length);
@@ -69,6 +75,7 @@ GameMain.prototype.go = function () {
 
         this.checkRenderWorkers();
 
+
         setInterval($.proxy(this.timer, this), 16);
 
         if(this.loadedCallback)
@@ -76,7 +83,33 @@ GameMain.prototype.go = function () {
     }, this));
 };
 
-GameMain.prototype.canvasClick = function (evt) {
+GameMain.prototype.onTouchStart = function(evt) {
+    evt.preventDefault();
+    this.touchStart[0] = evt.originalEvent.touches[0].clientX;
+    this.touchStart[1] = evt.originalEvent.touches[0].clientY;
+//    console.log(evt);
+};
+
+GameMain.prototype.onTouchMove = function(evt) {
+    evt.preventDefault();
+    var dx = evt.originalEvent.touches[0].clientX - this.touchStart[0];
+    var dy = evt.originalEvent.touches[0].clientY - this.touchStart[1];
+
+    if(this.state == 'game') {
+        this.map.player.angle += dx / 5 * GAME_CONSTANTS.playerTurnSpeed * this.lastGameTime / 30.0;
+        this.map.player.angle = fast_floor(normalizeAngle(this.map.player.angle));
+        this.map.player.move(this.map.player.angle, 0, -dy / 5);
+        this.touchStart[0] = evt.originalEvent.touches[0].clientX;
+        this.touchStart[1] = evt.originalEvent.touches[0].clientY;
+    }
+};
+
+GameMain.prototype.onTouchEnd = function(evt) {
+    evt.preventDefault();
+//    console.log(evt);
+};
+
+GameMain.prototype.onCanvasClick = function (evt) {
     var canvas = document.getElementById(this.canvasId);
     var rect = canvas.getBoundingClientRect();
     var x = fast_floor((evt.clientX - rect.left) / (rect.right - rect.left) * canvas.width);
