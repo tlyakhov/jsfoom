@@ -46,6 +46,18 @@ ProjectileBehavior.prototype.interact = function (lastFrameTime, target) {
     entity.remove();
 };
 
+ProjectileBehavior.prototype.onCollision = function() {
+    if(this.hitSoundSrc) {
+        var sound = audioEngine.get(this.hitSoundSrc);
+        if(this.entity && this.entity.audioEngineEntity)
+            this.entity.audioEngineEntity.play(sound);
+        else
+            sound.play();
+    }
+
+    return 'remove';
+};
+
 ProjectileBehavior.prototype.serialize = function () {
     var r = InteractionBehavior.prototype.serialize.call(this);
 

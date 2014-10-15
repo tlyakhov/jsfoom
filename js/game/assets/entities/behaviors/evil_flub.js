@@ -19,8 +19,22 @@ GameBehaviorEvilFlub.prototype.frame = function (lastFrameTime) {
     var behaviors = this.entity.behaviors;
 
     if (behaviors.length == 1) {
+        var pe = new SpriteEntity({
+            width: 12,
+            height: 12,
+            boundingRadius: 6,
+            sprites: [
+                new Sprite({ textureSrc: 'data/game/transparent-bubble.png'})
+            ],
+            behaviors: [ new ProjectileBehavior({ entityClasses: [ 'Player', 'GameEntityFlub' ] }) ],
+            collisionResponseCallback: 'return this.getBehavior(ProjectileBehavior).onCollision();'
+        });
+
         behaviors.push(new WanderBehavior({ speed: 0.1, facing: false, moveZ: false, entity: this.entity }));
-        behaviors.push(new RifleBehavior({ entity: this.entity }));
+        behaviors.push(new RocketBehavior({ entity: this.entity,
+            speed: 2,
+            entityClasses: [ 'Player', 'GameEntityFlub' ],
+            projectileEntity: pe }));
     }
 };
 

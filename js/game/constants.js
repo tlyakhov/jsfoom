@@ -9,6 +9,7 @@ var GAME_CONSTANTS = {
     fieldOfView: 75,
     debugLevel: 0,
     // Audio constants
+    sourcesPerSound: 8,
     audioUnitsFactor: 12,
     // World constants
     gravity: 0.1,

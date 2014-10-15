@@ -62,7 +62,10 @@ InteractionBehavior.prototype.frame = function (lastFrameTime) {
     Behavior.prototype.frame.call(this, lastFrameTime);
 
     var entity = this.entity;
-    
+
+    if(!entity.sector)
+        return;
+
     for(var sid in entity.sector.pvs) {
         var sector = entity.sector.pvs[sid];
 
@@ -80,6 +83,7 @@ InteractionBehavior.prototype.frame = function (lastFrameTime) {
 
             if(!valid)
                 continue;
+
             if (this.minDistance && vec3dist2(entity.pos, target.pos) > sqr(this.minDistance)) {
                 if(this.interactingEntity == target)
                     this.stopInteracting();

@@ -21,7 +21,7 @@ Editor.prototype.dataPropertyValue = function (row, type, set, meta) {
             set = parseFloat(set);
         }
         else if (row.type == 'vector') {
-            var split = set.split(',')
+            var split = set.split(',');
             set = vec3create(parseFloat(split[0]), parseFloat(split[1]), parseFloat(split[2]));
         }
 

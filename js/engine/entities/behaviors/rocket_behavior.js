@@ -12,7 +12,7 @@ function RocketBehavior(options) {
 classes['RocketBehavior'] = RocketBehavior;
 
 RocketBehavior.editableProperties = AttackBehavior.editableProperties.concat([
-    { name: 'speed', friendly: 'Strength', type: 'float' },
+    { name: 'speed', friendly: 'Speed', type: 'float' },
     { name: 'projectileEntity', friendly: 'Projectile Entity', type: 'object', childType: 'Entity' }
 ]);
 

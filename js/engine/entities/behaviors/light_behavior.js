@@ -41,7 +41,7 @@ LightBehavior.prototype.frame = function (lastFrameTime) {
 LightBehavior.prototype.serialize = function () {
     var r = Behavior.prototype.serialize.call(this);
 
-    r.diffuse = this.diffuse;
+    r.diffuse = vec3clone(this.diffuse);
     r.strength = this.strength;
     r.attenuation = this.attenuation;
 

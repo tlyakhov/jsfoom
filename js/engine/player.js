@@ -17,6 +17,14 @@ classes['Player'] = Player;
 Player.editorHidden = true;
 Player.editableProperties = Entity.editableProperties;
 
+Player.prototype.reset = function() {
+    var e = Entity.prototype.reset.call(this);
+
+    if(!e)
+        return;
+
+    this.map.player = e;
+};
 Player.prototype.frame = function (lastFrameTime) {
     Entity.prototype.frame.call(this, lastFrameTime);
 

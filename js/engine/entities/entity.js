@@ -10,7 +10,9 @@ function Entity(options) {
     this.vel = vec3blank(false);
     this.hurtTime = 0;
     this.boundingRadius = 10.0;
-    this.collisionResponse = 'slide'; // can be 'slide', 'bounce', 'stop', or 'remove'
+    this.collisionResponse = 'slide'; // can be 'slide', 'bounce', 'stop', 'remove', or 'callback'
+    this.collisionResponseCallback = null;
+    this._collisionResponseCallback = null;
     this.health = 100;
     this.mountHeight = GAME_CONSTANTS.playerMountHeight;
     this.behaviors = [];
@@ -20,6 +22,9 @@ function Entity(options) {
     this.moveSoundSrc = null;
     this.moveSoundRate = 500;
     this.moveSoundTriggerLast = preciseTime();
+
+    this.resetEntity = null;
+    this.resetSector = null;
 
     if (options) {
         $.extend(true, this, options);
@@ -34,11 +39,35 @@ Entity.editableProperties = EngineObject.editableProperties.concat([
     { name: 'pos', friendly: 'Position', type: 'vector' },
     { name: 'angle', friendly: 'Angle', type: 'float' },
     { name: 'boundingRadius', friendly: 'Bounding Radius', type: 'float' },
-    { name: 'collisionResponse', friendly: 'Collision Response', type: [ 'slide', 'bounce', 'stop', 'remove' ] },
+    { name: 'collisionResponse', friendly: 'Collision Response', type: [ 'slide', 'bounce', 'stop', 'remove', 'callback' ] },
+    { name: 'collisionResponseCallback', friendly: 'Collision Response Callback', type: 'code' },
     { name: 'behaviors', friendly: 'Behaviors', type: 'array', childType: 'Behavior', parentReference: 'entity' },
     { name: 'moveSoundSrc', friendly: 'Move Sound Source', type: 'string' },
     { name: 'moveSoundRate', friendly: 'Move Sound Rate', type: 'float' }
 ]);
+
+
+Entity.prototype.reset = function () {
+    if (this.resetEntity == null)
+        return; // Already reset
+
+    var e = classes[this.resetEntity._type].deserialize(this.resetEntity, this.map);
+
+    var sector = this.sector;
+    e.sector = this.resetSector;
+
+    if(sector) {
+        var index = $.inArray(this, sector.entities);
+        if (index >= 0)
+            sector.entities.splice(index, 1);
+    }
+
+    if (this.resetSector)
+        this.resetSector.entities.push(e);
+    e.collide();
+
+    return e;
+};
 
 Entity.prototype.getBehavior = function(clazz) {
     for(var i = 0; i < this.behaviors.length; i++) {
@@ -218,19 +247,35 @@ Entity.prototype.collide = function () {
     }
 
     if (collided.length > 0) {
-        if (this.collisionResponse == 'stop') {
+        var collisionResponse = this.collisionResponse;
+
+        if(this.collisionResponseCallback) {
+            if(!this._collisionResponseCallback ||
+                this._collisionResponseCallback.source != this.collisionResponseCallback) {
+                this._collisionResponseCallback = $.proxy(new Function(this.collisionResponseCallback), this);
+                this._collisionResponseCallback.source = this.collisionResponseCallback;
+            }
+
+            collisionResponse = this._collisionResponseCallback();
+        }
+
+        if (collisionResponse == 'stop') {
             this.vel[0] = 0;
             this.vel[1] = 0;
         }
-        else if (this.collisionResponse == 'bounce') {
+        else if (collisionResponse == 'bounce') {
             var dot = this.vel[0] * segment.normal[0] + this.vel[1] * segment.normal[1];
             this.vel[0] = this.vel[0] - 2 * dot * segment.normal[0];
             this.vel[1] = this.vel[1] - 2 * dot * segment.normal[1];
         }
-        else if(this.collisionResponse == 'remove') {
+        else if(collisionResponse == 'remove') {
             this.remove();
+            this.sector = null;
         }
     }
+
+    if(this.sector && $.inArray(this, this.sector.entities) < 0)
+        this.sector.entities.push(this);
 
     return collided;
 };
@@ -258,6 +303,11 @@ Entity.prototype.remove = function() {
 Entity.prototype.frame = function (lastFrameTime) {
     if(!this.audioEngineEntity)
         this.audioEngineEntity = new AudioEngineEntity({ entity: this });
+
+    if (this.resetEntity == null) {
+        this.resetEntity = this.serialize();
+        this.resetSector = this.sector;
+    }
 
     var frameScale = lastFrameTime / 10.0;
 
@@ -296,12 +346,13 @@ Entity.prototype.hurt = function (amount) {
 Entity.prototype.serialize = function () {
     var r = EngineObject.prototype.serialize.call(this);
 
-    r.pos = this.pos;
+    r.pos = vec3clone(this.pos);
     r.angle = this.angle;
-    r.vel = this.vel;
+    r.vel = vec3clone(this.vel);
     r.hurtTime = this.hurtTime;
     r.boundingRadius = this.boundingRadius;
     r.collisionResponse = this.collisionResponse;
+    r.collisionResponseCallback = this.collisionResponseCallback;
     r.health = this.health;
     r.mountHeight = this.mountHeight;
     r.behaviors = [];
@@ -323,6 +374,7 @@ Entity.deserialize = function (data, map, entity) {
     entity.hurtTime = data.hurtTime;
     entity.boundingRadius = data.boundingRadius;
     entity.collisionResponse = data.collisionResponse;
+    entity.collisionResponseCallback = data.collisionResponseCallback;
     entity.health = data.health;
     entity.mountHeight = data.mountHeight;
     entity.active = data.active;
@@ -334,7 +386,7 @@ Entity.deserialize = function (data, map, entity) {
         if (i >= entity.behaviors.length)
             entity.behaviors.push(classes[data.behaviors[i]._type].deserialize(data.behaviors[i], entity));
         else
-            classes[data.behaviors[i]._type].deserialize(data.behaviors[i], entity, entity.behaviors[i]);
+            entity.behaviors[i] = classes[data.behaviors[i]._type].deserialize(data.behaviors[i], entity, entity.behaviors[i]);
     }
 
     return entity;

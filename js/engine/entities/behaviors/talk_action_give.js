@@ -22,13 +22,16 @@ TalkActionGive.create = function(item, id, gotoId) {
 };
 
 TalkActionGive.editableProperties = TalkAction.editableProperties.concat([
-    { name: 'item', friendly: 'Inventory Item', type: 'inventoryItem' }
+    { name: 'item', friendly: 'Inventory Item', type: 'object', childType: 'Entity' }
 ]);
 
 classes['TalkActionGive'] = TalkActionGive;
 
 TalkActionGive.prototype.act = function () {
-    var realItem = Entity.deserialize(this.item, this.behavior.entity.map);
+    if(!this.item)
+        return;
+
+    var realItem = classes[this.item._type].deserialize(this.item, this.behavior.entity.map);
 
     for(var i = 0; i < realItem.behaviors.length; i++)
     {

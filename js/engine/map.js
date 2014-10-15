@@ -168,9 +168,7 @@ Map.prototype.resetAllEntities = function () {
         for (var j = 0; j < entities.length; j++) {
             var entity = entities[j];
 
-            for (var k = 0; k < entity.behaviors.length; k++) {
-                entity.behaviors[k].reset();
-            }
+            entity.reset();
         }
     }
 };
@@ -222,7 +220,7 @@ Map.deserialize = function (data, map) {
     if (map.materials.length > data.materials.length)
         map.materials.splice(data.materials.length, map.materials.length - data.materials.length);
 
-    Player.deserialize(data.player, map, map.player);
+    map.player = Player.deserialize(data.player, map, map.player);
 
     if(!map.player.sector || map.player.sector != map.getSector(map.player.sector.id))
         map.player.collide();
