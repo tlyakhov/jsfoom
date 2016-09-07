@@ -34,9 +34,6 @@ AudioEngineEntity.prototype.play = function(sound) {
             entity.pos[2] / GAME_CONSTANTS.audioUnitsFactor);
     if(entity.angle != undefined && entity.angle != null)
         this.panner.setOrientation(-Math.cos(entity.angle * Math.PI / 180.0), -Math.sin(entity.angle * Math.PI / 180.0), 0);
-    this.panner.setVelocity(entity.vel[0] / GAME_CONSTANTS.audioUnitsFactor,
-            entity.vel[1] / GAME_CONSTANTS.audioUnitsFactor,
-            entity.vel[2] / GAME_CONSTANTS.audioUnitsFactor);
 
     if(sector && sector.roomImpulse && this.roomImpulse != sector.roomImpulse) {
         var impulse = audioEngine.get(sector.roomImpulse);

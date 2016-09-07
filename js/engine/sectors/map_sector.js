@@ -307,8 +307,12 @@ MapSector.prototype.update = function () {
     this.lightmapWidth = fast_floor((this.max[0] - this.min[0]) / GAME_CONSTANTS.lightGrid) + 6;
     this.lightmapHeight = fast_floor((this.max[1] - this.min[1]) / GAME_CONSTANTS.lightGrid) + 6;
 
-    this.floorLightmap = new Float64Array(this.lightmapWidth * this.lightmapHeight * 3);
-    this.ceilLightmap = new Float64Array(this.lightmapWidth * this.lightmapHeight * 3);
+    if(this.floorLightmap)
+        deleteFloat64Array(this.floorLightmap);
+    if(this.ceilLightmap)
+        deleteFloat64Array(this.ceilLightmap);
+    this.floorLightmap = newFloat64Array(this.lightmapWidth * this.lightmapHeight * 3);
+    this.ceilLightmap = newFloat64Array(this.lightmapWidth * this.lightmapHeight * 3);
     this.clearLightmaps();
     if (globalWorkerId == undefined)
         this.version++;

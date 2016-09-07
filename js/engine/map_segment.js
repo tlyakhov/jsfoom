@@ -55,7 +55,9 @@ MapSegment.prototype.update = function () {
     if (this.sector) {
         this.lightmapWidth = fast_floor(this.length / GAME_CONSTANTS.lightGrid) + 2;
         this.lightmapHeight = fast_floor((this.sector.topZ - this.sector.bottomZ) / GAME_CONSTANTS.lightGrid) + 2;
-        this.lightmap = new Float64Array(this.lightmapWidth * this.lightmapHeight * 3);
+        if(this.lightmap)
+            deleteFloat64Array(this.lightmap);
+        this.lightmap = newFloat64Array(this.lightmapWidth * this.lightmapHeight * 3);
         this.clearLightmap();
     }
 };

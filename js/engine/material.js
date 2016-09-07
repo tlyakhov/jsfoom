@@ -34,7 +34,7 @@ Material.prototype.getTexture = function () {
         return null;
 
     if (!this.texture || this.texture.src != this.textureSrc)
-        this.texture = textureCache.get(this.textureSrc, true, true);
+        this.texture = textureCache.get({ src: this.textureSrc, generateMipMaps: true, filter: true });
 
     return this.texture;
 };

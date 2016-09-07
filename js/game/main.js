@@ -183,9 +183,9 @@ GameMain.prototype.gameText = function () {
 };
 
 GameMain.prototype.infoBar = function () {
-    var infoBarTexture = textureCache.get(GAME_CONSTANTS.infoBarSrc, false, false);
+    var infoBarTexture = textureCache.get({ src: GAME_CONSTANTS.infoBarSrc, generateMipMaps: false, filter: false });
     this.renderContext.drawImage(infoBarTexture.img, 0, this.screenHeight - 1);
-    var avatarTexture = textureCache.get(GAME_CONSTANTS.avatarSrc, false, false);
+    var avatarTexture = textureCache.get({ src: GAME_CONSTANTS.avatarSrc, generateMipMaps: false, filter: false });
     this.renderContext.drawImage(avatarTexture.img, 320 - 32, this.screenHeight - 1, 64, 64);
 
     for (var i = 0; i < this.map.player.inventory.length; i++) {
@@ -294,7 +294,7 @@ GameMain.prototype.onWorkerMessage = function (e) {
         var fn = function (texture) {
             this.onTextureLoad(e.target, texture);
         };
-        var tex = textureCache.get(data.texture.src, data.texture.generateMipMaps, data.texture.filter, $.proxy(fn, this));
+        var tex = textureCache.get({ src: data.texture.src, generateMipMaps: data.texture.generateMipMaps, filter: data.texture.filter, onLoad: $.proxy(fn, this) });
         if (tex.data.length > 0) {
             this.onTextureLoad(e.target, tex);
         }

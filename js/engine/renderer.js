@@ -57,15 +57,15 @@ Renderer.prototype.renderFloor = function (slice, start, end) {
 
         var distToFloor = (-sector.bottomZ + (this.map.player.pos[2] + this.map.player.height)) * this.viewFix[slice.x] / (slice.y - this.screenHeight / 2);
         var scaler = th * sector.floorScale / distToFloor;
-        var screenIndex = slice.targetX + slice.y * this.workerWidth;
+        var screenIndex = (slice.targetX + slice.y * this.workerWidth)|0;
 
         if (distToFloor < this.zbuffer[screenIndex]) {
             world[0] = this.map.player.pos[0] + this.trigTable[slice.rayTable].cos * distToFloor;
             world[1] = this.map.player.pos[1] + this.trigTable[slice.rayTable].sin * distToFloor;
 
 
-            var tx = world[0] / sector.floorScale - fast_floor(world[0] / sector.floorScale);
-            var ty = world[1] / sector.floorScale - fast_floor(world[1] / sector.floorScale);
+            var tx = world[0] / sector.floorScale - ((world[0] / sector.floorScale)|0);
+            var ty = world[1] / sector.floorScale - ((world[1] / sector.floorScale)|0);
 
             if (tx < 0)
                 tx = tx + 1.0;
@@ -89,14 +89,14 @@ Renderer.prototype.renderCeiling = function (slice, start, end) {
     for (slice.y = start; slice.y < end; slice.y++) {
         var distToCeiling = (sector.topZ - (this.map.player.pos[2] + this.map.player.height)) * this.viewFix[slice.x] / (this.screenHeight / 2 - 1 - slice.y);
         var scaler = th * sector.ceilScale / distToCeiling;
-        var screenIndex = slice.targetX + slice.y * this.workerWidth;
+        var screenIndex = (slice.targetX + slice.y * this.workerWidth)|0;
 
         if (distToCeiling < this.zbuffer[screenIndex]) {
             world[0] = this.map.player.pos[0] + this.trigTable[slice.rayTable].cos * distToCeiling;
             world[1] = this.map.player.pos[1] + this.trigTable[slice.rayTable].sin * distToCeiling;
 
-            var tx = Math.abs(world[0] / sector.ceilScale - fast_floor(world[0] / sector.ceilScale));
-            var ty = Math.abs(world[1] / sector.ceilScale - fast_floor(world[1] / sector.ceilScale));
+            var tx = Math.abs(world[0] / sector.ceilScale - ((world[0] / sector.ceilScale))|0);
+            var ty = Math.abs(world[1] / sector.ceilScale - ((world[1] / sector.ceilScale))|0);
 
             if (tx < 0)
                 tx = tx + 1.0;
@@ -117,10 +117,10 @@ Renderer.prototype.renderSlice = function (slice) {
     var projectedHeightTop = (sector.topZ - (this.map.player.pos[2] + this.map.player.height)) * this.viewFix[slice.x] / slice.distance;
     var projectedHeightBottom = (sector.bottomZ - (this.map.player.pos[2] + this.map.player.height)) * this.viewFix[slice.x] / slice.distance;
 
-    var sliceStart = fast_floor(this.screenHeight / 2 - projectedHeightTop);
-    var sliceEnd = fast_floor(this.screenHeight / 2 - projectedHeightBottom);
-    var clippedStart = fast_floor(Math.max(sliceStart, slice.yStart));
-    var clippedEnd = fast_floor(Math.min(sliceEnd, slice.yEnd));
+    var sliceStart = (this.screenHeight / 2 - projectedHeightTop)|0;
+    var sliceEnd = (this.screenHeight / 2 - projectedHeightBottom)|0;
+    var clippedStart = (Math.max(sliceStart, slice.yStart))|0;
+    var clippedEnd = (Math.min(sliceEnd, slice.yEnd))|0;
 
     this.renderCeiling(slice, slice.yStart, clippedStart);
     this.renderFloor(slice, clippedEnd, slice.yEnd);
@@ -142,14 +142,15 @@ Renderer.prototype.renderSlice = function (slice) {
         var adjProjectedHeightTop = (adj.topZ - (this.map.player.pos[2] + this.map.player.height)) * this.viewFix[slice.x] / slice.distance;
         var adjProjectedHeightBottom = (adj.bottomZ - (this.map.player.pos[2] + this.map.player.height)) * this.viewFix[slice.x] / slice.distance;
 
-        var adjSliceTop = fast_floor(this.screenHeight / 2 - adjProjectedHeightTop);
-        var adjSliceBottom = fast_floor(this.screenHeight / 2 - adjProjectedHeightBottom);
-        var adjClippedTop = fast_floor(Math.max(adjSliceTop, clippedStart));
-        var adjClippedBottom = fast_floor(Math.min(adjSliceBottom, clippedEnd));
-
+        var adjSliceTop = (this.screenHeight / 2 - adjProjectedHeightTop)|0;
+        var adjSliceBottom = (this.screenHeight / 2 - adjProjectedHeightBottom)|0;
+        var adjClippedTop = (Math.max(adjSliceTop, clippedStart))|0;
+        var adjClippedBottom = (Math.min(adjSliceBottom, clippedEnd))|0;
+        var screenIndex = 0;
+        
         if (hiMaterial) {
             for (slice.y = clippedStart; slice.y < adjClippedTop; slice.y++) {
-                var screenIndex = slice.targetX + slice.y * this.workerWidth;
+                screenIndex = (slice.targetX + slice.y * this.workerWidth)|0;
                 if (slice.distance < this.zbuffer[screenIndex]) {
                     var v = (slice.y - sliceStart) / (adjSliceTop - sliceStart);
                     slice.intersection[2] = sector.topZ - v * (sector.topZ - adj.topZ);
@@ -167,7 +168,7 @@ Renderer.prototype.renderSlice = function (slice) {
 
         if (loMaterial) {
             for (slice.y = adjClippedBottom; slice.y < clippedEnd; slice.y++) {
-                var screenIndex = slice.targetX + slice.y * this.workerWidth;
+                screenIndex = (slice.targetX + slice.y * this.workerWidth)|0;
                 if (slice.distance < this.zbuffer[screenIndex]) {
                     var v = (slice.y - adjClippedBottom) / (sliceEnd - adjSliceBottom);
                     slice.intersection[2] = adj.bottomZ - v * (adj.bottomZ - sector.bottomZ);
@@ -197,7 +198,7 @@ Renderer.prototype.renderSlice = function (slice) {
             return;
 
         for (slice.y = clippedStart; slice.y < clippedEnd; slice.y++) {
-            var screenIndex = slice.targetX + slice.y * this.workerWidth;
+            screenIndex = (slice.targetX + slice.y * this.workerWidth)|0;
             if (slice.distance < this.zbuffer[screenIndex]) {
                 var v = (slice.y - sliceStart) / (sliceEnd - sliceStart);
                 slice.intersection[2] = sector.topZ + v * (sector.bottomZ - sector.topZ);
@@ -281,12 +282,12 @@ Renderer.prototype.renderEntity = function (renderTarget, entity) {
     var x = (ang + this.fov / 2.0) * this.screenWidth / this.fov;
     var vfixindex = Math.min(Math.max(fast_floor(x), 0), this.screenWidth - 1);
     var z = entity.pos[2] + entity.zOffset - (this.map.player.pos[2] + this.map.player.height);
-    var y1 = fast_floor(this.screenHeight / 2 - (z + entity.height) * this.viewFix[vfixindex] / d);
-    var y2 = fast_floor(this.screenHeight / 2 - z * this.viewFix[vfixindex] / d);
+    var y1 = (this.screenHeight / 2 - (z + entity.height) * this.viewFix[vfixindex] / d)|0;
+    var y2 = (this.screenHeight / 2 - z * this.viewFix[vfixindex] / d)|0;
 
     var scale = (y2 - y1) * entity.width / entity.height;
-    var x1 = fast_floor(x - scale * 0.5);
-    var x2 = fast_floor(x + scale * 0.5);
+    var x1 = (x - scale * 0.5)|0;
+    var x2 = (x + scale * 0.5)|0;
 
     var xStart = (globalWorkerId != undefined) ? globalWorkerId * this.workerWidth : 0;
     var xEnd = (globalWorkerId != undefined) ? xStart + this.workerWidth : this.screenWidth;
@@ -294,9 +295,10 @@ Renderer.prototype.renderEntity = function (renderTarget, entity) {
     var clippedX2 = Math.min(x2, xEnd);
     var clippedY1 = Math.max(y1, 0);
     var clippedY2 = Math.min(y2, this.screenHeight - 1);
+    var screenIndex = 0;
     for (var x = clippedX1; x < clippedX2; x++) {
         for (var y = clippedY1; y < clippedY2; y++) {
-            var screenIndex = y * this.workerWidth + x - xStart;
+            screenIndex = (y * this.workerWidth + x - xStart)|0;
             if (d < this.zbuffer[screenIndex]) {
                 var surface = texture.sample((x - x1) / scale, (y - y1) / (y2 - y1), y2 - y1);
 
@@ -374,7 +376,7 @@ Renderer.prototype.pick = function(screenX, screenY) {
     var picked = [];
     var yStart = 0;
     var yEnd = this.screenHeight - 1;
-    var rayTable = fast_floor(this.map.player.angle * this.trigCount / 360.0) + screenX - this.screenWidth / 2 + 1;
+    var rayTable = ((this.map.player.angle * this.trigCount / 360.0)|0) + screenX - this.screenWidth / 2 + 1;
     while (rayTable < 0)
         rayTable += this.trigCount;
 
@@ -436,10 +438,10 @@ Renderer.prototype.pick = function(screenX, screenY) {
         var projectedHeightTop = (sector.topZ - (this.map.player.pos[2] + this.map.player.height)) * this.viewFix[screenX] / distance;
         var projectedHeightBottom = (sector.bottomZ - (this.map.player.pos[2] + this.map.player.height)) * this.viewFix[screenX] / distance;
 
-        var sliceStart = fast_floor(this.screenHeight / 2 - projectedHeightTop);
-        var sliceEnd = fast_floor(this.screenHeight / 2 - projectedHeightBottom);
-        var clippedStart = fast_floor(Math.max(sliceStart, yStart));
-        var clippedEnd = fast_floor(Math.min(sliceEnd, yEnd));
+        var sliceStart = (this.screenHeight / 2 - projectedHeightTop)|0;
+        var sliceEnd = (this.screenHeight / 2 - projectedHeightBottom)|0;
+        var clippedStart = (Math.max(sliceStart, yStart))|0;
+        var clippedEnd = (Math.min(sliceEnd, yEnd))|0;
 
         if(screenY >= yStart && screenY < clippedStart) {
             picked.push({ type: 'ceiling', sector: sector, segment: segment });
@@ -464,10 +466,10 @@ Renderer.prototype.pick = function(screenX, screenY) {
             var adjProjectedHeightTop = (adj.topZ - (this.map.player.pos[2] + this.map.player.height)) * this.viewFix[screenX] / distance;
             var adjProjectedHeightBottom = (adj.bottomZ - (this.map.player.pos[2] + this.map.player.height)) * this.viewFix[screenX] / distance;
 
-            var adjSliceTop = fast_floor(this.screenHeight / 2 - adjProjectedHeightTop);
-            var adjSliceBottom = fast_floor(this.screenHeight / 2 - adjProjectedHeightBottom);
-            var adjClippedTop = fast_floor(Math.max(adjSliceTop, clippedStart));
-            var adjClippedBottom = fast_floor(Math.min(adjSliceBottom, clippedEnd));
+            var adjSliceTop = (this.screenHeight / 2 - adjProjectedHeightTop)|0;
+            var adjSliceBottom = (this.screenHeight / 2 - adjProjectedHeightBottom)|0;
+            var adjClippedTop = (Math.max(adjSliceTop, clippedStart))|0;
+            var adjClippedBottom = (Math.min(adjSliceBottom, clippedEnd))|0;
 
             if(screenY >= clippedStart && screenY < adjClippedTop) {
                 picked.push({ type: 'hi', sector: adj, segment: adjSegment });
@@ -507,7 +509,7 @@ Renderer.prototype.pick = function(screenX, screenY) {
 
             var d = this.map.player.distanceTo(entity.pos[0], entity.pos[1]);
             var x = (ang + this.fov / 2.0) * this.screenWidth / this.fov;
-            var vfixindex = Math.min(Math.max(fast_floor(x), 0), this.screenWidth - 1);
+            var vfixindex = Math.min(Math.max(x|0, 0), this.screenWidth - 1);
             var z = entity.pos[2] + entity.zOffset - (this.map.player.pos[2] + this.map.player.height);
             var y1 = fast_floor(this.screenHeight / 2 - (z + entity.height) * this.viewFix[vfixindex] / d);
             var y2 = fast_floor(this.screenHeight / 2 - z * this.viewFix[vfixindex] / d);

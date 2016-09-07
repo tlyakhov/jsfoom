@@ -250,3 +250,20 @@ function loadAssets(assets, done) {
 function isMobile() {
     return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
 }
+
+var _globalFloatPool = [];
+
+function newFloat64Array(size) {
+    var arr = new Float64Array(size);
+    _globalFloatPool.push(arr);
+    return arr;
+}
+
+function deleteFloat64Array(array) {
+    for(var i = 0; i < _globalFloatPool.length; i++) {
+        if(_globalFloatPool[i] == array) {
+            _globalFloatPool.splice(i, 1);
+            break;
+        }
+    }
+}

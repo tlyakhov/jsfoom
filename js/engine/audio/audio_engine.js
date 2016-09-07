@@ -54,8 +54,4 @@ AudioEngine.prototype.listener = function(entity) {
         -Math.cos(entity.angle * Math.PI / 180.0),
         -Math.sin(entity.angle * Math.PI / 180.0),
         0, 0, 0, 1.0);
-    this.context.listener.setVelocity(
-            entity.vel[0] / GAME_CONSTANTS.audioUnitsFactor,
-            entity.vel[1] / GAME_CONSTANTS.audioUnitsFactor,
-            entity.vel[2] / GAME_CONSTANTS.audioUnitsFactor);
 };

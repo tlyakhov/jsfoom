@@ -59,7 +59,7 @@ onmessage = function (e) {
         renderer.map = map = new Map();
     }
     else if (data.type == 'setTextureData') {
-        var texture = textureCache.get(data.texture.src, data.texture.generateMipMaps, data.texture.filter);
+        var texture = textureCache.get(data.texture);
         texture.data = data.data;
         texture.width = data.texture.width;
         texture.height = data.texture.height;

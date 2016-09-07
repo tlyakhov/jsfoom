@@ -140,8 +140,13 @@ Texture.prototype.sample = function (x, y, scaledHeight) {
     if (!data || data.length == 0 || width <= 0 || height <= 0)
         return 255 << 24;
 
-    var fx = fast_floor(x * width);
-    var fy = fast_floor(y * height);
+    x = x < 0.0 ? 0.0 : x;
+    y = y < 0.0 ? 0.0 : y;
+    x = x >= 1.0 ? 0.999 : x;
+    y = y >= 1.0 ? 0.999 : y;
+
+    var fx = (x * width) | 0;
+    var fy = (y * height) | 0;
 
     if (!this.filter)
         return data[fx * height + fy];

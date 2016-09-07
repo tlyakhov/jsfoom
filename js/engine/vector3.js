@@ -102,9 +102,9 @@ function vec3reflect(v, normal, vout) {
 }
 
 function vec3clamp(v, min, max, vout) {
-    vout[0] = Math.max(min, Math.min(max, v[0]));
-    vout[1] = Math.max(min, Math.min(max, v[1]));
-    vout[2] = Math.max(min, Math.min(max, v[2]));
+    vout[0] = v[0] < min ? min : (v[0] > max ? max : v[0]);
+    vout[1] = v[1] < min ? min : (v[1] > max ? max : v[1]);
+    vout[2] = v[2] < min ? min : (v[2] > max ? max : v[2]);
 
     return vout;
 }

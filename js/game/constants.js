@@ -1,13 +1,13 @@
 var GAME_CONSTANTS = {
     // Rendering constants
     renderWorkers: isMobile() ? 4 : 8,
-    intersectEpsilon: 1e-13,
-    lightGrid: 8,
+    intersectEpsilon: 1e-10,
+    lightGrid: 4,
     velocityEpsilon: 1e-15,
     lightAttenuationEpsilon: 0.001,
     maxViewDistance: 1000000.0,
     fieldOfView: 75,
-    debugLevel: 0,
+    debugLevel: 1,
     // Audio constants
     sourcesPerSound: 8,
     audioUnitsFactor: 12,

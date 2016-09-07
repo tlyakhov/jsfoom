@@ -26,7 +26,7 @@ Sprite.prototype.getTexture = function () {
         return null;
 
     if (!this.texture || this.texture.src != this.textureSrc)
-        this.texture = textureCache.get(this.textureSrc, true, false);
+        this.texture = textureCache.get({ src: this.textureSrc, generateMipMaps: true, filter: false });
 
     return this.texture;
 };
