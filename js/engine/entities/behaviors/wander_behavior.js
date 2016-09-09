@@ -1,3 +1,5 @@
+'use strict';
+
 inherit(Behavior, WanderBehavior);
 
 function WanderBehavior(options) {

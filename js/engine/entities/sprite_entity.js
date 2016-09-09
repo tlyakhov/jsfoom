@@ -1,3 +1,5 @@
+'use strict';
+
 inherit(RenderableEntity, SpriteEntity);
 
 function SpriteEntity(options) {

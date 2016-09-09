@@ -1,4 +1,6 @@
-var testMonsterSprites = [
+'use strict';
+
+window.testMonsterSprites = [
     new Sprite({ textureSrc: '/data/test_sprite/Test0012.png', state: 'idle', angle: 0 }),
     new Sprite({ textureSrc: '/data/test_sprite/Test0013.png', state: 'idle', angle: 1 }),
     new Sprite({ textureSrc: '/data/test_sprite/Test0014.png', state: 'idle', angle: 2 }),
@@ -17,7 +19,7 @@ var testMonsterSprites = [
     new Sprite({ textureSrc: '/data/test_sprite/Test0011.png', state: 'idle', angle: 15 })
 ];
 
-var testMap = new Map({
+window.testMap = new Map({
     spawnX: 0,
     spawnY: -70,
     materials: [

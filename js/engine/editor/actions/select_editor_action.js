@@ -1,3 +1,5 @@
+'use strict';
+
 inherit(EditorAction, SelectEditorAction);
 
 function SelectEditorAction(editor) {

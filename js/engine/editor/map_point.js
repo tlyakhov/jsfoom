@@ -1,3 +1,5 @@
+'use strict';
+
 // Only for editor
 
 function MapPoint(segment) {

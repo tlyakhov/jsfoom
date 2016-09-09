@@ -1,3 +1,5 @@
+'use strict';
+
 inherit(InteractionBehavior, TalkBehavior);
 
 function TalkBehavior(options) {

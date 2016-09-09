@@ -1,3 +1,5 @@
+'use strict';
+
 var globalWorkerId = undefined; // We're not a worker
 
 function GameMain(options) {

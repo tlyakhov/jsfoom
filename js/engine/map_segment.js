@@ -1,3 +1,5 @@
+'use strict';
+
 inherit(EngineObject, MapSegment);
 
 function MapSegment(options) {

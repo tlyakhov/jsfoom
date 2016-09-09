@@ -1,3 +1,5 @@
+'use strict';
+
 inherit(AttackBehavior, RocketBehavior);
 
 function RocketBehavior(options) {

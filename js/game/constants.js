@@ -1,8 +1,10 @@
+'use strict';
+
 var GAME_CONSTANTS = {
     // Rendering constants
-    renderWorkers: isMobile() ? 4 : 8,
+    renderWorkers: isMobile() ? 4 : 4,
     intersectEpsilon: 1e-10,
-    lightGrid: 4,
+    lightGrid: 2,
     velocityEpsilon: 1e-15,
     lightAttenuationEpsilon: 0.001,
     maxViewDistance: 1000000.0,

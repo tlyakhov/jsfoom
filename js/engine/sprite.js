@@ -1,3 +1,5 @@
+'use strict';
+
 inherit(EngineObject, Sprite);
 
 function Sprite(options) {

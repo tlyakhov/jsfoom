@@ -1,3 +1,5 @@
+'use strict';
+
 function TextureCache(options) {
     this.cache = {};
 

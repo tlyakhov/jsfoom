@@ -1,3 +1,5 @@
+'use strict';
+
 inherit(Behavior, WaypointBehavior);
 
 function WaypointBehavior(options) {

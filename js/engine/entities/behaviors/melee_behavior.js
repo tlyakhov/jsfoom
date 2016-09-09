@@ -1,3 +1,5 @@
+'use strict';
+
 inherit(AttackBehavior, MeleeBehavior);
 
 function MeleeBehavior(options) {

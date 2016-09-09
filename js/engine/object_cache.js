@@ -1,3 +1,5 @@
+'use strict';
+
 function ObjectCache(size, constr) {
     this.size = size;
     this.cache = Array();

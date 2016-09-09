@@ -1,3 +1,5 @@
+'use strict';
+
 var VEC3_TYPE = Float64Array;
 
 // Not very OOP, but EXTREMELY fast for JS

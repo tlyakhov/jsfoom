@@ -1,3 +1,5 @@
+'use strict';
+
 inherit(EditorAction, SetPropertyEditorAction);
 
 function SetPropertyEditorAction(editor) {

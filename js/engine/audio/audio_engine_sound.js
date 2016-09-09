@@ -1,3 +1,5 @@
+'use strict';
+
 function AudioEngineSound(options) {
     this.url = 'data/blip1.wav';
     this.loaded = false;

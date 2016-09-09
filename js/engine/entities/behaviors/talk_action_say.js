@@ -1,3 +1,5 @@
+'use strict';
+
 inherit(TalkAction, TalkActionSay);
 
 function TalkActionSay(options) {

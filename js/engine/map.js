@@ -1,3 +1,5 @@
+'use strict';
+
 inherit(EngineObject, Map);
 
 function Map(options) {
@@ -80,6 +82,7 @@ Map.prototype.frame = function (lastFrameTime) {
 Map.prototype.light = function (world, normal, sector, segment, u, v, pool) {
     // Lightmap access
     var lightmap = null;
+    var lightmapLength = 0;
     var mapIndex00 = 0;
     var mapIndex10 = 0;
     var mapIndex11 = 0;
@@ -92,18 +95,19 @@ Map.prototype.light = function (world, normal, sector, segment, u, v, pool) {
     // Optimize for our simple world geometry
     if (!isWall) {
         lightmap = normal[2] < 0 ? sector.ceilLightmap : sector.floorLightmap;
+        lightmapLength = lightmap.length;
         mapIndex00 = sector.lightmapAddress(world);
-        mapIndex10 = Math.min(mapIndex00 + 3, lightmap.length - 1);
-        mapIndex11 = Math.min(mapIndex10 + 3 * sector.lightmapWidth, lightmap.length - 1);
-        mapIndex01 = Math.min(mapIndex11 - 3, lightmap.length - 1);
+        mapIndex10 = Math.min(mapIndex00 + 3, lightmapLength - 1);
+        mapIndex11 = Math.min(mapIndex10 + 3 * sector.lightmapWidth, lightmapLength - 1);
+        mapIndex01 = Math.min(mapIndex11 - 3, lightmapLength - 1);
         q00 = sector.lightmapWorld(world, true);
         wu = 1.0 - (world[0] - q00[0]) / GAME_CONSTANTS.lightGrid;
         wv = 1.0 - (world[1] - q00[1]) / GAME_CONSTANTS.lightGrid;
     }
     else {
         lightmap = segment.lightmap;
-        wu = Math.min(fast_floor(u * (segment.lightmapWidth - 2)) + 1, segment.lightmapWidth - 1);
-        wv = Math.min(fast_floor(v * (segment.lightmapHeight - 2)) + 1, segment.lightmapHeight - 1);
+        wu = Math.min(((u * (segment.lightmapWidth - 2))|0) + 1, segment.lightmapWidth - 1);
+        wv = Math.min(((v * (segment.lightmapHeight - 2))|0) + 1, segment.lightmapHeight - 1);
         var wu2 = Math.min(wu + 1, segment.lightmapWidth - 1);
         var wv2 = Math.min(wv + 1, segment.lightmapHeight - 1) * segment.lightmapWidth;
         wv *= segment.lightmapWidth;
@@ -113,8 +117,8 @@ Map.prototype.light = function (world, normal, sector, segment, u, v, pool) {
         mapIndex01 = (wu + wv2) * 3;
         wu = u * (segment.lightmapWidth - 2);
         wv = v * (segment.lightmapHeight - 2);
-        wu = 1.0 - (wu - fast_floor(wu));
-        wv = 1.0 - (wv - fast_floor(wv));
+        wu = 1.0 - (wu - (wu|0));
+        wv = 1.0 - (wv - (wv|0));
     }
 
     wu = Math.min(1.0, Math.max(wu, 0.0));

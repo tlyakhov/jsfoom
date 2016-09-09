@@ -1,3 +1,5 @@
+'use strict';
+
 inherit(EditorAction, AddEntityEditorAction);
 
 function AddEntityEditorAction(editor) {

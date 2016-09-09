@@ -1,3 +1,5 @@
+'use strict';
+
 inherit(EditorAction, PanEditorAction);
 
 function PanEditorAction(editor) {

@@ -1,3 +1,5 @@
+'use strict';
+
 inherit(Behavior, InteractionBehavior);
 
 function InteractionBehavior(options) {

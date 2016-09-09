@@ -1,3 +1,5 @@
+'use strict';
+
 function RenderSlice() {
     this.renderTarget = null;
     this.x = 0;

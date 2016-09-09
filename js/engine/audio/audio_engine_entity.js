@@ -1,3 +1,5 @@
+'use strict';
+
 function AudioEngineEntity(options) {
     if(globalWorkerId != undefined)
         return;

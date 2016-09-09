@@ -1,3 +1,5 @@
+'use strict';
+
 inherit(AttackBehavior, RifleBehavior);
 
 function RifleBehavior(options) {

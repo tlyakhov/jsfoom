@@ -1,3 +1,5 @@
+'use strict';
+
 inherit(EditorAction, ScissorEditorAction);
 
 function ScissorEditorAction(editor) {

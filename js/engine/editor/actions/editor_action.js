@@ -1,3 +1,5 @@
+'use strict';
+
 function EditorAction(editor) {
     this.editor = editor;
 

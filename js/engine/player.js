@@ -1,3 +1,5 @@
+'use strict';
+
 inherit(Entity, Player);
 
 function Player(options) {

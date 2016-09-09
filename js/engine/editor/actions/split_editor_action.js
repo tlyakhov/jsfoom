@@ -1,3 +1,5 @@
+'use strict';
+
 inherit(EditorAction, SplitEditorAction);
 
 function SplitEditorAction(editor) {

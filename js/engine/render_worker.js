@@ -1,3 +1,5 @@
+'use strict';
+
 importScripts("../lib/jquery.nodom.js");
 importScripts("../lib/object_id.js");
 importScripts("../lib/hashcode.js");

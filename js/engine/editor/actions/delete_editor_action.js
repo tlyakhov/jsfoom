@@ -1,3 +1,5 @@
+'use strict';
+
 inherit(EditorAction, DeleteEditorAction);
 
 function DeleteEditorAction(editor) {

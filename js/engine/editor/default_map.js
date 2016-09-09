@@ -1,3 +1,5 @@
+'use strict';
+
 var globalDefaultMap = new Map({
     spawnX: 0,
     spawnY: 0,

@@ -1,3 +1,5 @@
+'use strict';
+
 inherit(InteractionBehavior, ProjectileBehavior);
 
 function ProjectileBehavior(options) {

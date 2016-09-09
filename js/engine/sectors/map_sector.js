@@ -1,3 +1,5 @@
+'use strict';
+
 inherit(EngineObject, MapSector);
 
 function MapSector(options) {
@@ -363,7 +365,7 @@ MapSector.prototype.isPointInside = function (x, y) {
     var j = 1;
 
     for (var i = 0; i < this.segments.length; i++) {
-        flag2 = (y >= this.segments[j].ay);
+        var flag2 = (y >= this.segments[j].ay);
         if (flag1 != flag2) {
             if (((this.segments[j].ay - y) * (this.segments[i].ax - this.segments[j].ax) >=
                 (this.segments[j].ax - x) * (this.segments[i].ay - this.segments[j].ay)) == flag2) {

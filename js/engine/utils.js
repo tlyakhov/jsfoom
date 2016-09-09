@@ -1,3 +1,5 @@
+'use strict';
+
 var classes = {};
 
 function createFromName(name, opts) {
@@ -229,22 +231,49 @@ function stringSerialize(obj) {
         return JSON.stringify(obj.serialize(), replacer);
 }
 
-function loadAssets(assets, done) {
-    var count = 0;
-    for (var i = 0; i < assets.length; i++) {
-        if (globalWorkerId == undefined) {
-            $.getScript(assets[i]).always(function() {
-                count++;
-                if(count == assets.length && done)
-                    done();
-            });
+function strictGetScript(source, done) {
+    var script = document.createElement('script');
+    var prior = document.getElementsByTagName('script')[0];
+    script.async = 1;
+    prior.parentNode.insertBefore(script, prior);
+    script.onerror = function(error) { console.log(error); };
+    script.onload = script.onreadystatechange = function(_, isAbort) {
+        if (isAbort || !script.readyState || /loaded|compvare/.test(script.readyState)) {
+            script.onload = script.onreadystatechange = null;
+            script = undefined;
+
+            if (!isAbort) {
+                done();
+            }
         }
-        else {
+    };
+
+    script.src = source;
+}
+
+function loadNonWorkerAsset(assets, current, done) {
+    if(current >= assets.length) {
+        if(done)
+            done();
+        return;
+    }
+    strictGetScript(assets[current], function() {
+        console.log(assets[current]);
+        loadNonWorkerAsset(assets, current + 1, done);
+    })
+}
+
+function loadAssets(assets, done) {
+    if (globalWorkerId == undefined) {
+        loadNonWorkerAsset(assets, 0, done);
+    }
+    else {
+        for (var i = 0; i < assets.length; i++) {
             importScripts(assets[i]);
         }
+        if (done)
+            done();
     }
-    if (globalWorkerId != undefined && done)
-        done();
 }
 
 function isMobile() {

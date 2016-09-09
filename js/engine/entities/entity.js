@@ -1,3 +1,5 @@
+'use strict';
+
 inherit(EngineObject, Entity);
 
 function Entity(options) {

@@ -1,3 +1,5 @@
+'use strict';
+
 inherit(Behavior, GameBehaviorFlub);
 
 function GameBehaviorFlub(options) {

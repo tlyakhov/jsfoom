@@ -1,3 +1,5 @@
+'use strict';
+
 inherit(InteractionBehavior, InventoryItemBehavior);
 
 function InventoryItemBehavior(options) {

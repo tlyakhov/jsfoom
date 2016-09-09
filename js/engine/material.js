@@ -1,3 +1,5 @@
+'use strict';
+
 inherit(EngineObject, Material);
 
 function Material(options) {

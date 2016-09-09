@@ -1,3 +1,5 @@
+'use strict';
+
 inherit(MapSector, MapSectorVerticalDoor);
 
 function MapSectorVerticalDoor(options) {

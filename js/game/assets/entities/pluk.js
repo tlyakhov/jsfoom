@@ -1,3 +1,5 @@
+'use strict';
+
 inherit(SpriteEntity, GameEntityPluk);
 
 var globalGameEntityPlukSprites = [

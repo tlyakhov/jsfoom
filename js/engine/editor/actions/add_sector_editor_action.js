@@ -1,3 +1,5 @@
+'use strict';
+
 inherit(EditorAction, AddSectorEditorAction);
 
 function AddSectorEditorAction(editor) {

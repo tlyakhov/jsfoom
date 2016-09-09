@@ -1,3 +1,5 @@
+'use strict';
+
 inherit(Entity, LightEntity);
 
 function LightEntity(options) {

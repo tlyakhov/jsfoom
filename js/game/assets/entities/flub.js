@@ -1,3 +1,5 @@
+'use strict';
+
 inherit(SpriteEntity, GameEntityFlub);
 
 var globalGameEntityFlubSprites = [

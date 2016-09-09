@@ -1,3 +1,5 @@
+'use strict';
+
 inherit(EngineObject, Behavior);
 
 function Behavior(options) {

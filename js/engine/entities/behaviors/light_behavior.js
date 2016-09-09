@@ -1,3 +1,5 @@
+'use strict';
+
 inherit(Behavior, LightBehavior);
 
 function LightBehavior(options) {

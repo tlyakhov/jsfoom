@@ -1,3 +1,5 @@
+'use strict';
+
 function AudioEngine(options) {
     this.sounds = {};
     this.onAllLoaded = [];

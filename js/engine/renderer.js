@@ -1,3 +1,5 @@
+'use strict';
+
 var FLOOR_NORMAL = vec3create(0.0, 0.0, 1.0);
 var CEILING_NORMAL = vec3create(0.0, 0.0, -1.0);
 
@@ -198,7 +200,7 @@ Renderer.prototype.renderSlice = function (slice) {
             return;
 
         for (slice.y = clippedStart; slice.y < clippedEnd; slice.y++) {
-            screenIndex = (slice.targetX + slice.y * this.workerWidth)|0;
+            var screenIndex = (slice.targetX + slice.y * this.workerWidth)|0;
             if (slice.distance < this.zbuffer[screenIndex]) {
                 var v = (slice.y - sliceStart) / (sliceEnd - sliceStart);
                 slice.intersection[2] = sector.topZ + v * (sector.bottomZ - sector.topZ);

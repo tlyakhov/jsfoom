@@ -1,3 +1,5 @@
+'use strict';
+
 Editor.prototype.renderPropertyName = function (row, type, set, meta) {
     if (type == 'sort') {
         var depth = padNumber(row.depth, 2);

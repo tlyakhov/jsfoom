@@ -1,3 +1,5 @@
+'use strict';
+
 var KEY_0 = 48;
 var KEY_1 = 49;
 var KEY_2 = 50;

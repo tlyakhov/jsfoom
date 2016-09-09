@@ -1,3 +1,5 @@
+'use strict';
+
 function Texture(options) {
     this.width = 0;
     this.height = 0;
@@ -137,7 +139,7 @@ Texture.prototype.sample = function (x, y, scaledHeight) {
         }
     }
 
-    if (!data || data.length == 0 || width <= 0 || height <= 0)
+    if (!data || width <= 0 || height <= 0)
         return 255 << 24;
 
     x = x < 0.0 ? 0.0 : x;

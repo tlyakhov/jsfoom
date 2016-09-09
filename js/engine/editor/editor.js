@@ -1,3 +1,5 @@
+'use strict';
+
 var EDITOR_CONSTANTS = {
     segmentSelectionEpsilon: 5.0,
     gridSize: 10.0,

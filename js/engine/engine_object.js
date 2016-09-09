@@ -1,3 +1,5 @@
+'use strict';
+
 function EngineObject(options) {
     this.id = this.constructor.name + "_" + (new ObjectId().toString());
     this.tags = [];

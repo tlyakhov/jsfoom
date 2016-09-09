@@ -1,3 +1,5 @@
+'use strict';
+
 inherit(MapSector, MapSectorWater);
 
 function MapSectorWater(options) {

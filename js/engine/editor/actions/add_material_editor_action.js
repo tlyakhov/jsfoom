@@ -1,3 +1,5 @@
+'use strict';
+
 inherit(EditorAction, AddMaterialEditorAction);
 
 function AddMaterialEditorAction(editor) {
